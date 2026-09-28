@@ -36,16 +36,22 @@ plugins:
   - search
   - mkdocstrings:
       handlers:
-          python:
-              options:
-                  docstring_style: google
-                  show_root_heading: true
-                  show_root_full_path: false
-                  show_object_full_path: false
-                  show_signature_annotations: true
-                  members_order: source
-                  show_source: false
-                  group_by_category: true
+        python:
+          options:
+            docstring_style: google
+            show_root_heading: false
+            show_root_full_path: false
+            show_object_full_path: false
+            show_signature_annotations: true
+            members_order: source
+            show_source: true
+            group_by_category: true     # Required: Generates the "Classes", "Functions" headers
+            show_symbol_type_heading: true # Displays small category badges next to item names
+            show_symbol_type_toc: true
+
+extra_css:
+  - assets/stylesheets/custom.css
+  - assets/stylesheets/custom_api.css
 
 nav:
   - Home: home.md

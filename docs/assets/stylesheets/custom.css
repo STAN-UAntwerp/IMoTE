@@ -1,0 +1,10 @@
+:root [data-md-color-scheme="default"] {
+  /* This shifts the top bar background to your preferred blue */
+  --md-primary-fg-color: #1f77b4;
+  --md-primary-fg-color--dark: #165683;
+}
+
+:root [data-md-color-scheme="slate"] {
+  /* Keeps it consistent if you switch to dark/slate mode */
+  --md-primary-fg-color: #1f77b4;
+}

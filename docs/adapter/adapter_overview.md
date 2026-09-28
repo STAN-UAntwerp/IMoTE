@@ -1,4 +1,4 @@
-# Adapters
+# Adapter
 Different tools exist to fit linear model trees to tabular data. These include the implemented PILOT and M5 algorithms
 which can be used to fit new trees in the applications (see [New Tree](../user-guide/c-new-tree.md)).
 

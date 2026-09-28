@@ -35,11 +35,17 @@ Below the node type badge, the following fields are displayed:
 
 * **Label** – A description of the node. For split nodes, this provides information about the split condition. For leaf
   nodes, it describes the fitted linear model.
-* **Node ID** – The unique identifier of the node in the tree.
-* **Samples** – The number of data points that reach this node.
-* **Current RSS** – The residual sum of squares (RSS) of the model fitted at this node.
-* **RSS Root Reduction** – The reduction in RSS compared to the root node, indicating how much improvement has been
-  achieved by splitting the data.
+* **Metrics** – A dropdown list form which you select the metrics you are interested in.
+  * **Node ID** – The unique identifier of the node in the tree.
+  * **Samples** – The number of data points that reach this node.
+  * **RSS** – The residual sum of squares (RSS) of the model fitted at this node.
+  * **MAE** – The mean absolute error (MAE) between the true and predicted values at this node.
+  * **MSE** – The mean squared error (MSE) between the true and predicted values at this node.
+  * **RMSE** – The root mean squared error (RMSE) between the true and predicted values at this node.
+  * **R²** – The coefficient of determination (R²) between the true and predicted values at this node.
+  * **Mean Residual** – The mean of the node's own residuals.
+  * **Std Residual** – The standard deviation of the node's own residuals.
+  * **Split Balance** – The fraction of samples routed to the right child, 0.5 indicates a perfectly balanced split.
 * **Show node plot** – A switch that enables the node plot for the selected node (see below).
 
 ---

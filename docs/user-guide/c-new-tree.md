@@ -56,7 +56,7 @@ external implementation into the internal `VizTree` object used for visualizatio
 Currently, adapters are available for PILOT, M5, and the _partykit_ package in R. (PILOT and M5 trees can also be
 trained directly in the application.) The _partykit_ adapter supports trees fitted using `lmtree()` in R.
 
-The documentation page of the [adapter](../home.md) explains how to implement your own adapter, allowing trees from other linear model tree
+The documentation page of the [adapter](../adapter/adapter_overview.md) explains how to implement your own adapter, allowing trees from other linear model tree
 algorithms in different languages to be imported. It also provides more details on the partykit adapter.
 
 ### Using an Adapter

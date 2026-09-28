@@ -1,3 +1,3 @@
 # Base Node
 
-::: nodes.base_node.BaseNode
+::: nodes.base_node
