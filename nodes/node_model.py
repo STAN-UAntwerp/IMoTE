@@ -47,11 +47,11 @@ class NodeModel(ABC):
         pass
 
     @abstractmethod
-    def predict(self, x):
+    def predict(self, X):
         """Predicts the target value(s) for the given input.
 
         Args:
-            x: Input feature(s) to predict on.
+            X: MatriX of feature values.
 
         Returns:
             Predicted value(s).
@@ -94,16 +94,20 @@ class NoneNodeModel(NodeModel):
         """
         return cls.__new__(cls)
 
-    def predict(self, x):
-        """Returns the input unchanged.
+    def predict(self, X):
+        """Predicts 0
 
         Args:
-            x: Input feature(s).
+            X: Matrix of feature values.
 
         Returns:
-            x, unmodified.
+            List containing 0 for each input row.
         """
-        return x
+        if X.ndim == 1:
+            X_shaped = X.reshape(1, -1)
+        else:
+            X_shaped = X
+        return np.full(X_shaped.shape[0], 0)
 
 class ConstantNodeModel(NodeModel):
     """Model that predicts a single constant value.
@@ -152,16 +156,20 @@ class ConstantNodeModel(NodeModel):
         obj.value = dic["value"]
         return obj
 
-    def predict(self, x: List[float]) -> List[float]:
+    def predict(self, X: np.ndarray) -> np.ndarray:
         """Predicts the constant value for each input row.
 
         Args:
-            x: Input feature(s); only its length is used.
+            X: Matrix of feature values.
 
         Returns:
-            List containing the constant value, repeated len(x) times.
+            List containing the constant value for each input row.
         """
-        return [self.value] * len(x)
+        if X.ndim == 1:
+            X_shaped = X.reshape(1, -1)
+        else:
+            X_shaped = X
+        return np.full(X_shaped.shape[0], self.value)
 
 class SimpleLinearNodeModel(NodeModel):
     """Model with a one dimensional linear regression model.
@@ -207,18 +215,16 @@ class SimpleLinearNodeModel(NodeModel):
                      "intercept": self.intercept})
         return dic
 
-    def predict(self, x: List[float]) -> List[float]:
-        """Predicts using the one dimensional linear regression model.
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        """Predict using the one-dimensional linear regression model.
 
         Args:
             x: List of feature values.
 
         Returns:
-            List of predicted values.
+            Array of predicted values.
         """
-        y = [self.intercept] * len(x)
-        y += self.coefficient * np.array(x)
-        return y
+        return self.intercept + self.coefficient * x
 
     @classmethod
     def from_dict(cls, dic: dict) -> "SimpleLinearNodeModel":
@@ -244,10 +250,10 @@ class LinearNodeModel(NodeModel):
         intercept: Constant offset added to the prediction.
     """
 
-    coefficients: List[float]
+    coefficients: np.ndarray
     intercept: float
 
-    def __init__(self, coefficients: List[float], intercept: float):
+    def __init__(self, coefficients: np.ndarray, intercept: float):
         """
         Args:
             coefficients: Coefficient for each feature.
@@ -282,19 +288,20 @@ class LinearNodeModel(NodeModel):
                      "intercept": self.intercept})
         return dic
 
-    def predict(self, x: List[float]) -> List[float]:
+    def predict(self, X: np.ndarray) -> np.ndarray:
         """Predicts using the full linear regression model.
 
         Args:
-            x: Input feature matrix, one row per sample.
+            X: Input feature matrix, one row per sample.
 
         Returns:
             Array of predicted values.
         """
-        x_array = np.array(x)
-        y = [self.intercept] * x_array.shape[0]
-        y += self.coefficients @ x_array
-        return y
+        if X.ndim == 1:
+            X_shaped = X.reshape(1, -1)
+        else:
+            X_shaped = X
+        return self.intercept + X_shaped @ self.coefficients
 
     def add_model(self, model: NodeModel):
         """Merges another model's parameters into this one, in place.

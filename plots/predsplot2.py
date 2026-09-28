@@ -5,7 +5,7 @@ import warnings
 from matplotlib.patches import ConnectionPatch
 from matplotlib.transforms import blended_transform_factory
 
-from viz_tree.contributions import get_split_and_lin_contributions, get_split_and_lin_contributions_test
+from viz_tree.contributions import get_split_and_lin_contributions_test
 from nodes.leaf_node import LeafNode
 from viz_tree.viz_tree import VizTree
 
@@ -71,7 +71,8 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
     indices = leaf_node.indices
     coefficients = leaf_node.node_model.coefficients
     X = viz_tree.X_train[indices,:]
-    all_split_contributions, all_lin_contributions = get_split_and_lin_contributions(viz_tree)
+    all_split_contributions = viz_tree.split_contributions
+    all_lin_contributions = viz_tree.linear_contributions
     split_contributions = all_split_contributions[indices,:]
     lin_contributions = all_lin_contributions[indices,:]
     center_predictions = np.mean(y_hat)
@@ -90,8 +91,14 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
     features_sorted_by_importance = np.argsort(all_contribution_mean)[::-1]
 
     # Select features with non-zero coefficients
+    all_contribution_abs_max_per_feature = np.max(np.abs(all_contribution_mean), axis=0)
+    abs_max_contribution = np.max(all_contribution_abs_max_per_feature)
+    cutoff_zero_feature = abs_max_contribution * 0.01
+    num_far_from_zero_features = np.sum(np.abs(all_contribution_mean) > cutoff_zero_feature)
     num_nonzero_features = np.sum(np.abs(all_contribution_mean) > 1e-14)
-    num_features_to_plot = min(num_nonzero_features, n_max)
+    n_max_plot = min(n_max, num_far_from_zero_features+1)
+    num_features_to_plot = min(num_nonzero_features, n_max_plot)
+
 
     # Define feature labels
     if feature_names is None:
@@ -105,13 +112,13 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
 
     # Remove zero features and possibly combine last features
     if num_features_to_plot < num_nonzero_features:
-        features_to_keep = features_sorted_by_importance[:n_max - 1]
-        features_to_combine = features_sorted_by_importance[n_max - 1:num_nonzero_features]
+        features_to_keep = features_sorted_by_importance[:n_max_plot - 1]
+        features_to_combine = features_sorted_by_importance[n_max_plot - 1:num_nonzero_features]
 
-        feature_data = np.empty((X.shape[0], n_max))
-        is_coefficients_positive = np.empty(n_max)
+        feature_data = np.empty((X.shape[0], n_max_plot))
+        is_coefficients_positive = np.empty(n_max_plot)
         split_features = []
-        for j in range(n_max-1):
+        for j in range(n_max_plot-1):
             i = features_to_keep[j]
             if i < n_features: #linear contribution
                 feature_data[:, j] = X[:, i]
@@ -120,15 +127,15 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
                 feature_data[:, j] = all_contributions[:, i]
                 is_coefficients_positive[j] = True
                 split_features.append(j)
-        feature_data[:, n_max - 1] = np.sum(all_contributions[:, features_to_combine], axis=1)
-        is_coefficients_positive[n_max - 1] = True
+        feature_data[:, n_max_plot - 1] = np.sum(all_contributions[:, features_to_combine], axis=1)
+        is_coefficients_positive[n_max_plot - 1] = True
 
-        contributions = np.empty((X.shape[0], n_max))
-        contributions[:, :n_max - 1] = all_contributions[:, features_to_keep]
-        contributions[:, n_max - 1] = np.sum(all_contributions[:, features_to_combine], axis=1)
+        contributions = np.empty((X.shape[0], n_max_plot))
+        contributions[:, :n_max_plot - 1] = all_contributions[:, features_to_keep]
+        contributions[:, n_max_plot - 1] = np.sum(all_contributions[:, features_to_combine], axis=1)
 
-        if np.var(feature_data[:, n_max - 1]) < 1e-15:
-            split_features.append(n_max-1)
+        if np.var(feature_data[:, n_max_plot - 1]) < 1e-15:
+            split_features.append(n_max_plot-1)
 
         features_labels = [all_feature_labels[i] for i in features_to_keep]
         features_labels.append("Remainder")
@@ -138,22 +145,22 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
             feature_colors.append("grey")
 
         if highlight:
-            highlight_x_contributions = np.empty(n_max)
-            highlight_x_contributions[:n_max - 1] = highlight_x_all_contributions[features_to_keep]
-            highlight_x_contributions[n_max - 1] = np.sum(highlight_x_all_contributions[features_to_combine])
+            highlight_x_contributions = np.empty(n_max_plot)
+            highlight_x_contributions[:n_max_plot - 1] = highlight_x_all_contributions[features_to_keep]
+            highlight_x_contributions[n_max_plot - 1] = np.sum(highlight_x_all_contributions[features_to_combine])
 
-            highlight_x_feature = np.empty(n_max)
-            for j in range(n_max - 1):
+            highlight_x_feature = np.empty(n_max_plot)
+            for j in range(n_max_plot - 1):
                 i = features_to_keep[j]
                 if i < n_features:  # linear contribution
                     highlight_x_feature[j] = highlight_x[i]
                 else:  # split contribution
                     highlight_x_feature[j] = highlight_x_all_contributions[i]
-            highlight_x_feature[n_max - 1] = highlight_x_contributions[n_max - 1]
+            highlight_x_feature[n_max_plot - 1] = highlight_x_contributions[n_max_plot - 1]
     else:
         features_to_keep = features_sorted_by_importance[:num_nonzero_features]
         feature_data = np.empty((X.shape[0], num_nonzero_features))
-        is_coefficients_positive = np.empty(n_max)
+        is_coefficients_positive = np.empty(num_nonzero_features)
         split_features = []
         for j in range(num_nonzero_features):
             i = features_to_keep[j]
@@ -172,7 +179,7 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
         if highlight:
             highlight_x_contributions = highlight_x_all_contributions[features_to_keep]
 
-            highlight_x_feature = np.empty(n_max)
+            highlight_x_feature = np.empty(num_nonzero_features)
             for j in range(num_nonzero_features):
                 i = features_to_keep[j]
                 if i < n_features:  # linear contribution

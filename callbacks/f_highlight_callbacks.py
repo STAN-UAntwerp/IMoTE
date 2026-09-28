@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from dash import Input, Output, State, ctx
+from dash import Input, Output, State, NoUpdate
 from dash.exceptions import PreventUpdate
 
 import ids
@@ -38,12 +38,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def highlight_path(n_clicks, input_highlight_x, viz_tree_dict, tree_params):
-        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if triggered_id != ids.BTN_HIGHLIGHT or n_clicks is None or input_highlight_x is None:
-            print(f"call to highlight path with id:{triggered_id}")
-            raise PreventUpdate
         if n_clicks is None:
-            print("call to highlight path with clicks None")
             raise PreventUpdate
         if input_highlight_x is None:
             raise PreventUpdate
@@ -51,13 +46,13 @@ def register_callbacks(app):
         try:
             highlight_x = np.array([float(v.strip()) for v in input_highlight_x.split(",")])
         except ValueError:
-            return None, "Couldn't parse the highlight input -- expected comma-separated numbers.", time.time()
+            return None, NoUpdate, "Couldn't parse the highlight input, expected comma-separated numbers.", NoUpdate
 
         if len(highlight_x) != n_features:
             return (
-                None,
+                None, NoUpdate,
                 f"Highlight input has length {len(highlight_x)}, expected {n_features}.",
-                time.time(),
+                NoUpdate,
             )
 
         new_tree_params = tree_params.copy()

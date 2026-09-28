@@ -30,7 +30,7 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
             plt.scatter(X[idx_point, feature_idx], node.y_res[idx_point], s=60 + scaled_weights[idx_point],
                         facecolors='r', marker='*')
     if isinstance(node, LinearNode):
-        x = [min_x, max_x]
+        x = np.array([min_x, max_x])
         y = node.linear_model.predict(x)
         plt.plot(x, y, color=feature_colors[feature_idx], linewidth=3)
         plt.title(f"LIN - Feature: {feature_label}")
@@ -48,17 +48,17 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
                 left_len = (value - possible_values[i-1])/2
                 right_len = (possible_values[i+1] - value)/2
             if value in left_child_values:
-                y = node.left_model.predict([value])
+                y = node.left_model.predict(np.array([value]))
             else:
-                y = node.right_model.predict([value])
+                y = node.right_model.predict(np.array([value]))
             plt.plot([value-left_len, value+right_len], [y, y], color=feature_colors[feature_idx], linewidth=3)
         self_name = str(node.__class__.__name__)
         plt.title(f"{self_name} - Feature: {feature_label}")
 
     elif isinstance(node, (PconNode, PlinNode, BlinNode)):
         pivot = node.pivot_value
-        x1 = [min_x, pivot]
-        x2 = [pivot, max_x]
+        x1 = np.array([min_x, pivot]).reshape(2, -1)
+        x2 = np.array([pivot, max_x]).reshape(2, -1)
         y1 = node.left_model.predict(x1)
         y2 = node.right_model.predict(x2)
         plt.plot(x1, y1, x2, y2, color=feature_colors[feature_idx], linewidth=3)

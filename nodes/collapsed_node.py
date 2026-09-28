@@ -1,12 +1,3 @@
-"""
-Node type representing a leaf like node that stands in for a hidden subtree.
-
-Used to collapse a subtree in the visualization while retaining a
-copy of its original structure, so it can be expanded again later.
-
-Not used for initialising a tree structure.
-"""
-
 from nodes.base_node import BaseNode
 
 @BaseNode.register

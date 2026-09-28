@@ -51,4 +51,6 @@ class NoneNode(BaseNode):
         Returns:
             A new NoneNode instance.
         """
-        return cls()
+        obj = cls()
+        obj.id = -1
+        return obj

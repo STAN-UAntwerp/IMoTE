@@ -2,7 +2,7 @@ from m5py import M5Prime
 import os
 import pickle
 import time
-from dash import Input, Output, State, ctx, no_update, NoUpdate
+from dash import Input, Output, State, no_update, NoUpdate
 from dash.exceptions import PreventUpdate
 import base64
 from pathlib import Path
@@ -186,12 +186,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def load_tree(n_clicks, load_path):
-        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if triggered_id != ids.BTN_LOAD_TREE:
-            print(f"call to load tree with id:{triggered_id}")
-            raise PreventUpdate
         if n_clicks is None:
-            print("call to load tree with clicks None")
             raise PreventUpdate
         resolved_path = load_path
         if not resolved_path or not os.path.exists(resolved_path):
@@ -219,7 +214,6 @@ def register_callbacks(app):
     )
     def reload_tree(n_clicks, viz_tree_dict, tree_params):
         if n_clicks is None:
-            print("call to reload tree with clicks None")
             raise PreventUpdate
         return  viz_tree_dict, tree_params, time.time()
 
@@ -245,7 +239,6 @@ def register_callbacks(app):
     )
     def fit_tree(n_clicks, dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf, feature_color):
         if n_clicks is None:
-            print("call to fit tree with clicks None")
             raise PreventUpdate
         print("fitting tree")
         viz_tree, training_time = fit_new_tree(dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
@@ -293,7 +286,6 @@ def register_callbacks(app):
     )
     def fit_tree(n_clicks, input_dataset, adapter_name, model_path):
         if n_clicks is None:
-            print("call to load new tree with adapter with clicks None")
             raise PreventUpdate
 
         adapter = ADAPTERS_REGISTRY[adapter_name]

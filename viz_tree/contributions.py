@@ -8,8 +8,9 @@ from subprocess import run
 from viz_tree.viz_tree import VizTree
 from nodes.collapsed_node import CollapsedNode
 from nodes.internal_node import InternalNode, LinearNode
-from nodes.split_node import PconNode, PconcNode, SplitNode
+from nodes.split_node import PconNode, PconcNode, SplitNode, BlinNode, PlinNode, SplitCNode
 from nodes.leaf_node import LeafNode
+from nodes.node_model import LinearNodeModel
 from plots.beeswarm import beeswarm
 import matplotlib.pyplot as plt
 
@@ -31,58 +32,8 @@ import matplotlib.pyplot as plt
 #
 ########################################
 
-# def get_contributions(viz_tree: VizTree):
-#     X = viz_tree.X_train
-#     all_contributions = np.zeros_like(X, dtype=float)
-#     for node in viz_tree.nodes:
-#         if isinstance(node, CollapsedNode):
-#             raise ValueError("CollapsedNode cannot be used when calculating contributions")
-#         if isinstance(node, InternalNode):
-#             pivot = node.pivot_idx
-#             predictions_left = node.left_model.predict(X[node.left_child_node.indices, pivot])
-#             y_hat_node = np.mean(predictions_left) * np.sum(node.left_child_node.indices)
-#             if node.right_child_node is not None:
-#                 predictions_right = node.right_lin_model[1] + node.right_lin_model[0] * X[node.right_child_node.indices, pivot]
-#                 y_hat_node += np.mean(predictions_right) * np.sum(node.right_child_node.indices)
-#
-#             y_hat_node = y_hat_node/np.sum(node.indices)
-#             all_contributions[node.left_child_node.indices, pivot] += predictions_left - y_hat_node
-#             if node.right_child_node is not None:
-#                 all_contributions[node.right_child_node.indices, pivot] += predictions_right - y_hat_node
-#     return all_contributions
 
-def get_split_and_lin_contributions(viz_tree: VizTree):
-    X = viz_tree.X_train
-    split_contributions = np.zeros_like(X, dtype=float)
-    lin_contributions = np.zeros_like(X, dtype=float)
-    for node in viz_tree.nodes:
-        if isinstance(node, CollapsedNode):
-            raise ValueError("CollapsedNode cannot be used when calculating contributions")
-        if isinstance(node, InternalNode):
-            pivot = node.pivot_idx
-            if isinstance(node, LinearNode):
-                linear_predictions = node.linear_model.predict(X[node.child.indices, pivot])
-                lin_contributions[node.child.indices, pivot] += linear_predictions - np.mean(linear_predictions)
-                continue
-            if isinstance(node, PconcNode) or isinstance(node, PconNode):
-                avg_pred_left = node.left_model.predict([0])[0]
-                avg_pred_right = node.right_model.predict([0])[0]
-            elif isinstance(node, SplitNode): #blin and plin
-                linear_predictions_left = node.left_model.predict(X[node.left_child.indices, pivot])
-                linear_predictions_right = node.right_model.predict(X[node.right_child.indices, pivot])
-                avg_pred_left = np.mean(linear_predictions_left)
-                avg_pred_right = np.mean(linear_predictions_right)
-                lin_contributions[node.left_child.indices, pivot] += linear_predictions_left - avg_pred_left
-                lin_contributions[node.right_child.indices, pivot] += linear_predictions_right - avg_pred_right
-            else:
-                raise ValueError(f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
-
-            y_hat_node = (avg_pred_left*np.sum(node.left_child.indices) + avg_pred_right*np.sum(node.right_child.indices))/np.sum(node.indices)
-            split_contributions[node.left_child.indices, pivot] += avg_pred_left - y_hat_node
-            split_contributions[node.right_child.indices, pivot] += avg_pred_right - y_hat_node
-    return split_contributions, lin_contributions
-
-def get_split_and_lin_contributions_test(viz_tree: VizTree, x_test):
+def get_split_and_lin_contributions_test(viz_tree: VizTree, x_test: np.ndarray):
     split_contributions = np.zeros_like(x_test, dtype=float)
     lin_contributions = np.zeros_like(x_test, dtype=float)
 
@@ -96,47 +47,95 @@ def get_split_and_lin_contributions_test(viz_tree: VizTree, x_test):
             pivot = node.pivot_idx
             if isinstance(node, LinearNode):
                 linear_predictions = node.linear_model.predict(X[node.child.indices, pivot])
-                linear_prediction_x_test = node.linear_model.predict([x_test[pivot]])[0]
+                linear_prediction_x_test = node.linear_model.predict(np.array([x_test[pivot]]))[0]
                 lin_contributions[pivot] += linear_prediction_x_test - np.mean(linear_predictions)
             else:
-                if isinstance(node, PconcNode) or isinstance(node, PconNode):
-                    avg_pred_left = node.left_model.predict([0])[0]
-                    avg_pred_right = node.right_model.predict([0])[0]
-                elif isinstance(node, SplitNode):  # blin and plin
+                if isinstance(node, (PconcNode, PconNode)):
+                    avg_pred_left = node.left_model.predict(np.array([0]))[0]
+                    avg_pred_right = node.right_model.predict(np.array([0]))[0]
+                elif isinstance(node, (BlinNode, PlinNode)):
                     linear_predictions_left = node.left_model.predict(X[node.left_child.indices, pivot])
                     linear_predictions_right = node.right_model.predict(X[node.right_child.indices, pivot])
                     avg_pred_left = np.mean(linear_predictions_left)
                     avg_pred_right = np.mean(linear_predictions_right)
-                    linear_prediction_x_test_left = node.left_model.predict([x_test[pivot]])[0]
-                    linear_prediction_x_test_right = node.right_model.predict([x_test[pivot]])[0]
+                    linear_prediction_x_test_left = node.left_model.predict(np.array([x_test[pivot]]))[0]
+                    linear_prediction_x_test_right = node.right_model.predict(np.array([x_test[pivot]]))[0]
+                elif isinstance(node, SplitNode):
+                    split_contributions, lin_contributions, _ = _calculate_split_and_lin_contributions_test2_recursive(
+                        viz_tree, viz_tree.root_node, x_test)
+                    return split_contributions, lin_contributions
                 else:
                     raise ValueError(f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
 
-                y_hat_node = (avg_pred_left*np.sum(node.left_child.indices) + avg_pred_right*np.sum(node.right_child.indices))/np.sum(node.indices)
+                avg_pred = (avg_pred_left*np.sum(node.left_child.indices) + avg_pred_right*np.sum(node.right_child.indices))/np.sum(node.indices)
 
         # Find next node in path
         if isinstance(node, LinearNode):
             node = node.child
         elif isinstance(node, PconcNode):
-            if x_test[node.pivot_idx] in node.pivot_value:
+            if x_test[pivot] in node.pivot_value:
                 node = node.left_child
-                split_contributions[pivot] += avg_pred_left - y_hat_node
+                split_contributions[pivot] += avg_pred_left - avg_pred
             else:
                 node = node.right_child
-                split_contributions[pivot] += avg_pred_right - y_hat_node
+                split_contributions[pivot] += avg_pred_right - avg_pred
         else:
-            if x_test[node.pivot_idx] > node.pivot_value:
-                split_contributions[pivot] += avg_pred_right - y_hat_node
+            if x_test[pivot] > node.pivot_value:
+                split_contributions[pivot] += avg_pred_right - avg_pred
                 if not isinstance(node, PconNode):
                     lin_contributions[pivot] += linear_prediction_x_test_right - avg_pred_right
                 node = node.right_child
             else:
-                split_contributions[pivot] += avg_pred_left - y_hat_node
+                split_contributions[pivot] += avg_pred_left - avg_pred
                 if not isinstance(node, PconNode):
                     lin_contributions[pivot] += linear_prediction_x_test_left - avg_pred_left
                 node = node.left_child
 
     return split_contributions, lin_contributions
+
+# For non-pilot trees
+def _calculate_split_and_lin_contributions_test2_recursive(viz_tree: VizTree, node, x_test: np.ndarray):
+    if isinstance(node, LeafNode):
+        node_model = node.node_model
+        X_node = viz_tree.X_train[node.indices, :]
+        avg_pred = np.mean(node_model.predict(X_node))
+
+        split_contributions = np.zeros_like(x_test, dtype=float)
+        lin_contributions = np.zeros_like(x_test, dtype=float)
+        if isinstance(node_model, LinearNodeModel):
+            lin_contributions += node_model.coefficients * (x_test - np.mean(X_node, axis=0))
+        return split_contributions, lin_contributions, avg_pred
+    elif isinstance(node, SplitNode):
+        split_contributions_left, lin_contributions_left, avg_pred_left = (
+            _calculate_split_and_lin_contributions_test2_recursive(viz_tree, node.left_child, x_test))
+        split_contributions_right, lin_contributions_right, avg_pred_right = (
+            _calculate_split_and_lin_contributions_test2_recursive(viz_tree, node.right_child, x_test))
+        pivot = node.pivot_idx
+        avg_pred = (avg_pred_left * np.sum(node.left_child.indices) +
+                    avg_pred_right * np.sum(node.right_child.indices)) / np.sum(node.indices)
+        if isinstance(node, SplitCNode):
+            if x_test[pivot] in node.pivot_value:
+                split_contributions = split_contributions_left
+                split_contributions[pivot] += avg_pred_left - avg_pred
+                lin_contributions = lin_contributions_left
+            else:
+                split_contributions = split_contributions_right
+                split_contributions[pivot] += avg_pred_right - avg_pred
+                lin_contributions = lin_contributions_right
+        else:
+            if x_test[node.pivot_idx] > node.pivot_value:
+                split_contributions = split_contributions_right
+                split_contributions[pivot] += avg_pred_right - avg_pred
+                lin_contributions = lin_contributions_right
+            else:
+                split_contributions = split_contributions_left
+                split_contributions[pivot] += avg_pred_left - avg_pred
+                lin_contributions = lin_contributions_left
+
+        return split_contributions, lin_contributions, avg_pred
+    else:
+        raise NotImplementedError(
+            f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
 
 def scatter_contributions(df_X, df_contributions, feature, color_feature = None):
     if color_feature is None:

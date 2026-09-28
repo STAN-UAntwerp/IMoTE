@@ -1,5 +1,5 @@
 import time
-from dash import Input, Output, State, ctx
+from dash import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 import ids
@@ -77,7 +77,6 @@ def register_callbacks(app):
     )
     def collapse_to_level(n_clicks, collapse_level, collapse_level_options, viz_tree_dict, tree_params):
         if n_clicks is None:
-            print("call to collapse  with clicks None")
             raise PreventUpdate
         collapse_level = int(collapse_level)
         include_lin = "include_lin" in collapse_level_options
@@ -120,12 +119,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def expand_all_nodes(n_clicks, viz_tree_dict, tree_params):
-        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if triggered_id != ids.BTN_EXPAND_ALL:
-            print(f"call to expand all nodes with id:{triggered_id}")
-            raise PreventUpdate
         if n_clicks is None:
-            print("call to expand all nodes with clicks None")
             raise PreventUpdate
         viz_tree = VizTree.from_dict(viz_tree_dict)
         viz_tree.expand_all_nodes()
