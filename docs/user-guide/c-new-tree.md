@@ -13,7 +13,7 @@ an adapter.
 | Field                 | Description                                                                                                                                                       |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Dataset**           | The dataset on which the tree will be fitted. A selection of datasets from the PMLB repository are available. A csv file with a new dataset can also be uploaded. |
-| **Method**            | The model tree algorithm to use: PILOT or M5 (see the [index](../home.md) for a brief description of each).                                                       |
+| **Method**            | The model tree algorithm to use: PILOT (in python or in C++) or M5 (see the [home](../home.md) page for a brief description of each).                             |
 | **Max depth**         | The maximum depth of the tree. (The root node is at depth 0.)                                                                                                     |
 | **Max model depth**   | PILOT only feauture: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).                                                  |
 | **Min samples split** | The minimum number of samples required before a node may be considered for splitting.                                                                             |

@@ -6,6 +6,7 @@ from dash import Input, Output, State, no_update, NoUpdate
 from dash.exceptions import PreventUpdate
 import base64
 from pathlib import Path
+import numpy as np
 
 import ids
 from config import DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
@@ -42,7 +43,7 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
     adapter = ADAPTERS_REGISTRY[method_name]
     if method_name == "Pilot":
         print("importing PILOT...")
-        from pilot.pilot import PILOT
+        from pilot_pure_python.pilot import PILOT
         print("import done")
         start_time = time.time()
         model = PILOT(max_depth=max_depth,
@@ -52,7 +53,21 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
                       )
         model.fit(X, y, categorical=cat_ids)
         elapsed_time = time.time() - start_time
-        viz_tree = VizTree.from_model(adapter, X, y, model)
+    elif method_name == "PilotC":
+        print("importing PILOT C version...")
+        from pilot import PILOT
+        print("import done")
+        start_time = time.time()
+        model = PILOT(max_depth=max_depth,
+                      max_model_depth=max_model_depth,
+                      min_sample_fit=min_sample_split,
+                      min_sample_leaf=min_sample_leaf,
+                      )
+        categorical = np.zeros(X.shape[1])
+        if not np.array_equal(cat_ids, np.array([-1])):
+            categorical[cat_ids] = 1
+        model.train(X, y, categorical)
+        elapsed_time = time.time() - start_time
     elif method_name == "M5":
         start_time = time.time()
         model = M5Prime(
@@ -65,9 +80,9 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
         )
         model.fit(X, y)
         elapsed_time = time.time() - start_time
-        viz_tree = VizTree.from_model(adapter, X, y, model)
     else:
         raise ValueError(f'Method name {method_name} not recognized.')
+    viz_tree = VizTree.from_model(adapter, X, y, model)
     time_string = f"{int(elapsed_time // 60)}min {int(elapsed_time % 60)}sec"
     return viz_tree, time_string
 
@@ -265,7 +280,7 @@ def register_callbacks(app):
             "pruned": False,
         }
 
-        if feature_color or method_name == "Pilot":
+        if feature_color or method_name in ["Pilot", "PilotC"]:
             return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), NoUpdate ,""
         else:
             return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), True ,""

@@ -14,6 +14,7 @@ NO_FILE_SELECTED_PLACEHOLDER = "No file uploaded."
 
 METHOD_OPTIONS = [
     {"label": "Pilot", "value": "Pilot"},
+    {"label": "Pilot in C++", "value": "PilotC"},
     {"label": "M5", "value": "M5"},
 ]
 
@@ -45,8 +46,8 @@ DEFAULT_MIN_SAMPLE_SPLIT = 10
 DEFAULT_MIN_SAMPLE_LEAF = 5
 
 # --- Layout card defaults ------------------------------------------------
-DEFAULT_RANK_SEP = 30
-DEFAULT_NODE_SEP = 20
+DEFAULT_RANK_SEP = 10
+DEFAULT_NODE_SEP = 10
 
 # --- Settings node plot defaults -----------------------------------------
 DEFAULT_COLLAPSE_LEVEL = 5
