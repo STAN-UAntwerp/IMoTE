@@ -43,7 +43,6 @@ def register_callbacks(app):
         viz_tree = VizTree.from_dict(viz_tree_dict)
         node = find_node_by_cytoscape_id(viz_tree, selected_node[0]["id"])
 
-        n_collapsed_nodes = 0
         if isinstance(node, CollapsedNode):
             viz_tree.expand(node)
             message = f"Expanded node {node.id}"
@@ -55,11 +54,11 @@ def register_callbacks(app):
             else:
                 if isinstance(node, LinearNode) and isinstance(children[0], LeafNode):
                     raise PreventUpdate
-                n_collapsed_nodes = viz_tree.collapse(node)
+                viz_tree.collapse(node)
                 message = f"Collapsed below node {node.id}"
 
         new_tree_params = tree_params.copy()
-        new_tree_params["collapsed_nodes_count"] = n_collapsed_nodes
+        new_tree_params["collapsed_nodes_count"] = sum(n.n_nodes for n in viz_tree.nodes if isinstance(n, CollapsedNode))
         return viz_tree.to_dict(), new_tree_params, message, time.time()
 
     @app.callback(
@@ -152,7 +151,7 @@ def register_callbacks(app):
         viz_tree.edges = viz_tree.collect_edges()
 
         new_tree_params = tree_params.copy()
-        new_tree_params["subtree_node_id"] = selected_node[0]["id"]
+        new_tree_params["subtree_node_id"] = root.id
 
         return viz_tree.to_dict(), new_tree_params, f"Subtree from {selected_node[0]['id']}.", time.time()
 
@@ -169,7 +168,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def prune_from_node(n_clicks, selected_node, viz_tree_dict, tree_params):
-        if not selected_node or tree_params['method_name'] != "Pilot":
+        if not selected_node or tree_params['method_name'] not in ["Pilot", "PilotC"]:
             raise PreventUpdate
 
         viz_tree = VizTree.from_dict(viz_tree_dict)

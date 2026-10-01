@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 import ids
-from config import DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
+from config import DIR_BASE, DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
 from viz_tree.viz_tree import VizTree
 from adapters.base_adapter import ADAPTERS_REGISTRY
 
@@ -34,6 +34,27 @@ def get_dataset_X_y(input_dataset):
         raise ValueError("Unknown dataset type")
 
     return dataset.X, dataset.y, dataset.cat_ids
+
+def _resolve_saved_tree_path(load_path) -> tuple[str | None, str | None]:
+    if not load_path or not load_path.strip():
+        saved_trees = list(DIR_SAVED_VIZ_TREES.glob("*.pkl"))
+        if not saved_trees:
+            return None, f"No saved trees found in {DIR_SAVED_VIZ_TREES}."
+        return str(max(saved_trees, key=os.path.getctime)), None
+
+    candidate = Path(load_path.strip()).expanduser()
+    path = next((p for p in (candidate, DIR_SAVED_VIZ_TREES / candidate, DIR_BASE / candidate) if p.exists()), candidate)
+    if path.suffix != ".pkl":
+        return None, f"Can't load {load_path}: not a .pkl file."
+    if not path.exists():
+        return None, f"Can't load {load_path}: file doesn't exist."
+    if not path.is_file():
+        return None, f"Can't load {load_path}: not a regular file."
+    return str(path), None
+
+def _tree_file_name(viz_tree_dict, tree_params) -> str:
+    dataset_name = Path(tree_params['dataset_name']).name
+    return f"tree_{viz_tree_dict['tree_id']}__{dataset_name}-{tree_params['method_name']}-{tree_params['max_depth']}-{tree_params['max_model_depth']}-{tree_params['min_sample_split']}-{tree_params['min_sample_leaf']}"
 
 def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf) -> tuple[VizTree, str]:
     print('Fitting model dataset:')
@@ -93,7 +114,7 @@ def register_callbacks(app):
         State(ids.NEW_TREE_COLLAPSE, "is_open"),
         prevent_initial_call=True,
     )
-    def toggle_card(n_clicks, is_open):
+    def toggle_card(_, is_open):
         return not is_open
 
     # --- OPEN CSV MODAL ---
@@ -196,6 +217,7 @@ def register_callbacks(app):
         Output(ids.STORE_TREE_PARAMS, "data", allow_duplicate=True),
         Output(ids.STORE_TREE_PARAMS_BASE, "data", allow_duplicate=True),
         Output(ids.NEW_TREE_TRIGGER, "data", allow_duplicate=True),
+        Output(ids.DEBUG_INFO, "children", allow_duplicate=True),
 
         Input(ids.BTN_LOAD_TREE, "n_clicks"),
         State(ids.INPUT_LOAD_TREE, "value"),
@@ -204,18 +226,15 @@ def register_callbacks(app):
     def load_tree(n_clicks, load_path):
         if n_clicks is None:
             raise PreventUpdate
-        resolved_path = load_path
-        if not resolved_path or not os.path.exists(resolved_path):
-            resolved_path = max(
-                (str(DIR_SAVED_VIZ_TREES / f) for f in os.listdir(str(DIR_SAVED_VIZ_TREES)) if f.endswith(".pkl")),
-                key=os.path.getctime,
-            )
+        resolved_path, error = _resolve_saved_tree_path(load_path)
+        if error:
+            return no_update, no_update, no_update, no_update, no_update, error
         with open(resolved_path, "rb") as f:
             input_dict = pickle.load(f)
         
         tree_params = input_dict["tree_params"]
         viz_tree_dict = input_dict["viz_tree_dict"]
-        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time()
+        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), f"Loaded tree from {resolved_path}"
 
     # --- RELOAD BASE TREE ---
     @app.callback(
@@ -364,7 +383,7 @@ def register_callbacks(app):
     )
     def save_tree(n_clicks, viz_tree_dict, tree_params):
         print("saving tree")
-        output_path = str(DIR_SAVED_VIZ_TREES / f"tree_{viz_tree_dict['tree_id']}__{tree_params['dataset_name']}-{tree_params['method_name']}-{tree_params['max_depth']}-{tree_params['max_model_depth']}-{tree_params['min_sample_split']}-{tree_params['min_sample_leaf']}.pkl")
+        output_path = str(DIR_SAVED_VIZ_TREES / f"{_tree_file_name(viz_tree_dict, tree_params)}.pkl")
         output_dict = {"tree_params": tree_params, 
                        "viz_tree_dict": viz_tree_dict}
         with open(output_path, "wb") as handle:
@@ -383,5 +402,5 @@ def register_callbacks(app):
     )
     def download_tree_svg(n_clicks, viz_tree_dict, tree_params):
         print("downloading tree")
-        file_name = f"tree_{viz_tree_dict['tree_id']}__{tree_params['dataset_name']}-{tree_params['method_name']}-{tree_params['max_depth']}-{tree_params['max_model_depth']}-{tree_params['min_sample_split']}-{tree_params['min_sample_leaf']}"
+        file_name = _tree_file_name(viz_tree_dict, tree_params)
         return {"type": "svg", "action": "download", "filename": file_name}

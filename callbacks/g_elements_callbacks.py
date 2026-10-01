@@ -1,6 +1,5 @@
 import time
 import numpy as np
-import dash
 from dash import Input, Output, State, no_update, ctx
 from dash.exceptions import PreventUpdate
 

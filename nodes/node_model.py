@@ -284,7 +284,7 @@ class LinearNodeModel(NodeModel):
             Dictionary with class_type, coefficients, and intercept.
         """
         dic = super().to_dict()
-        dic.update({"coefficients": self.coefficients,
+        dic.update({"coefficients": self.coefficients.tolist(),
                      "intercept": self.intercept})
         return dic
 

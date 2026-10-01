@@ -243,7 +243,7 @@ class VizTree:
         """
         if node is None:
             node = self.root_node
-        elif isinstance(node, LeafNode):
+        if isinstance(node, LeafNode):
             return 0
         elif isinstance(node, NoneNode):
             return -1

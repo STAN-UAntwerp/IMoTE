@@ -221,7 +221,7 @@ def viz_tree_to_cytoscape_elements(
                     classes.append("predsplot")
 
         if use_node_size:
-            x = (n_samples - min_n_samples_node) / (max_n_samples_node - min_n_samples_node)
+            x = (n_samples - min_n_samples_node) / max(max_n_samples_node - min_n_samples_node, 1)
             x = x**power
             height = MIN_NODE_HEIGHT + x * (MAX_NODE_HEIGHT - MIN_NODE_HEIGHT)
             width = 2*height
@@ -280,7 +280,7 @@ def viz_tree_to_cytoscape_elements(
 
         if use_edge_width:
             n_samples_child = np.sum(child.indices)
-            x = (n_samples_child - min_n_samples_node) / (max_n_samples_node - min_n_samples_node)
+            x = (n_samples_child - min_n_samples_node) / max(max_n_samples_node - min_n_samples_node, 1)
             x = x**power
             width = MIN_EDGE_WIDTH + x * (MAX_EDGE_WIDTH - MIN_EDGE_WIDTH)
 
