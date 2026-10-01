@@ -24,10 +24,10 @@ class PartyKitAdapter(BaseAdapter):
             The parsed model as a dict.
 
         Raises:
-            ValueError: If model_path does not exist.
+            FileNotFoundError: If model_path does not exist.
         """
         if not os.path.exists(model_path):
-            raise ValueError(f"No such file path to load model: {model_path}")
+            raise FileNotFoundError(f"No such file path to load model: {model_path}")  # The standard exception for a missing file
         with open(model_path) as f:
             model = json.load(f)
 

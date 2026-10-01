@@ -169,7 +169,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def prune_from_node(n_clicks, selected_node, viz_tree_dict, tree_params):
-        if not selected_node or tree_params['method_name'] != "Pilot":
+        if not selected_node or tree_params['method_name'] not in ["Pilot", "PilotC"]:
             raise PreventUpdate
 
         viz_tree = VizTree.from_dict(viz_tree_dict)
