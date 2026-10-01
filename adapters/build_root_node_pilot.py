@@ -21,8 +21,6 @@ def build_root_node_from_pilot(pilot_node, X_train, current_indices, current_y_r
         
         new_coefficients = accumulated_coefficients.copy()
         new_coefficients[pivot_idx] += pilot_node.lm_l[0]
-        coef_list = [0] * len(accumulated_coefficients)
-        coef_list[pivot_idx] = pilot_node.lm_l[0]
         new_intercept = accumulated_intercept + pilot_node.lm_l[1]
 
         new_y_res = current_y_res - (pilot_node.lm_l[1] +

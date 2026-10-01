@@ -81,11 +81,11 @@ class BaseNode(ABC):
             Dictionary with the node's id, rss, indices, and y_res.
         """
         node_dict = {"id": self.id, "rss": self.rss}
-        if isinstance(self.indices, List):
+        if isinstance(self.indices, list):
             node_dict["indices"] = self.indices
         else:
             node_dict["indices"] = self.indices.tolist()
-        if isinstance(self.y_res, List):
+        if isinstance(self.y_res, list):
             node_dict["y_res"] = self.y_res
         else:
             node_dict["y_res"] = self.y_res.tolist()

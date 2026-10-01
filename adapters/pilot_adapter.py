@@ -14,6 +14,7 @@ class PilotAdapter(BaseAdapter):
             np.zeros(n_features), 0.0,
         )
 
+    @staticmethod
     def load_model(model_path):
         raise NotImplementedError()
 

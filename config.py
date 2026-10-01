@@ -1,4 +1,5 @@
 from pathlib import Path
+from functools import lru_cache
 import pickle
 
 # --- Filesystem ---------------------------------------------------------
@@ -66,9 +67,10 @@ SPINNER_COLOR = "primary"
 
 DEFAULT_NODE_METRICS = ["ID", "# Samples", "RSS", 'MAE']
 
+@lru_cache(maxsize=1)
 def get_initial_graph_info():
     with open(
-            "output/saved_viz_trees/tree_14-08-26_12-45-55__1199_BNG_echoMonths.pmlb-Pilot-12-30-10-5.pkl",
+            DIR_SAVED_VIZ_TREES / "tree_14-08-26_12-45-55__1199_BNG_echoMonths.pmlb-Pilot-12-30-10-5.pkl",
             "rb") as f:
         input_dict = pickle.load(f)
     return input_dict["viz_tree_dict"], input_dict["tree_params"]

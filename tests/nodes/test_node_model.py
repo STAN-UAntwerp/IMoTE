@@ -45,9 +45,9 @@ def test_round_trip(model):
 
 
 def test_add_simple_linear_model():
-    model = LinearNodeModel(np.zeros(2), 1.0)
+    model = LinearNodeModel(np.array([4.0,10.1]), 1.0)
     model.add_model(SimpleLinearNodeModel(1, 3.0, 0.5))
-    np.testing.assert_array_equal(model.coefficients, [0.0, 3.0])
+    np.testing.assert_array_equal(model.coefficients, [4, 13.1])
     assert model.intercept == 1.5
 
 

@@ -162,7 +162,7 @@ def register_callbacks(app):
                                   highlight_x=highlight_x_arr,
                                   staircase=staircase)
                     else:
-                        return "Prediction plots (type 1) can't be made for nodes with no linear model."
+                        return "Prediction plots (type 1) can't be made for nodes with no linear model.", None
             else:
                 return f"No plot available for this type of leaf node.", None
         elif isinstance(node, InternalNode):

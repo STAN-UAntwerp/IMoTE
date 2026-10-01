@@ -37,7 +37,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def toggle_collapse_expand_node(n_clicks, selected_node, viz_tree_dict, tree_params):
-        if not selected_node or "leaf" in selected_node[0]["node_type"]:
+        if not selected_node or "Leaf" in selected_node[0]["node_type"]:  # node_type is "LeafNode", lowercase never matched
             raise PreventUpdate
 
         viz_tree = VizTree.from_dict(viz_tree_dict)

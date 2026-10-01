@@ -156,7 +156,7 @@ def viz_tree_to_cytoscape_elements(
             "n_samples": n_samples,
             "rss": float(f"{node.rss:.5g}"),
             "rss_root_reduction": float(f"{(1 - node.rss/viz_tree.root_node.rss)*100:.3g}"),
-            "highlight": True if node in highlight_nodes else False,
+            "highlight": node in highlight_nodes,
         }
         classes  = [node_type]
         node_highlight_x = None

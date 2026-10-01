@@ -88,7 +88,7 @@ class VizTree:
         """
         root_node = adapter.build_root_node(X_train, y_train, model)
         y_hat = adapter.predict(X_train, model)
-        return VizTree(root_node, X_train, y_train, y_hat)
+        return cls(root_node, X_train, y_train, y_hat)
 
     def collect_nodes(self) -> List[BaseNode]:
         """Collects all nodes in the tree.
@@ -98,10 +98,7 @@ class VizTree:
             all its descendants (depth-first order).
         """
         nodes = [self.root_node] + self.root_node.get_all_children()
-        for node in nodes:
-            if isinstance(node, NoneNode):
-                nodes.remove(node)
-        return nodes
+        return [node for node in nodes if not isinstance(node, NoneNode)]
 
     def collect_edges(self) -> List[Tuple[BaseNode, BaseNode]]:
         """Collects all edges in the tree from self.nodes.
@@ -225,7 +222,7 @@ class VizTree:
             raise NotImplementedError(
                 f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
 
-    def _calculate_contributions(self) -> (np.ndarray, np.ndarray):
+    def _calculate_contributions(self) -> Tuple[np.ndarray, np.ndarray]:
         """Computes contributions of the tree on X_train.
 
         Returns:
@@ -363,7 +360,7 @@ class VizTree:
             else:
                 raise NotImplementedError
 
-        if np.sum(model.coefficients) == 0:
+        if not np.any(model.coefficients):
             model = ConstantNodeModel(model.intercept)
 
         new_leaf_node = LeafNode(

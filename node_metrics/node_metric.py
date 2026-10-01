@@ -86,7 +86,7 @@ class NSamplesMetric(BaseNodeMetric):
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
-        return sum(node.indices)
+        return int(np.sum(node.indices))
 
 @register_metric("RSS")
 class RSSMetric(BaseNodeMetric):
@@ -161,7 +161,7 @@ class SplitBalanceMetric(BaseNodeMetric):
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
         if isinstance(node, SplitNode):
-            n_right = sum(node.right_child.indices)
-            n_total = sum(node.indices)
+            n_right = np.sum(node.right_child.indices)
+            n_total = np.sum(node.indices)
             return n_right / n_total
         return "-"

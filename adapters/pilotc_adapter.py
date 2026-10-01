@@ -39,8 +39,6 @@ class PilotCAdapter(BaseAdapter):
 
             new_coefficients = accumulated_coefficients.copy()
             new_coefficients[pivot_idx] += coef
-            coef_list = [0] * len(accumulated_coefficients)
-            coef_list[pivot_idx] = coef
             new_intercept = accumulated_intercept + intercept
 
             new_y_res = current_y_res - (intercept + coef * X_train[current_indices, pivot_idx])

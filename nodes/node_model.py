@@ -315,14 +315,14 @@ class LinearNodeModel(NodeModel):
                 number of coefficients than this model.
         """
         if isinstance(model, SimpleLinearNodeModel):
-            self.coefficients[model.idx] = model.coefficient
+            self.coefficients[model.idx] += model.coefficient
             self.intercept += model.intercept
         elif isinstance(model, ConstantNodeModel):
             self.intercept += model.value
         elif isinstance(model, LinearNodeModel):
             if len(self.coefficients) != len(model.coefficients):
                 raise ValueError(f"Number of coefficients does not match: {len(self.coefficients)} vs {len(model.coefficients)}")
-            self.coefficients = model.coefficients
+            self.coefficients = self.coefficients + model.coefficients
             self.intercept += model.intercept
 
     @classmethod
@@ -336,6 +336,6 @@ class LinearNodeModel(NodeModel):
             A new LinearNodeModel instance.
         """
         obj = cls.__new__(cls)
-        obj.coefficients = dic["coefficients"]
+        obj.coefficients = np.asarray(dic["coefficients"])
         obj.intercept = dic["intercept"]
         return obj

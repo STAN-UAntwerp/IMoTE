@@ -9,6 +9,7 @@ class M5Adapter(BaseAdapter):
     def build_root_node(X_train, y_train, model) -> BaseNode:
         return build_root_node_from_m5(model, X_train, y_train)
 
+    @staticmethod
     def load_model(model_path):
         raise NotImplementedError()
 

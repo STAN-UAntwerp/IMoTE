@@ -2,7 +2,7 @@ from m5py import M5Prime
 import os
 import pickle
 import time
-from dash import Input, Output, State, no_update, NoUpdate
+from dash import Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
 import base64
 from pathlib import Path
@@ -35,7 +35,7 @@ def get_dataset_X_y(input_dataset):
 
     return dataset.X, dataset.y, dataset.cat_ids
 
-def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf) -> (VizTree, str):
+def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf) -> tuple[VizTree, str]:
     print('Fitting model dataset:')
     print(input_dataset, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
     X, y, cat_ids = get_dataset_X_y(input_dataset)
@@ -121,7 +121,7 @@ def register_callbacks(app):
     )
     def cancel_csv_modal(_, file_name):
         file_path = str(DIR_DATASET_UPLOAD / file_name)
-        if file_path != NO_FILE_SELECTED_PLACEHOLDER:
+        if file_name != NO_FILE_SELECTED_PLACEHOLDER:
             path = Path(file_path)
             if path.exists():
                 path.unlink()
@@ -143,7 +143,7 @@ def register_callbacks(app):
     )
     def confirm_csv_modal(_, file_name, target_col):
         file_path = str(DIR_DATASET_UPLOAD / file_name)
-        if file_path == NO_FILE_SELECTED_PLACEHOLDER:
+        if file_name == NO_FILE_SELECTED_PLACEHOLDER:
             return "No file was uploaded yet.", no_update, no_update, no_update, no_update, no_update
 
         if not target_col:
@@ -172,7 +172,7 @@ def register_callbacks(app):
         DIR_DATASET_UPLOAD.mkdir(parents=True, exist_ok=True)
 
         old_file_path = str(DIR_DATASET_UPLOAD / old_file_name)
-        if old_file_path != NO_FILE_SELECTED_PLACEHOLDER:
+        if old_file_name != NO_FILE_SELECTED_PLACEHOLDER:
             path = Path(old_file_path)
             if path.exists():
                 path.unlink()
@@ -180,6 +180,7 @@ def register_callbacks(app):
         _, content_string = contents.split(",", 1)
         decoded = base64.b64decode(content_string)
 
+        filename = Path(filename).name
         path = DIR_DATASET_UPLOAD / filename
 
         if path.exists():
@@ -281,7 +282,7 @@ def register_callbacks(app):
         }
 
         if feature_color or method_name in ["Pilot", "PilotC"]:
-            return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), NoUpdate ,""
+            return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), no_update ,""
         else:
             return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), True ,""
 
@@ -299,7 +300,7 @@ def register_callbacks(app):
         State(ids.INPUT_LOAD_TREE_ADAPTER, "value"),
         prevent_initial_call=True,
     )
-    def fit_tree(n_clicks, input_dataset, adapter_name, model_path):
+    def load_tree_with_adapter(n_clicks, input_dataset, adapter_name, model_path):
         if n_clicks is None:
             raise PreventUpdate
 

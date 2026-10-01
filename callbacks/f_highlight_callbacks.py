@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from dash import Input, Output, State, NoUpdate
+from dash import Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
 
 import ids
@@ -46,13 +46,13 @@ def register_callbacks(app):
         try:
             highlight_x = np.array([float(v.strip()) for v in input_highlight_x.split(",")])
         except ValueError:
-            return None, NoUpdate, "Couldn't parse the highlight input, expected comma-separated numbers.", NoUpdate
+            return None, no_update, "Couldn't parse the highlight input, expected comma-separated numbers.", no_update
 
         if len(highlight_x) != n_features:
             return (
-                None, NoUpdate,
+                None, no_update,
                 f"Highlight input has length {len(highlight_x)}, expected {n_features}.",
-                NoUpdate,
+                no_update,
             )
 
         new_tree_params = tree_params.copy()

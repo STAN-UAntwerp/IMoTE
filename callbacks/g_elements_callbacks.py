@@ -143,7 +143,6 @@ def register_callbacks(app):
             use_node_size,
             tree_params,
     ):
-        ctx = dash.callback_context
         if show_node_plots and not modal_dont_ask and ctx.triggered_id != ids.MODAL_BTN_CONFIRM:
             raise PreventUpdate
 
