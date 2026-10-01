@@ -1,30 +1,42 @@
-from typing import List
+from typing import List, Union
 import numpy as np
 from nodes.base_node import BaseNode
-from nodes.node_model import NodeModel, ConstantNodeModel, node_model_from_dict
+from nodes.node_model import (NodeModel, NoneNodeModel, ConstantNodeModel, SimpleLinearNodeModel,
+                              node_model_from_dict)
 from nodes.internal_node import InternalNode
 
 
 @BaseNode.register
 class SplitNode(InternalNode):
-    """Base split node with a left and right child.
+    """Split node with a left and right child.
+
+    The plain SplitNode only splits the data and applies no model, so both
+    side models are NoneNodeModel. Subclasses change the expected model type
+    (model_type) and/or make the split categorical (categorical).
 
     Attributes:
-        pivot_value: Threshold value the split compares against.
+        pivot_value: Threshold for a numeric split (left if x <= pivot_value),
+            or the list of categories routed to the left child for a
+            categorical split.
         left_child: Child node for samples on the left of the split.
         right_child: Child node for samples on the right of the split.
         left_model: Model applied to samples on the left of the split.
         right_model: Model applied to samples on the right of the split.
     """
 
-    pivot_value: float
+    model_type = NoneNodeModel
+    """Model class both side models must be an instance of."""
+    categorical = False
+    """Whether pivot_value is a list of left categories instead of a threshold."""
+
+    pivot_value: Union[float, list]
     left_child: BaseNode
-    right_child_node: BaseNode
+    right_child: BaseNode
     left_model: NodeModel
     right_model: NodeModel
 
     def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float,
-                 pivot_idx: int, pivot_value: float,
+                 pivot_idx: int, pivot_value: Union[float, list],
                  left_child: BaseNode, right_child: BaseNode,
                  left_model: NodeModel, right_model: NodeModel):
         """
@@ -33,18 +45,53 @@ class SplitNode(InternalNode):
             y_res: Residuals of the target variable at this node.
             rss: Residual sum of squares at this node.
             pivot_idx: Index of the feature the split is based on.
-            pivot_value: Threshold value the split compares against.
+            pivot_value: Threshold value, or list of left categories for a
+                categorical split.
             left_child: Child node for samples on the left of the split.
             right_child: Child node for samples on the right of the split.
             left_model: Model applied to samples on the left of the split.
             right_model: Model applied to samples on the right of the split.
+
+        Raises:
+            TypeError: If a side model is not an instance of model_type, or
+                pivot_value doesn't match the kind of split.
         """
         super().__init__(indices, y_res, rss, pivot_idx)
-        self.pivot_value = pivot_value
+        self.pivot_value = self._check_pivot_value(pivot_value)
         self.left_child = left_child
         self.right_child = right_child
         self.left_model = left_model
         self.right_model = right_model
+        self._check_models()
+
+    def _check_pivot_value(self, pivot_value):
+        if self.categorical:
+            if not isinstance(pivot_value, (list, tuple, np.ndarray)):
+                raise TypeError(f"{type(self).__name__} expects a list of categories as pivot_value, "
+                                f"got {type(pivot_value).__name__}")
+            return list(pivot_value)
+        if np.ndim(pivot_value) != 0:
+            raise TypeError(f"{type(self).__name__} expects a single threshold as pivot_value")
+        return pivot_value
+
+    def _check_models(self):
+        for model in (self.left_model, self.right_model):
+            if not isinstance(model, self.model_type):
+                raise TypeError(f"{type(self).__name__} expects {self.model_type.__name__} side models, "
+                                f"got {type(model).__name__}")
+
+    def goes_left(self, value) -> bool:
+        """Returns whether a sample with this pivot feature value goes to the left child.
+
+        Args:
+            value: Value of the sample at feature pivot_idx.
+
+        Returns:
+            True if the sample is routed to the left child.
+        """
+        if self.categorical:
+            return bool(np.isin(value, self.pivot_value))
+        return bool(value <= self.pivot_value)
 
     def get_children(self) -> List[BaseNode]:
         """Returns this node's left and right children.
@@ -67,10 +114,13 @@ class SplitNode(InternalNode):
         """Returns the full display label for this node.
 
         Returns:
-            Label of the form "SPLIT\\nX<pivot_idx> > <pivot_value>".
+            Label of the form "<NAME>\\nX<pivot_idx> > <pivot_value>", or
+            "<NAME> X<pivot_idx>\\nidx ∉ <categories>" for a categorical split.
         """
-        # Default label for pure split nodes
-        return f"SPLIT\nX{self.pivot_idx} > {self.pivot_value:.3g}"
+        name = type(self).__name__.removesuffix("Node").upper()
+        if self.categorical:
+            return f"{name} X{self.pivot_idx}\nidx ∉ {self.pivot_value}"
+        return f"{name}\nX{self.pivot_idx} > {self.pivot_value:.3g}"
 
     def to_dict(self) -> dict:
         """Serializes the node to a dictionary.
@@ -101,7 +151,7 @@ class SplitNode(InternalNode):
             dic: Dictionary previously produced by to_dict().
 
         Returns:
-            A new SplitNode instance with children and side models restored.
+            A new instance of cls with children and side models restored.
         """
         left_child_class = cls.class_registry[dic["left_child_class"]]
         right_child_class = cls.class_registry[dic["right_child_class"]]
@@ -115,84 +165,44 @@ class SplitNode(InternalNode):
         obj.right_model = node_model_from_dict(dic["right_model"])
         return obj
 
-@BaseNode.register
-class PlinNode(SplitNode):
-    """PLIN split node: split with linear models on both sides."""
-
-    def get_label(self) -> str:
-        """Returns the full display label for this node.
-
-        Returns:
-            Label of the form "PLIN\\nX<pivot_idx> > <pivot_value>".
-        """
-        return f"PLIN\nX{self.pivot_idx} > {self.pivot_value:.3g}"
-
-@BaseNode.register
-class BlinNode(SplitNode):
-    """BLIN split node: split with a shared/blended linear model."""
-
-    def get_label(self) -> str:
-        """Returns the full display label for this node.
-
-        Returns:
-            Label of the form "BLIN\\nX<pivot_idx> > <pivot_value>".
-        """
-        return f"BLIN\nX{self.pivot_idx} > {self.pivot_value:.3g}"
-
-@BaseNode.register
-class PconNode(SplitNode):
-    """PCON split node: split with constant models on both sides."""
-
-    def get_label(self) -> str:
-        """Returns the full display label for this node.
-
-        Returns:
-            Label of the form "PCON\\nX<pivot_idx> > <pivot_value>".
-        """
-        return f"PCON\nX{self.pivot_idx} > {self.pivot_value:.3g}"
-
-@BaseNode.register
-class PconcNode(PconNode):
-    """PCONC split node: categorical PCON variant.
-
-    Splits samples on category membership (pivot_value holds the set
-    of categories routed to the left child), using constant models on both sides.
-    """
-
-    def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float, pivot_idx: int, pivot_value: float,
-                 left_child: BaseNode, right_child: BaseNode,
-                 left_model: ConstantNodeModel, right_model: ConstantNodeModel):
-        """
-        Args:
-            indices: Row indices of the samples belonging to this node.
-            y_res: Residuals of the target variable at this node.
-            rss: Residual sum of squares at this node.
-            pivot_idx: Index of the categorical feature the split is based on.
-            pivot_value: Category or set of categories defining the split.
-            left_child: Child node for samples on the left of the split.
-            right_child: Child node for samples on the right of the split.
-            left_model: Constant model applied to the left of the split.
-            right_model: Constant model applied to the right of the split.
-        """
-        super().__init__(indices, y_res, rss, pivot_idx, pivot_value,
-                         left_child, right_child, left_model, right_model)
-
-    def get_label(self) -> str:
-        """Returns the full display label for this node.
-
-        Returns:
-            Label of the form "PCONC- X<pivot_idx>\\nidx ∉ <pivot_value>".
-        """
-        return f"PCONC- X{self.pivot_idx}\nidx ∉ {self.pivot_value}"
 
 @BaseNode.register
 class SplitCNode(SplitNode):
-    """Categorical variant of SplitNode, splitting on category membership."""
+    """Categorical SplitNode: pivot_value lists the categories routed to the left child."""
 
-    def get_label(self) -> str:
-        """Returns the full display label for this node.
+    categorical = True
 
-        Returns:
-            Label of the form "SPLITC X<pivot_idx>\\nidx ∉ <pivot_value>".
-        """
-        return f"SPLITC X{self.pivot_idx}\nidx ∉ {self.pivot_value}"
+
+@BaseNode.register
+class PlinNode(SplitNode):
+    """PLIN: piecewise linear split with a SimpleLinearNodeModel on each side."""
+
+    model_type = SimpleLinearNodeModel
+
+
+@BaseNode.register
+class BlinNode(SplitNode):
+    """BLIN: broken linear split, like PLIN but the two models are continuous at pivot_value."""
+
+    model_type = SimpleLinearNodeModel
+
+    def _check_models(self):
+        super()._check_models()
+        left = self.left_model.predict(self.pivot_value)
+        right = self.right_model.predict(self.pivot_value)
+        if not np.isclose(left, right):
+            raise ValueError(f"BlinNode models are not continuous at {self.pivot_value}: {left} vs {right}")
+
+
+@BaseNode.register
+class PconNode(SplitNode):
+    """PCON: piecewise constant split with a ConstantNodeModel on each side."""
+
+    model_type = ConstantNodeModel
+
+
+@BaseNode.register
+class PconcNode(PconNode):
+    """PCONC: categorical PCON, pivot_value lists the categories routed to the left child."""
+
+    categorical = True

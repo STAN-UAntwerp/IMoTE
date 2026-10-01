@@ -8,7 +8,7 @@ from nodes.internal_node import InternalNode, LinearNode
 from nodes.collapsed_node import CollapsedNode
 from nodes.none_node import NoneNode
 from nodes.node_model import LinearNodeModel, ConstantNodeModel
-from nodes.split_node import PconNode, PconcNode, SplitNode, BlinNode, PlinNode, SplitCNode
+from nodes.split_node import PconNode, PconcNode, SplitNode, BlinNode, PlinNode
 from adapters.base_adapter import BaseAdapter
 
 class VizTree:
@@ -135,16 +135,8 @@ class VizTree:
             while not isinstance(node, LeafNode):
                 if isinstance(node, LinearNode):
                     node = node.child
-                elif isinstance(node, (PconcNode, SplitCNode)):
-                    if np.isin(x[node.pivot_idx], node.pivot_value):
-                        node = node.left_child
-                    else:
-                        node = node.right_child
                 elif isinstance(node, SplitNode):
-                    if x[node.pivot_idx] <= node.pivot_value:
-                        node = node.left_child
-                    else:
-                        node = node.right_child
+                    node = node.left_child if node.goes_left(x[node.pivot_idx]) else node.right_child
                 else:
                     raise ValueError(f"Can't predict node of type {type(node)}")
             y_pred[i] = node.node_model.predict(x)[0]

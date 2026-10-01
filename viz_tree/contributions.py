@@ -8,7 +8,7 @@ from subprocess import run
 from viz_tree.viz_tree import VizTree
 from nodes.collapsed_node import CollapsedNode
 from nodes.internal_node import InternalNode, LinearNode
-from nodes.split_node import PconNode, PconcNode, SplitNode, BlinNode, PlinNode, SplitCNode
+from nodes.split_node import PconNode, PconcNode, SplitNode, BlinNode, PlinNode
 from nodes.leaf_node import LeafNode
 from nodes.node_model import LinearNodeModel
 from plots.beeswarm import beeswarm
@@ -72,24 +72,16 @@ def get_split_and_lin_contributions_test(viz_tree: VizTree, x_test: np.ndarray):
         # Find next node in path
         if isinstance(node, LinearNode):
             node = node.child
-        elif isinstance(node, PconcNode):
-            if x_test[pivot] in node.pivot_value:
-                node = node.left_child
-                split_contributions[pivot] += avg_pred_left - avg_pred
-            else:
-                node = node.right_child
-                split_contributions[pivot] += avg_pred_right - avg_pred
+        elif node.goes_left(x_test[pivot]):
+            split_contributions[pivot] += avg_pred_left - avg_pred
+            if not isinstance(node, PconNode):
+                lin_contributions[pivot] += linear_prediction_x_test_left - avg_pred_left
+            node = node.left_child
         else:
-            if x_test[pivot] > node.pivot_value:
-                split_contributions[pivot] += avg_pred_right - avg_pred
-                if not isinstance(node, PconNode):
-                    lin_contributions[pivot] += linear_prediction_x_test_right - avg_pred_right
-                node = node.right_child
-            else:
-                split_contributions[pivot] += avg_pred_left - avg_pred
-                if not isinstance(node, PconNode):
-                    lin_contributions[pivot] += linear_prediction_x_test_left - avg_pred_left
-                node = node.left_child
+            split_contributions[pivot] += avg_pred_right - avg_pred
+            if not isinstance(node, PconNode):
+                lin_contributions[pivot] += linear_prediction_x_test_right - avg_pred_right
+            node = node.right_child
 
     return split_contributions, lin_contributions
 
@@ -113,24 +105,14 @@ def _calculate_split_and_lin_contributions_test2_recursive(viz_tree: VizTree, no
         pivot = node.pivot_idx
         avg_pred = (avg_pred_left * np.sum(node.left_child.indices) +
                     avg_pred_right * np.sum(node.right_child.indices)) / np.sum(node.indices)
-        if isinstance(node, SplitCNode):
-            if x_test[pivot] in node.pivot_value:
-                split_contributions = split_contributions_left
-                split_contributions[pivot] += avg_pred_left - avg_pred
-                lin_contributions = lin_contributions_left
-            else:
-                split_contributions = split_contributions_right
-                split_contributions[pivot] += avg_pred_right - avg_pred
-                lin_contributions = lin_contributions_right
+        if node.goes_left(x_test[pivot]):
+            split_contributions = split_contributions_left
+            split_contributions[pivot] += avg_pred_left - avg_pred
+            lin_contributions = lin_contributions_left
         else:
-            if x_test[node.pivot_idx] > node.pivot_value:
-                split_contributions = split_contributions_right
-                split_contributions[pivot] += avg_pred_right - avg_pred
-                lin_contributions = lin_contributions_right
-            else:
-                split_contributions = split_contributions_left
-                split_contributions[pivot] += avg_pred_left - avg_pred
-                lin_contributions = lin_contributions_left
+            split_contributions = split_contributions_right
+            split_contributions[pivot] += avg_pred_right - avg_pred
+            lin_contributions = lin_contributions_right
 
         return split_contributions, lin_contributions, avg_pred
     else:

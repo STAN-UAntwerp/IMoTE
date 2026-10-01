@@ -51,18 +51,18 @@ class CombinedLinNode(BaseNode):
         idx_str = ",".join(str(i) for i in self.pivot_indices[:1])
         return f"X{idx_str}.."
 
-    def to_dict(self):
-        node_dict = super().to_dict()
-        node_dict.update({
-            "pivot_indices": self.pivot_indices,
-            "lin_coefficients": self.lin_coefficients,
-            "intercept": self.intercept,
-            "child_class": self.child.__class__.__name__,
-            "child_dict": self.child.to_dict(),
-            # "true_child_class": self.true_child.__class__.__name__,
-            # "true_child_dict": self.true_child.to_dict()
-        })
-        return node_dict
+    # def to_dict(self):
+    #     node_dict = super().to_dict()
+    #     node_dict.update({
+    #         "pivot_indices": self.pivot_indices,
+    #         "lin_coefficients": self.lin_coefficients,
+    #         "intercept": self.intercept,
+    #         "child_class": self.child.__class__.__name__,
+    #         "child_dict": self.child.to_dict(),
+    #         # "true_child_class": self.true_child.__class__.__name__,
+    #         # "true_child_dict": self.true_child.to_dict()
+    #     })
+    #     return node_dict
 
     # @classmethod
     # def from_dict(cls, dic: dict) -> "LinearNode":

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 from nodes.collapsed_node import CollapsedNode
-from nodes.split_node import PconcNode, SplitNode
+from nodes.split_node import SplitNode
 from viz_tree.viz_tree import VizTree
 from nodes.leaf_node import LeafNode
 from nodes.internal_node import InternalNode, LinearNode
@@ -51,16 +51,10 @@ def viz_tree_to_cytoscape_elements(
             parent_node_in_path = node_in_path
             if isinstance(node_in_path, LinearNode):
                 node_in_path = node_in_path.child
-            elif isinstance(node_in_path, PconcNode):
-                if highlight_x[node_in_path.pivot_idx] in node_in_path.pivot_value:
-                    node_in_path = node_in_path.left_child
-                else:
-                    node_in_path = node_in_path.right_child
+            elif node_in_path.goes_left(highlight_x[node_in_path.pivot_idx]):
+                node_in_path = node_in_path.left_child
             else:
-                if highlight_x[node_in_path.pivot_idx] > node_in_path.pivot_value:
-                    node_in_path = node_in_path.right_child
-                else:
-                    node_in_path = node_in_path.left_child
+                node_in_path = node_in_path.right_child
             highlight_nodes.append(node_in_path)
             highlight_edges.append((parent_node_in_path, node_in_path))
 
