@@ -56,7 +56,9 @@ class Dataset:
         self.target_name = target_name
 
         if cat_ids is None:
-            cat_ids = [i for i in range(self.X.shape[1]) if len(np.unique(self.X[:, i])) < cat_unique_threshold] or [-1]
+            cat_ids = np.array(
+                [i for i in range(self.X.shape[1]) if len(np.unique(self.X[:, i])) < cat_unique_threshold] or [-1]
+            )
             print(f"Auto detected categorical columns in dataset {name}, as {cat_ids}")
         self.cat_ids = cat_ids
 

@@ -69,4 +69,4 @@ def test_from_pmlb(monkeypatch):
     np.testing.assert_array_equal(ds.y, [5.0, 6.0])
     assert ds.feature_names == ["a", "b", "c"]
     assert ds.name == "1199_BNG_echoMonths"
-    assert ds.cat_ids == [0, 2, 8]  # from PMLB_DATASETS_CAT_IDS
+    np.testing.assert_array_equal(ds.cat_ids, [0, 2, 8])  # from PMLB_DATASETS_CAT_IDS

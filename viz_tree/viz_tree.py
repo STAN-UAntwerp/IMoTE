@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Type
 from datetime import datetime
 
 from nodes.base_node import BaseNode
@@ -73,7 +73,7 @@ class VizTree:
         self.split_contributions, self.linear_contributions = self._calculate_contributions()
 
     @classmethod
-    def from_model(cls, adapter: BaseAdapter, X_train: np.ndarray, y_train: np.ndarray, model) -> "VizTree":
+    def from_model(cls, adapter: Type[BaseAdapter], X_train: np.ndarray, y_train: np.ndarray, model) -> "VizTree":
         """Builds a VizTree from a fitted model via an adapter.
 
         Args:
