@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import List
+from typing import List, Type, TypeVar
+
+T = TypeVar("T", bound="BaseNode")
+
 
 class BaseNode(ABC):
     """Abstract base class for all node types in a tree.
@@ -115,7 +118,7 @@ class BaseNode(ABC):
     """Maps subclass names to subclass objects, for use in from_dict()."""
 
     @classmethod
-    def register(cls, subclass: "BaseNode") -> "BaseNode":
+    def register(cls, subclass: Type[T]) -> Type[T]:
         """Class decorator that registers a node subclass by name.
 
         Registration is required so that from_dict() can look up the
