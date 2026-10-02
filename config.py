@@ -13,6 +13,20 @@ DIR_DATASET_UPLOAD = DIR_BASE / "dataset" / "uploaded"
 NEW_CSV_OPTION = "__new_csv__"
 NO_FILE_SELECTED_PLACEHOLDER = "No file uploaded."
 
+PMLB_OPTIONS = [
+    {"label": "PMLB: 547_no2", "value": "547_no2.pmlb"},
+    {"label": "PMLB: 294_satellite_image", "value": "294_satellite_image.pmlb"},
+    {"label": "PMLB: 1199_BNG_echoMonths", "value": "1199_BNG_echoMonths.pmlb"},
+    {"label": "PMLB: 537_houses", "value": "537_houses.pmlb"},
+    {"label": "PMLB: 658_fri_c3_250_25", "value": "658_fri_c3_250_25.pmlb"},
+    {"label": "PMLB: 505_tecator", "value": "505_tecator.pmlb"},
+    {"label": "PMLB: 560_bodyfat", "value": "560_bodyfat.pmlb"},
+    {"label": "PMLB: 485_analcatdata_vehicle", "value": "485_analcatdata_vehicle.pmlb"},
+    {"label": "PMLB: 210_cloud", "value": "210_cloud.pmlb"},
+    {"label": "PMLB: 1028_SWD", "value": "1028_SWD.pmlb"},
+    {"label": "PMLB: 197_cpu_act", "value": "197_cpu_act.pmlb"},
+]
+
 METHOD_OPTIONS = [
     {"label": "Pilot", "value": "Pilot"},
     {"label": "Pilot in C++", "value": "PilotC"},

@@ -1,19 +1,3 @@
-"""Dataset container for regression (for now) data used across the app.
-
-Design notes
-------------
-- X and y are always stored as numpy arrays internally.
-- `cat_ids` are the column indices of X considered categorical. If not
-  given explicitly, they are auto-detected: a column counts as
-  categorical if it has fewer than `cat_unique_threshold` unique values.
-- New data sources are added as classmethods (`from_pmlb`, `from_csv`,
-  ...) that all funnel into the same `__init__`, so a future
-  `from_openml`, `from_parquet`, etc. is a small addition.
-- Classification support later: add a `task_type` field (default
-  "regression") and branch on it where needed, without touching the
-  constructors' signatures.
-"""
-
 from __future__ import annotations
 
 from typing import Optional, List
@@ -72,9 +56,7 @@ class Dataset:
         self.target_name = target_name
 
         if cat_ids is None:
-            cat_ids = np.array(
-                [i for i in range(self.X.shape[1]) if len(np.unique(self.X[:, i])) < cat_unique_threshold] or [-1]
-            )
+            cat_ids = [i for i in range(self.X.shape[1]) if len(np.unique(self.X[:, i])) < cat_unique_threshold] or [-1]
             print(f"Auto detected categorical columns in dataset {name}, as {cat_ids}")
         self.cat_ids = cat_ids
 
