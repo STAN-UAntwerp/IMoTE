@@ -14,6 +14,8 @@ class PilotCAdapter(BaseAdapter):
         tree = model.tree_summary()
         n_features = X_train.shape[1]
         root_indices = np.ones(X_train.shape[0], dtype=bool)
+        if tree.parent_node_id[0]:
+            raise ValueError(f'First node is not the root node')
         return PilotCAdapter.build_root_node_pilotc(
             tree, 0, X_train, root_indices, y_train,
             np.zeros(n_features), 0.0,
@@ -31,8 +33,7 @@ class PilotCAdapter(BaseAdapter):
                 node_model=LinearNodeModel(accumulated_coefficients, accumulated_intercept),
             )
 
-        possible_children_index = np.where(tree.model_depth == tree.model_depth[node_index] + 1)[0]
-        possible_children_index = possible_children_index[possible_children_index > node_index]
+        children_index = np.where(tree.parent_node_id == tree.node_id[node_index])[0]
         if node_type == 'lin':
             pivot_idx = int(tree.feature_index[node_index])
             coef = tree.slope_left[node_index]
@@ -43,7 +44,7 @@ class PilotCAdapter(BaseAdapter):
             new_intercept = accumulated_intercept + intercept
 
             new_y_res = current_y_res - (intercept + coef * X_train[current_indices, pivot_idx])
-            child_index = possible_children_index[0]
+            child_index = children_index[0]
             child = PilotCAdapter.build_root_node_pilotc(tree, child_index, X_train, current_indices, new_y_res,
                                                          new_coefficients, new_intercept)
 
@@ -57,14 +58,13 @@ class PilotCAdapter(BaseAdapter):
             )
         elif node_type in ['pcon', 'pconc', 'blin', 'plin']:
             pivot_idx = int(tree.feature_index[node_index])
-            coef_left = tree.slope_left[node_index]
-            intercept_left = tree.intercept_left[node_index]
-            coef_right = tree.slope_right[node_index]
-            intercept_right = tree.intercept_right[node_index]
+            coef_left = np.nan_to_num(tree.slope_left[node_index])
+            intercept_left = np.nan_to_num(tree.intercept_left[node_index])
+            coef_right = np.nan_to_num(tree.slope_right[node_index])
+            intercept_right = np.nan_to_num(tree.intercept_right[node_index])
 
             if node_type == 'pconc':
-                raise NotImplementedError("pconc nodes are not supported by the PilotC adapter yet") # TODO
-                pivot_value = tree.split_value[node_index] #What should this be?
+                pivot_value = tree.pivot_values[node_index]
                 left_mask = np.isin(X_train[current_indices, pivot_idx], pivot_value)
                 right_mask = ~left_mask
             else:
@@ -86,8 +86,8 @@ class PilotCAdapter(BaseAdapter):
             right_intercept = accumulated_intercept + intercept_right
 
             # Recurse to both children
-            left_child_index = possible_children_index[0]
-            right_child_index = possible_children_index[1]
+            left_child_index = children_index[0]
+            right_child_index = children_index[1]
             left_child = PilotCAdapter.build_root_node_pilotc(tree, left_child_index, X_train, left_indices,
                                                               left_y_res, left_coefficients, left_intercept)
             right_child = PilotCAdapter.build_root_node_pilotc(tree, right_child_index, X_train, right_indices,
