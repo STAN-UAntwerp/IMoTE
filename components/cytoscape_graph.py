@@ -1,15 +1,11 @@
 import dash_cytoscape as cyto
-cyto.load_extra_layouts()
 from viz_tree.viz_tree import VizTree
 
 from viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
 import ids
-from config import (DIR_LIVE_OUTPUT, DIR_SAVED_VIZ_TREES, get_initial_graph_info,
+from config import (DIR_LIVE_OUTPUT, get_initial_graph_info,
                     CYTOSCAPE_STYLESHEET, DEFAULT_RANK_SEP, DEFAULT_NODE_SEP)
 
-(DIR_LIVE_OUTPUT / "regplots").mkdir(parents=True, exist_ok=True)
-(DIR_LIVE_OUTPUT / "predsplots").mkdir(parents=True, exist_ok=True)
-DIR_SAVED_VIZ_TREES.mkdir(parents=True, exist_ok=True)
 
 viz_tree_dict, _ = get_initial_graph_info()
 initial_viz_tree      = VizTree.from_dict(viz_tree_dict)

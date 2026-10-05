@@ -1,6 +1,7 @@
 import numpy as np
 from m5py.main import ConstantLeafModel, LinRegLeafModel
 
+from adapters.adapter_utils import split_by_threshold
 from nodes.base_node import BaseNode
 from nodes.leaf_node import LeafNode
 from nodes.split_node import SplitNode
@@ -50,12 +51,7 @@ def _build_root_node_from_m5(tree, node_models, X_train, y_train, current_indice
         pivot_idx = tree.feature[node_id]
         pivot_value = tree.threshold[node_id]
 
-        left_mask = X_train[current_indices, pivot_idx] <= pivot_value
-        right_mask = ~left_mask
-
-        left_indices, right_indices = current_indices.copy(), current_indices.copy()
-        left_indices[current_indices] = left_mask
-        right_indices[current_indices] = right_mask
+        left_indices, right_indices = split_by_threshold(X_train, current_indices, pivot_idx, pivot_value)
 
         left_child = _build_root_node_from_m5(tree, node_models, X_train, y_train, left_indices, node_id=left_id)
         right_child = _build_root_node_from_m5(tree, node_models, X_train, y_train, right_indices, node_id=right_id)

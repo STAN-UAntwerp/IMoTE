@@ -54,7 +54,11 @@ class BaseNode(ABC):
             Flat list of all descendant BaseNode instances, in
             depth-first order.
         """
-        return self.get_children() + sum([child.get_all_children() for child in self.get_children()], [])
+        children = self.get_children()
+        descendants = list(children)
+        for child in children:
+            descendants.extend(child.get_all_children())
+        return descendants
 
     @abstractmethod
     def get_label(self) -> str:

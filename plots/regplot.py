@@ -17,8 +17,8 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
         feature_label = "$X_{" + f"{feature_idx}" + "}$"
     else:
         feature_label = feature_names[feature_idx]
-    min_x = min(X[:, feature_idx])
-    max_x = max(X[:, feature_idx])
+    min_x = X[:, feature_idx].min()
+    max_x = X[:, feature_idx].max()
     scaled_weights = (w.flatten() - np.mean(w)) * 100 + 10
     plt.scatter(X[:, feature_idx], node.y_res, s=scaled_weights, color='slategrey')
     if highlight_x is not None:
@@ -77,5 +77,5 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
     else:
         y_label = "y" if node.id == 0 else "Residuals"
     plt.ylabel(y_label)
-    plt.savefig(directory_regplot_file)
-    plt.close()
+    fig.savefig(directory_regplot_file)
+    plt.close(fig)

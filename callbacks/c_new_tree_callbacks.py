@@ -40,7 +40,7 @@ def _resolve_saved_tree_path(load_path) -> tuple[str | None, str | None]:
         saved_trees = list(DIR_SAVED_VIZ_TREES.glob("*.pkl"))
         if not saved_trees:
             return None, f"No saved trees found in {DIR_SAVED_VIZ_TREES}."
-        return str(max(saved_trees, key=os.path.getctime)), None
+        return str(max(saved_trees, key=os.path.getmtime)), None
 
     candidate = Path(load_path.strip()).expanduser()
     path = next((p for p in (candidate, DIR_SAVED_VIZ_TREES / candidate, DIR_BASE / candidate) if p.exists()), candidate)
@@ -51,6 +51,28 @@ def _resolve_saved_tree_path(load_path) -> tuple[str | None, str | None]:
     if not path.is_file():
         return None, f"Can't load {load_path}: not a regular file."
     return str(path), None
+
+def _make_tree_params(viz_tree: VizTree, dataset_name, method_name, max_depth=-1, max_model_depth=-1,
+                      min_sample_split=-1, min_sample_leaf=-1, training_time=-1) -> dict:
+    n_leafs = viz_tree.get_n_leafs()
+    return {
+        "dataset_name": dataset_name,
+        "method_name": method_name,
+        "max_depth": max_depth,
+        "max_model_depth": max_model_depth,
+        "min_sample_split": min_sample_split,
+        "min_sample_leaf": min_sample_leaf,
+        "training_time": training_time,
+        "subtree_node_id": -1,
+        "collapsed_nodes_count": 0,
+        "highlight_x": None,
+        "n_internal_nodes": len(viz_tree.nodes) - n_leafs,
+        "n_leafs": n_leafs,
+        "depth": viz_tree.get_depth(),
+        "n_samples": viz_tree.X_train.shape[0],
+        "n_features": viz_tree.X_train.shape[1],
+        "pruned": False,
+    }
 
 def _tree_file_name(viz_tree_dict, tree_params) -> str:
     dataset_name = Path(tree_params['dataset_name']).name
@@ -66,19 +88,19 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
         print("importing PILOT...")
         from pilot_pure_python.pilot import PILOT
         print("import done")
-        start_time = time.time()
+        start_time = time.perf_counter()
         model = PILOT(max_depth=max_depth,
                       max_model_depth=max_model_depth,
                       min_sample_split=min_sample_split,
                       min_sample_leaf=min_sample_leaf,
                       )
         model.fit(X, y, categorical=cat_ids)
-        elapsed_time = time.time() - start_time
+        elapsed_time = time.perf_counter() - start_time
     elif method_name == "PilotC":
         print("importing PILOT C version...")
         from pilot import PILOT
         print("import done")
-        start_time = time.time()
+        start_time = time.perf_counter()
         model = PILOT(max_depth=max_depth,
                       max_model_depth=max_model_depth,
                       min_sample_fit=min_sample_split,
@@ -88,9 +110,9 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
         if not np.array_equal(cat_ids, np.array([-1])):
             categorical[cat_ids] = 1
         model.train(X, y, categorical)
-        elapsed_time = time.time() - start_time
+        elapsed_time = time.perf_counter() - start_time
     elif method_name == "M5":
-        start_time = time.time()
+        start_time = time.perf_counter()
         model = M5Prime(
             use_pruning=True,
             use_smoothing=True,
@@ -100,7 +122,7 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
             max_depth=max_depth,
         )
         model.fit(X, y)
-        elapsed_time = time.time() - start_time
+        elapsed_time = time.perf_counter() - start_time
     else:
         raise ValueError(f'Method name {method_name} not recognized.')
     viz_tree = VizTree.from_model(adapter, X, y, model)
@@ -205,7 +227,7 @@ def register_callbacks(app):
         path = DIR_DATASET_UPLOAD / filename
 
         if path.exists():
-            return no_update, f"There already exists a dataset with the name {filename}."
+            return NO_FILE_SELECTED_PLACEHOLDER, f"There already exists a dataset with the name {filename}."
 
         path.write_bytes(decoded)
         return filename, no_update
@@ -278,32 +300,11 @@ def register_callbacks(app):
         print("fitting tree")
         viz_tree, training_time = fit_new_tree(dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
         viz_tree_dict = viz_tree.to_dict()
-        n_leafs = viz_tree.get_n_leafs()
-        n_interal_nodes = len(viz_tree.nodes) - n_leafs
-        depth = viz_tree.get_depth()
-        tree_params = {
-            "dataset_name": dataset_name,
-            "method_name": method_name,
-            "max_depth": max_depth,
-            "max_model_depth": max_model_depth,
-            "min_sample_split": min_sample_split,
-            "min_sample_leaf": min_sample_leaf,
-            "training_time": training_time,
-            "subtree_node_id": -1,
-            "collapsed_nodes_count": 0,
-            "highlight_x": None,
-            "n_internal_nodes": n_interal_nodes,
-            "n_leafs": n_leafs,
-            "depth": depth,
-            "n_samples": viz_tree.X_train.shape[0],
-            "n_features": viz_tree.X_train.shape[1],
-            "pruned": False,
-        }
+        tree_params = _make_tree_params(viz_tree, dataset_name, method_name, max_depth, max_model_depth,
+                                        min_sample_split, min_sample_leaf, training_time)
 
-        if feature_color or method_name in ["Pilot", "PilotC"]:
-            return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), no_update ,""
-        else:
-            return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), True ,""
+        color_switch = no_update if feature_color or method_name in ["Pilot", "PilotC"] else True
+        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), color_switch, ""
 
     # --- LOAD NEW TREE WITH ADAPTER ---
     @app.callback(
@@ -330,27 +331,7 @@ def register_callbacks(app):
         viz_tree = VizTree.from_model(adapter, X, y, model)
 
         viz_tree_dict = viz_tree.to_dict()
-        n_leafs = viz_tree.get_n_leafs()
-        n_interal_nodes = len(viz_tree.nodes) - n_leafs
-        depth = viz_tree.get_depth()
-        tree_params = {
-            "dataset_name": input_dataset,
-            "method_name": adapter_name,
-            "max_depth": -1,
-            "max_model_depth": -1,
-            "min_sample_split": -1,
-            "min_sample_leaf": -1,
-            "training_time": -1,
-            "subtree_node_id": -1,
-            "collapsed_nodes_count": 0,
-            "highlight_x": None,
-            "n_internal_nodes": n_interal_nodes,
-            "n_leafs": n_leafs,
-            "depth": depth,
-            "n_samples": viz_tree.X_train.shape[0],
-            "n_features": viz_tree.X_train.shape[1],
-            "pruned": False,
-        }
+        tree_params = _make_tree_params(viz_tree, input_dataset, adapter_name)
 
         return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time()
 

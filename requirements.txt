@@ -10,5 +10,6 @@ numpy==2.0.2
 pandas==3.0.5
 pmlb==1.0.1.post3
 scikit_learn==1.8.0
+seaborn==0.13.2
 shap==0.52.0
 fast-model-trees==0.0.4

@@ -12,7 +12,8 @@ from config import (
     DEFAULT_MIN_SAMPLE_SPLIT,
     NO_FILE_SELECTED_PLACEHOLDER,
     ADAPTER_OPTIONS,
-    DEFAULT_ADAPTER_NAME
+    DEFAULT_ADAPTER_NAME,
+    DIR_BASE,
 )
 from dataset.dataset_registry import build_dropdown_options
 
@@ -148,7 +149,7 @@ def make_new_tree_card() -> dbc.Card:
                                         id=ids.INPUT_LOAD_TREE_ADAPTER,
                                         type="text",
                                         placeholder="path to model_adapter/...",
-                                        value="/Users/flor/Pycharm/Dash/output/r_partykit_trees/tree.json",
+                                        value=str(DIR_BASE / "output" / "r_partykit_trees" / "tree.json"),
                                     ),
                                     dbc.Button("Load with Adapter", id=ids.BTN_LOAD_TREE_ADAPTER, size="sm"),
                                 ],

@@ -22,8 +22,8 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def set_random_point(n_clicks, viz_tree_dict):
-        X_train = np.array(viz_tree_dict["X_train"])
-        return ", ".join(map(str, X_train[np.random.randint(X_train.shape[0])]))
+        rows = viz_tree_dict["X_train"]
+        return ", ".join(map(str, rows[np.random.randint(len(rows))]))
 
     @app.callback(
         Output(ids.STORE_HIGHLIGHT_X, "data", allow_duplicate=True),
@@ -42,7 +42,7 @@ def register_callbacks(app):
             raise PreventUpdate
         if input_highlight_x is None:
             raise PreventUpdate
-        n_features = np.array(viz_tree_dict["X_train"]).shape[1]
+        n_features = len(viz_tree_dict["X_train"][0])
         try:
             highlight_x = np.array([float(v.strip()) for v in input_highlight_x.split(",")])
         except ValueError:

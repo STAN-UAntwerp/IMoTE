@@ -11,7 +11,7 @@ def get_uploaded_options() -> list[dict]:
     DIR_DATASET_UPLOAD.mkdir(parents=True, exist_ok=True)
     options = []
     for csv_path in sorted(DIR_DATASET_UPLOAD.glob("*.csv")):
-        options.append({"label": f"CSV: {csv_path.name[:-4]}", "value": str(csv_path)})
+        options.append({"label": f"CSV: {csv_path.stem}", "value": str(csv_path)})
     return options
 
 

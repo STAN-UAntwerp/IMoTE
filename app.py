@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('agg')
+
 import dash
 import dash_bootstrap_components as dbc
 import dash_cytoscape as cyto
@@ -6,14 +9,13 @@ from flask import send_from_directory
 
 from callbacks import register_all_callbacks
 from components.stores import make_global_stores
-from config import DIR_LIVE_OUTPUT
-import matplotlib
-matplotlib.use('agg')
+from config import DIR_LIVE_OUTPUT, DIR_SAVED_VIZ_TREES
 
 cyto.load_extra_layouts()
 
 (DIR_LIVE_OUTPUT / "regplots").mkdir(parents=True, exist_ok=True)
 (DIR_LIVE_OUTPUT / "predsplots").mkdir(parents=True, exist_ok=True)
+DIR_SAVED_VIZ_TREES.mkdir(parents=True, exist_ok=True)
 
 app: Dash = dash.Dash(
     __name__,

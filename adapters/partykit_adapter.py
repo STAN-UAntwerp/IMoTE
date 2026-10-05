@@ -71,7 +71,6 @@ class PartyKitAdapter(BaseAdapter):
                 key, so its split type can't be determined.
         """
         current_y_res = y_train[current_indices]
-        n_features = X_train.shape[1]
 
         if node["is_terminal"]:
             coefficients = np.array([

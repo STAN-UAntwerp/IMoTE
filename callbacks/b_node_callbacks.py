@@ -38,7 +38,7 @@ def register_callbacks(app):
 
         label = node.get("label", "No node selected.")
 
-        if len(metric_names) == 0 or node == {}:
+        if not metric_names or not node:
             metrics_components = "No node or metrics selected."
         else:
             metric_cols = []
@@ -149,7 +149,7 @@ def register_callbacks(app):
                             intercept = None
                         predsplot(node_X,
                                   np.array(node.node_model.coefficients),
-                                  y_hat=np.array(np.sum(node.node_model.coefficients * node_X, axis=1) + node.node_model.intercept),
+                                  y_hat=node.node_model.predict(node_X),
                                   n_max=nmax,
                                   intercept=intercept,
                                   fig_size=(figw, figh),
@@ -178,9 +178,6 @@ def register_callbacks(app):
             )
         else:
             return f"No plot available for class {node.__class__.__name__}.", None
-
-        if file_dir is None:
-            return "Error, plot no file was created.", None
 
         svg_data = file_dir.read_text(encoding="utf-8")
         encoded_svg = quote(svg_data)

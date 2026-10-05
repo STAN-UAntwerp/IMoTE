@@ -478,7 +478,7 @@ def predsplot(X, coefficients, y_hat, n_max=5, intercept=None, fig_size=(10, 5),
 
     if file_directory is not None:
         fig.savefig(file_directory)
-        plt.close()
+        plt.close(fig)
     else:
         plt.show()
 

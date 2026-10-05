@@ -126,18 +126,23 @@ class VizTree:
         Raises:
             ValueError: If traversal reaches node type that isn't recognized.
         """
-        y_pred = np.empty(X.shape[0], dtype=float)
-        for i, x in enumerate(X):
-            node = self.root_node
-            while not isinstance(node, LeafNode):
-                if isinstance(node, LinearNode):
-                    node = node.child
-                elif isinstance(node, SplitNode):
-                    node = node.left_child if node.goes_left(x[node.pivot_idx]) else node.right_child
-                else:
-                    raise ValueError(f"Can't predict node of type {type(node)}")
-            y_pred[i] = node.node_model.predict(x)[0]
-        return y_pred
+        return self._predict_rows(self.root_node, X, np.arange(X.shape[0]))
+
+    def _predict_rows(self, node: BaseNode, X: np.ndarray, rows: np.ndarray) -> np.ndarray:
+        """Returns predictions for the given rows of X, routed down from node, recursively."""
+        if len(rows) == 0:
+            return np.empty(0)
+        if isinstance(node, LeafNode):
+            return node.node_model.predict(X[rows])
+        if isinstance(node, LinearNode):
+            return self._predict_rows(node.child, X, rows)
+        if isinstance(node, SplitNode):
+            go_left = node.goes_left_mask(X[rows, node.pivot_idx])
+            preds = np.empty(len(rows))
+            preds[go_left] = self._predict_rows(node.left_child, X, rows[go_left])
+            preds[~go_left] = self._predict_rows(node.right_child, X, rows[~go_left])
+            return preds
+        raise ValueError(f"Can't predict node of type {type(node)}")
 
 
     def _calculate_y_hat(self) -> np.ndarray:
@@ -257,11 +262,7 @@ class VizTree:
         Returns:
             Number of LeafNode instances in nodes.
         """
-        count = 0
-        for node in self.nodes:
-            if isinstance(node, LeafNode):
-                count += 1
-        return count
+        return sum(isinstance(node, LeafNode) for node in self.nodes)
 
     def collapse(self, parent_node: InternalNode) -> int:
         """Collapses a subtree in place, replacing it with a CollapsedNode.
@@ -293,6 +294,8 @@ class VizTree:
         for parent_node in self.nodes:
             if parent_node.id == collapsed_node.parent_id:
                 break
+        else:
+            raise ValueError(f"Parent node {collapsed_node.parent_id} of the collapsed node is not in this tree")
         parent_node.set_children(collapsed_node.parent.get_children())
 
         self.nodes = self.collect_nodes()
@@ -345,6 +348,8 @@ class VizTree:
         """
         self.expand_all_nodes()
         node_path = self._get_path_to_node(prune_node)
+        if len(node_path) < 2:
+            raise ValueError("Can only prune a non-root node that is part of this tree")
         model = LinearNodeModel(coefficients = np.zeros(self.X_train.shape[1]), intercept = 0)
 
         for i in range(len(node_path)-1):
@@ -371,15 +376,8 @@ class VizTree:
         )
         new_leaf_node.set_id(prune_node.id)
 
-        if isinstance(node, LinearNode):
-            node.child = new_leaf_node
-        elif isinstance(node, SplitNode):
-            if prune_node is node.left_child:
-                node.left_child = new_leaf_node
-            else:
-                node.right_child = new_leaf_node
-        else:
-            raise NotImplementedError
+        parent = node_path[-2]
+        parent.set_children([new_leaf_node if child is prune_node else child for child in parent.get_children()])
 
         self.nodes = self.collect_nodes()
         self.edges = self.collect_edges()

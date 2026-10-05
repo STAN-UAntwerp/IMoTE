@@ -8,6 +8,7 @@ from nodes.leaf_node import LeafNode
 from nodes.internal_node import InternalNode, LinearNode
 from nodes.combined_lin_node import CombinedLinNode
 from nodes.none_node import NoneNode
+from nodes.node_model import LinearNodeModel
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_hex
@@ -177,7 +178,7 @@ def viz_tree_to_cytoscape_elements(
             data["dir_regplot"] = f"/internal_regplots/regplot_node{node.id}_{elements_id}.svg"
             classes.append("regplot")
 
-        if show_node_plots and isinstance(node, LeafNode):
+        if show_node_plots and isinstance(node, LeafNode) and isinstance(node.node_model, LinearNodeModel):
             if predsplot_type2:
                 predsplot2(viz_tree=viz_tree,
                            leaf_node=node,
@@ -204,8 +205,7 @@ def viz_tree_to_cytoscape_elements(
                         intercept = None
                     predsplot(node_X,
                               np.array(node.node_model.coefficients),
-                              y_hat=np.array(
-                                  np.sum(node.node_model.coefficients * node_X, axis=1) + node.node_model.intercept),
+                              y_hat=node.node_model.predict(node_X),
                               n_max=predsplot_n_max,
                               intercept=intercept,
                               fig_size=fig_size,
@@ -239,10 +239,11 @@ def viz_tree_to_cytoscape_elements(
     # ── Build edge elements ────────────────────────────────────────────────────
     first_split_node = viz_tree.root_node
     while not isinstance(first_split_node, SplitNode):
-        if isinstance(first_split_node, LeafNode):
+        children = first_split_node.get_children()
+        if not children:
             first_split_node = None
             break
-        first_split_node = first_split_node.get_children()[0]
+        first_split_node = children[0]
 
     for parent, child in edges:
         only_show_highlight_active = highlight_x is not None and only_show_highlight

@@ -23,8 +23,6 @@ class PilotCAdapter(BaseAdapter):
     def build_root_node_pilotc(tree, node_index, X_train, current_indices, current_y_res,
                                accumulated_coefficients, accumulated_intercept) -> BaseNode:
         node_type = tree.node_type[node_index]
-        possible_children_index = np.where(tree.model_depth == tree.model_depth[node_index] + 1)[0]
-        possible_children_index = possible_children_index[possible_children_index > node_index]
         if node_type == 'con' or node_type == 'END':
             return LeafNode(
                 indices=current_indices,
@@ -32,7 +30,10 @@ class PilotCAdapter(BaseAdapter):
                 rss=-1,
                 node_model=LinearNodeModel(accumulated_coefficients, accumulated_intercept),
             )
-        elif node_type == 'lin':
+
+        possible_children_index = np.where(tree.model_depth == tree.model_depth[node_index] + 1)[0]
+        possible_children_index = possible_children_index[possible_children_index > node_index]
+        if node_type == 'lin':
             pivot_idx = int(tree.feature_index[node_index])
             coef = tree.slope_left[node_index]
             intercept = tree.intercept_left[node_index]
@@ -62,7 +63,7 @@ class PilotCAdapter(BaseAdapter):
             intercept_right = tree.intercept_right[node_index]
 
             if node_type == 'pconc':
-                raise NotImplementedError
+                raise NotImplementedError("pconc nodes are not supported by the PilotC adapter yet") # TODO
                 pivot_value = tree.split_value[node_index] #What should this be?
                 left_mask = np.isin(X_train[current_indices, pivot_idx], pivot_value)
                 right_mask = ~left_mask

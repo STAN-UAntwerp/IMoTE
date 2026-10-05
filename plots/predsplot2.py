@@ -353,8 +353,8 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
                                         feature_plot_width, subplot_heights[i]])
 
         # Configure subplot based on coefficient sign
-        min_feature_value = min(feature_values)
-        max_feature_value = max(feature_values)
+        min_feature_value = feature_values.min()
+        max_feature_value = feature_values.max()
         same_feature_value = min_feature_value == max_feature_value
         if same_feature_value & (min_feature_value <= 0): max_feature_value = 0
         elif same_feature_value & (max_feature_value > 0): min_feature_value = 0
@@ -533,7 +533,7 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
 
     if file_directory is not None:
         fig.savefig(file_directory)
-        plt.close()
+        plt.close(fig)
     else:
         plt.show()
 

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from nodes.base_node import BaseNode
 
-ADAPTERS_REGISTRY: dict[str, "BaseAdapter"] = {}
+ADAPTERS_REGISTRY: dict[str, type["BaseAdapter"]] = {}
 """Maps adapter names to adapter classes, populated via register_adapter()."""
 
 def register_adapter(name: str):

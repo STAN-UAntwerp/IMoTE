@@ -89,9 +89,20 @@ class SplitNode(InternalNode):
         Returns:
             True if the sample is routed to the left child.
         """
+        return bool(self.goes_left_mask(value))
+
+    def goes_left_mask(self, values) -> np.ndarray:
+        """Vectorized goes_left: returns a boolean mask of the values routed to the left child.
+
+        Args:
+            values: Array of sample values at feature pivot_idx.
+
+        Returns:
+            Boolean array, True where the sample goes to the left child.
+        """
         if self.categorical:
-            return bool(np.isin(value, self.pivot_value))
-        return bool(value <= self.pivot_value)
+            return np.isin(values, self.pivot_value)
+        return np.asarray(values) <= self.pivot_value
 
     def get_children(self) -> List[BaseNode]:
         """Returns this node's left and right children.

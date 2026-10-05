@@ -69,6 +69,8 @@ def node_model_from_dict(dic: dict) -> NodeModel:
         A new NodeModel instance of the matching subclass.
     """
     class_type = globals().get(dic["class_type"])
+    if class_type is None:
+        raise ValueError(f"Unknown node model class: {dic['class_type']!r}")
     return class_type.from_dict(dic)
 
 class NoneNodeModel(NodeModel):
@@ -107,7 +109,7 @@ class NoneNodeModel(NodeModel):
             X_shaped = X.reshape(1, -1)
         else:
             X_shaped = X
-        return np.full(X_shaped.shape[0], 0)
+        return np.zeros(X_shaped.shape[0])
 
 class ConstantNodeModel(NodeModel):
     """Model that predicts a single constant value.

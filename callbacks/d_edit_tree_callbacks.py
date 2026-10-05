@@ -75,7 +75,7 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def collapse_to_level(n_clicks, collapse_level, collapse_level_options, viz_tree_dict, tree_params):
-        if n_clicks is None:
+        if n_clicks is None or collapse_level is None:
             raise PreventUpdate
         collapse_level = int(collapse_level)
         include_lin = "include_lin" in collapse_level_options
@@ -145,6 +145,8 @@ def register_callbacks(app):
 
         viz_tree = VizTree.from_dict(viz_tree_dict)
         root = find_node_by_cytoscape_id(viz_tree, selected_node[0]["id"])
+        if isinstance(root, CollapsedNode):
+            raise PreventUpdate
 
         viz_tree.root_node = root
         viz_tree.nodes = viz_tree.collect_nodes()
@@ -173,7 +175,7 @@ def register_callbacks(app):
 
         viz_tree = VizTree.from_dict(viz_tree_dict)
         node = find_node_by_cytoscape_id(viz_tree, selected_node[0]["id"])
-        if isinstance(node, LeafNode):
+        if isinstance(node, (LeafNode, CollapsedNode)) or node is viz_tree.root_node:
             raise PreventUpdate
 
         viz_tree.prune(node)

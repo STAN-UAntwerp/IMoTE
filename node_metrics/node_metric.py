@@ -58,7 +58,7 @@ class BaseNodeMetric(ABC):
                 return "0"
             if float(value).is_integer():
                 return str(int(value))
-            return f"{value:.{6}g}"
+            return f"{value:.6g}"
 
         return str(value)
 
