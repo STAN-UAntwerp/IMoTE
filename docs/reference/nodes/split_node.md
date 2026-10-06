@@ -1,3 +1,3 @@
 # SplitNode
 
-::: nodes.split_node
+::: imote.nodes.split_node

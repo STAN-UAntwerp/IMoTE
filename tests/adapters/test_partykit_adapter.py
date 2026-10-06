@@ -3,11 +3,11 @@ import json
 import numpy as np
 import pytest
 
-from adapters.partykit_adapter import PartyKitAdapter
-from nodes.leaf_node import LeafNode
-from nodes.split_node import SplitCNode, SplitNode
+from imote.adapters.partykit_adapter import PartyKitAdapter
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.split_node import SplitCNode, SplitNode
 from tests.helpers import X, y
-from viz_tree.viz_tree import VizTree
+from imote.viz_tree.viz_tree import VizTree
 
 # root: x0 <= 3.5
 # ├── x1 in {0, 2}                   (partykit index: 1 = left kid, 2 = right kid)

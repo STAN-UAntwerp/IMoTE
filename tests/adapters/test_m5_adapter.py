@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 from m5py import M5Prime
 
-from adapters.m5_adapter import M5Adapter
-from nodes.leaf_node import LeafNode
-from nodes.node_model import ConstantNodeModel, LinearNodeModel
-from nodes.split_node import SplitNode
-from viz_tree.viz_tree import VizTree
+from imote.adapters.m5_adapter import M5Adapter
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import ConstantNodeModel, LinearNodeModel
+from imote.nodes.split_node import SplitNode
+from imote.viz_tree.viz_tree import VizTree
 
 
 @pytest.fixture(scope="module")

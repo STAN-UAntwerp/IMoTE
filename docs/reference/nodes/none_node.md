@@ -1,3 +1,3 @@
 # NoneNode
 
-::: nodes.none_node
+::: imote.nodes.none_node

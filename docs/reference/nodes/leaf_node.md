@@ -1,3 +1,3 @@
 # LeafNode
 
-::: nodes.leaf_node
+::: imote.nodes.leaf_node

@@ -64,8 +64,9 @@ Once registered and implemented the adapter shows up as one of the options in th
 [new tree](../user-guide/c-new-tree.md) card, from which a tree can be loaded.
 
 ## Writing your own adapter
-1. Create `adapters/your_format_adapter.py`.
+1. Create `imote/adapters/your_format_adapter.py`.
 2. Subclass `BaseAdapter` and decorate it with `@register_adapter("YourFormat")`.
+   Import it in `imote/adapters/__init__.py` so the adapter is registered when IMoTE starts.
 3. Implement `load_model` for your file format.
 4. Implement `build_root_node` as described above.
 5. (Optional) implement the `predict` function with your model.

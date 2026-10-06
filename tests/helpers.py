@@ -1,10 +1,10 @@
 import numpy as np
 
-from nodes.internal_node import LinearNode
-from nodes.leaf_node import LeafNode
-from nodes.node_model import ConstantNodeModel, LinearNodeModel, NoneNodeModel, SimpleLinearNodeModel
-from nodes.split_node import BlinNode, PconNode, SplitCNode, SplitNode
-from viz_tree.viz_tree import VizTree
+from imote.nodes.internal_node import LinearNode
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import ConstantNodeModel, LinearNodeModel, NoneNodeModel, SimpleLinearNodeModel
+from imote.nodes.split_node import BlinNode, PconNode, SplitCNode, SplitNode
+from imote.viz_tree.viz_tree import VizTree
 
 # 8 samples x 3 features: x0 = 0..7 (numeric), x1 in {0,1,2} (categorical), x2 in [0,1] (numeric)
 X = np.array([[0, 0, 0.0], [1, 1, 1.0], [2, 2, 0.2], [3, 0, 0.9],

@@ -1,3 +1,3 @@
 # PartyKitAdapter
 
-::: adapters.partykit_adapter
+::: imote.adapters.partykit_adapter

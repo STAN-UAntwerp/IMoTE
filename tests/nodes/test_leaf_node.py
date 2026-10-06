@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from nodes.leaf_node import LeafNode
-from nodes.node_model import ConstantNodeModel, LinearNodeModel
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import ConstantNodeModel, LinearNodeModel
 
 
 def test_has_no_children(leaf):

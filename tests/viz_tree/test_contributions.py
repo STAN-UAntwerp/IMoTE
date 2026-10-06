@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from tests.helpers import X, make_pilot_tree, make_split_tree
-from viz_tree.contributions import get_split_and_lin_contributions_test
+from imote.viz_tree.contributions import get_split_and_lin_contributions_test
 
 
 @pytest.mark.parametrize("row", range(2))

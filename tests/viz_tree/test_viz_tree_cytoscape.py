@@ -1,12 +1,12 @@
 import pytest
 
-from config import MAX_EDGE_WIDTH, MAX_NODE_HEIGHT, MIN_EDGE_WIDTH, MIN_NODE_HEIGHT, NODE_TYPE_COLORS
-from nodes.internal_node import LinearNode
-from nodes.node_model import ConstantNodeModel, SimpleLinearNodeModel
-from nodes.split_node import PconNode
+from imote.config import MAX_EDGE_WIDTH, MAX_NODE_HEIGHT, MIN_EDGE_WIDTH, MIN_NODE_HEIGHT, NODE_TYPE_COLORS
+from imote.nodes.internal_node import LinearNode
+from imote.nodes.node_model import ConstantNodeModel, SimpleLinearNodeModel
+from imote.nodes.split_node import PconNode
 from tests.helpers import X, leaf, mask, y
-from viz_tree.viz_tree import VizTree
-from viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
+from imote.viz_tree.viz_tree import VizTree
+from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
 
 
 def nodes_of(els):

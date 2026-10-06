@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from nodes.collapsed_node import CollapsedNode
-from nodes.split_node import SplitNode
+from imote.nodes.collapsed_node import CollapsedNode
+from imote.nodes.split_node import SplitNode
 
 
 def test_init(tree):

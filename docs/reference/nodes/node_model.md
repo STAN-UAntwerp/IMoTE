@@ -1,3 +1,3 @@
 # NodeModel
 
-::: nodes.node_model
+::: imote.nodes.node_model

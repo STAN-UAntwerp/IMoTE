@@ -1,6 +1,6 @@
-# Visualisation of linear model trees
+# IMoTE: Interactive MOdel Tree Explorer
 
-This is an interactive application for fitting, visualizing, and exploring **linear model trees** for regression. 
+**IMoTE** (*Interactive MOdel Tree Explorer*) is an interactive application for fitting, visualizing, and exploring **linear model trees** for regression. 
 Linear model trees are a type of regression model that aim to balance predictive performance with interpretability. 
 It lets you fit a tree to a dataset, load a self fitted tree, inspect its structure as an interactive graph, explore
 individual nodes to see how they model the data, and trace a specific data point through the tree to understand a

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from node_metrics.node_metric import NODE_METRICS_REGISTRY, BaseNodeMetric
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, BaseNodeMetric
 from tests.helpers import X, make_pilot_tree, y
 
 

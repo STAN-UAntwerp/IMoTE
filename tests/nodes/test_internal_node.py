@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from nodes.internal_node import LinearNode
-from nodes.leaf_node import LeafNode
-from nodes.node_model import SimpleLinearNodeModel
+from imote.nodes.internal_node import LinearNode
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import SimpleLinearNodeModel
 from tests.nodes.conftest import make_leaf
 
 

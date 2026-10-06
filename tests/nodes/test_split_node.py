@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
 
-from nodes.internal_node import LinearNode
-from nodes.leaf_node import LeafNode
-from nodes.node_model import ConstantNodeModel, NoneNodeModel, SimpleLinearNodeModel
-from nodes.none_node import NoneNode
-from nodes.split_node import BlinNode, PconcNode, PconNode, PlinNode, SplitCNode, SplitNode
+from imote.nodes.internal_node import LinearNode
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import ConstantNodeModel, NoneNodeModel, SimpleLinearNodeModel
+from imote.nodes.none_node import NoneNode
+from imote.nodes.split_node import BlinNode, PconcNode, PconNode, PlinNode, SplitCNode, SplitNode
 from tests.nodes.conftest import make_leaf
 
 VALID = {

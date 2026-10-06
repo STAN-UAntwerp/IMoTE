@@ -1,3 +1,3 @@
 # InternalNode
 
-::: nodes.internal_node
+::: imote.nodes.internal_node

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dataset.dataset import Dataset
+from imote.dataset.dataset import Dataset
 
 
 @pytest.fixture

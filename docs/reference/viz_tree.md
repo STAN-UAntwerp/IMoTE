@@ -1,3 +1,3 @@
 # VizTree
 
-::: viz_tree.viz_tree
+::: imote.viz_tree.viz_tree

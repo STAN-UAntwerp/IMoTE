@@ -5,13 +5,13 @@ import numpy as np
 import plotly.io
 import pytest
 
-from nodes.collapsed_node import CollapsedNode
-from nodes.leaf_node import LeafNode
-from nodes.node_model import ConstantNodeModel, LinearNodeModel
-from nodes.none_node import NoneNode
-from nodes.split_node import PconNode
+from imote.nodes.collapsed_node import CollapsedNode
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import ConstantNodeModel, LinearNodeModel
+from imote.nodes.none_node import NoneNode
+from imote.nodes.split_node import PconNode
 from tests.helpers import X, leaf, make_pilot_tree, make_single_leaf_tree, make_split_tree, mask, y
-from viz_tree.viz_tree import VizTree
+from imote.viz_tree.viz_tree import VizTree
 
 TREES = [make_pilot_tree, make_split_tree]
 

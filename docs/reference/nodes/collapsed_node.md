@@ -1,3 +1,3 @@
 # CollapsedNode
 
-::: nodes.collapsed_node
+::: imote.nodes.collapsed_node

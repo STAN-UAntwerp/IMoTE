@@ -1,3 +1,3 @@
 # CombinedLinNode
 
-::: nodes.combined_lin_node
+::: imote.nodes.combined_lin_node

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from nodes.node_model import (
+from imote.nodes.node_model import (
     ConstantNodeModel,
     LinearNodeModel,
     NoneNodeModel,

@@ -13,7 +13,7 @@ an adapter.
 | Field                 | Description                                                                                                                                                       |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Dataset**           | The dataset on which the tree will be fitted. A selection of datasets from the PMLB repository are available. A csv file with a new dataset can also be uploaded. |
-| **Method**            | The model tree algorithm to use: PILOT (in python or in C++) or M5 (see the [home](../home.md) page for a brief description of each).                             |
+| **Method**            | The model tree algorithm to use: PILOT or M5 (see the [home](../home.md) page for a brief description of each).                             |
 | **Max depth**         | The maximum depth of the tree. (The root node is at depth 0.)                                                                                                     |
 | **Max model depth**   | PILOT only feauture: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).                                                  |
 | **Min samples split** | The minimum number of samples required before a node may be considered for splitting.                                                                             |
@@ -27,13 +27,13 @@ datasets or deeper trees.
 The following actions are also available:
 
 * **Save shown tree** – Saves the currently displayed tree as a pickled Python object in
-  `application_dir/output/saved_viz_trees`. The saved tree can later be reloaded in the application.
+  `output/saved_viz_trees` inside the `imote` package folder. The saved tree can later be reloaded in the application.
 * **Download shown tree** – Downloads the currently displayed tree as an SVG image.
 * **Reload tree** – Restores the original fitted tree. This is useful after exploring subtrees or making temporary
   modifications to the visualization. The tree is restored to the state it had immediately after being fitted or loaded.
 * **Load tree** – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text
   field and click **Load tree**. If no valid path is provided, the application automatically loads the most recently
-  saved tree from `application_dir/output/saved_viz_trees`.
+  saved tree from `output/saved_viz_trees` inside the `imote` package folder.
 
 ## Uploading a CSV dataset
 

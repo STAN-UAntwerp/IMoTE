@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from nodes.combined_lin_node import CombinedLinNode
-from nodes.internal_node import LinearNode
-from nodes.node_model import SimpleLinearNodeModel
+from imote.nodes.combined_lin_node import CombinedLinNode
+from imote.nodes.internal_node import LinearNode
+from imote.nodes.node_model import SimpleLinearNodeModel
 
 
 @pytest.fixture

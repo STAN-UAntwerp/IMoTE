@@ -1,3 +1,3 @@
 # BaseAdapter
 
-::: adapters.base_adapter
+::: imote.adapters.base_adapter

@@ -4,13 +4,18 @@
 __pycache__/
 .DS_Store
 
-components/output/*
+imote/components/output/*
 #guide/output/*
 #guide/guide
 guide/
-output/
-!output/saved_viz_trees/tree_14-08-26_12-45-55__1199_BNG_echoMonths.pmlb-Pilot-12-30-10-5.pkl
+imote/output/
+!imote/output/saved_viz_trees/tree_14-08-26_12-45-55__1199_BNG_echoMonths.pmlb-Pilot-12-30-10-5.pkl
 m5_example.py
 placeholder.py
 
-dataset/uploaded/
+imote/dataset/uploaded/
+
+# Packaging build artifacts
+build/
+dist/
+*.egg-info/

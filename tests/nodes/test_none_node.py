@@ -1,4 +1,4 @@
-from nodes.none_node import NoneNode
+from imote.nodes.none_node import NoneNode
 
 
 def test_has_no_children():

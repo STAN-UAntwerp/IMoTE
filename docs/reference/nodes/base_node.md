@@ -1,3 +1,3 @@
 # Base Node
 
-::: nodes.base_node
+::: imote.nodes.base_node

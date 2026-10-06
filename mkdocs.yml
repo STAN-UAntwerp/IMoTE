@@ -1,4 +1,4 @@
-site_name: Visualisation of linear model trees
+site_name: "IMoTE: Interactive MOdel Tree Explorer"
 site_description: User guide and documentation for the Dash application
 site_url: https://flordebois.github.io/model-tree-cytoscape/
 repo_name: model-tree-cytoscape
