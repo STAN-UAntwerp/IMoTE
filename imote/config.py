@@ -1,12 +1,18 @@
+import os
 from pathlib import Path
 from functools import lru_cache
 import pickle
 
 # --- Filesystem ---------------------------------------------------------
-DIR_BASE = Path(__file__).resolve().parent
-DIR_LIVE_OUTPUT = DIR_BASE / "output" / "live"
-DIR_SAVED_VIZ_TREES = DIR_BASE / "output" / "saved_viz_trees"
-DIR_DATASET_UPLOAD = DIR_BASE / "dataset" / "uploaded"
+# Read-only files shipped inside the package.
+DIR_PACKAGE = Path(__file__).resolve().parent
+INITIAL_TREE_PATH = DIR_PACKAGE / "data" / "initial_tree.pkl"
+
+# Files the app writes at runtime go to a folder. Override with environment variable IMOTE_HOME.
+DIR_USER_DATA = Path(os.environ.get("IMOTE_HOME", Path.home() / ".imote")).expanduser()
+DIR_LIVE_OUTPUT = DIR_USER_DATA / "live"
+DIR_SAVED_VIZ_TREES = DIR_USER_DATA / "saved_trees"
+DIR_DATASET_UPLOAD = DIR_USER_DATA / "uploaded_datasets"
 
 # --- New Tree card defaults / options -----------------------------------
 
@@ -82,9 +88,7 @@ DEFAULT_NODE_METRICS = ["ID", "# Samples", "RSS", 'MAE']
 
 @lru_cache(maxsize=1)
 def get_initial_graph_info():
-    with open(
-            DIR_SAVED_VIZ_TREES / "tree_14-08-26_12-45-55__1199_BNG_echoMonths.pmlb-Pilot-12-30-10-5.pkl",
-            "rb") as f:
+    with open(INITIAL_TREE_PATH, "rb") as f:
         input_dict = pickle.load(f)
     return input_dict["viz_tree_dict"], input_dict["tree_params"]
 

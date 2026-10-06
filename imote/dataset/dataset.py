@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import logging
 from typing import Optional, List
 import numpy as np
 import pandas as pd
+
+
+logger = logging.getLogger(__name__)
 
 
 class Dataset:
@@ -59,7 +63,7 @@ class Dataset:
             cat_ids = np.array(
                 [i for i in range(self.X.shape[1]) if len(np.unique(self.X[:, i])) < cat_unique_threshold] or [-1]
             )
-            print(f"Auto detected categorical columns in dataset {name}, as {cat_ids}")
+            logger.info("Auto-detected categorical columns in dataset %s: %s", name, cat_ids)
         self.cat_ids = cat_ids
 
         self.name = name

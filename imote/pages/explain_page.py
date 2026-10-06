@@ -1,13 +1,13 @@
-"""
-TODO: This page is a work in progress
-"""
+import os
+
 import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 from imote import ids
 
-dash.register_page(__name__, path="/explain", name="Explain")
+if os.environ.get("IMOTE_EXPERIMENTAL") == "1":
+    dash.register_page(__name__, path="/explain", name="Explain")
 
 layout = dbc.Row(
     [

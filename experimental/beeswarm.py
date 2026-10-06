@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
-from imote.plots import colors
+from experimental import colors
 from matplotlib.patches import ConnectionPatch
 from matplotlib.transforms import blended_transform_factory
 

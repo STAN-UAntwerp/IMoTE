@@ -146,7 +146,6 @@ def register_callbacks(app):
             raise PreventUpdate
 
         if viz_tree_dict is None:
-            print(f"call to elements update with viz_tree_dict None")
             raise PreventUpdate
 
         use_intercept = "intercept" in predsplot_options

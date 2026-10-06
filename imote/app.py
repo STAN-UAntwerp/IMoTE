@@ -1,3 +1,5 @@
+import logging
+
 import matplotlib
 matplotlib.use('agg')
 
@@ -13,8 +15,10 @@ from imote.config import DIR_LIVE_OUTPUT, DIR_SAVED_VIZ_TREES
 
 cyto.load_extra_layouts()
 
-(DIR_LIVE_OUTPUT / "regplots").mkdir(parents=True, exist_ok=True)
-(DIR_LIVE_OUTPUT / "predsplots").mkdir(parents=True, exist_ok=True)
+for plot_dir in (DIR_LIVE_OUTPUT / "regplots", DIR_LIVE_OUTPUT / "predsplots"):
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    for old_plot in plot_dir.glob("*.svg"):
+        old_plot.unlink(missing_ok=True)
 DIR_SAVED_VIZ_TREES.mkdir(parents=True, exist_ok=True)
 
 app: Dash = dash.Dash(
@@ -58,9 +62,19 @@ app.layout = html.Div(
 register_all_callbacks(app)
 
 
+def _setup_logging(level: int):
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+    logger = logging.getLogger("imote")
+    logger.addHandler(handler)
+    logger.setLevel(level)
+
+
 def main():
+    _setup_logging(logging.INFO)
     app.run()
 
 
 if __name__ == "__main__":
+    _setup_logging(logging.DEBUG)
     app.run(debug=True)

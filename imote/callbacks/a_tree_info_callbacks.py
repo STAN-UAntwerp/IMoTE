@@ -34,7 +34,7 @@ def format_tree_info(
     else:
         badges.append(dbc.Badge(f"{collapsed_nodes_count} Collapsed Nodes", color="warning", className="me-2"))
     if highlight_x is not None:
-        badges.append(dbc.Badge(f"Highlighted point", color="danger", className="me-2"))
+        badges.append(dbc.Badge("Highlighted point", color="danger", className="me-2"))
     return dbc.CardBody([
         html.Div(
             className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom",

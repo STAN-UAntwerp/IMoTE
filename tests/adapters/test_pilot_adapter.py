@@ -57,3 +57,12 @@ def test_leaf_model_accumulates_path():
     assert left.node_model.intercept == 1.0
     tree = VizTree(root, X, y, None)
     np.testing.assert_allclose(tree.predict(X), np.where(X[:, 0] <= 3.5, X[:, 2] + 1, X[:, 2] - 1))
+
+
+def test_con_leaf_adds_its_own_constant():
+    # pcon(x0 <= 3.5: left +1 / right -1) -> left 'con' leaf fits +0.5 on top, right leaf adds nothing
+    root = build(("pcon", 0, 0, 3.5, 0, 1.0, 0, -1.0),
+                 ("con", 1, -1, np.nan, np.nan, 0.5, np.nan, np.nan),
+                 ("con", 1, -1, np.nan, np.nan, np.nan, np.nan, np.nan))
+    assert root.left_child.node_model.intercept == 1.5
+    assert root.right_child.node_model.intercept == -1.0

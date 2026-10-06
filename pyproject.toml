@@ -48,7 +48,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+dev = [
+    "pytest>=7",
+    "build",
+    "twine"
+]
+docs = [
+    "mkdocs>=1.6,<2",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.26",
+]
 
 [project.scripts]
 imote = "imote.app:main"
@@ -66,4 +75,4 @@ version = {attr = "imote.__version__"}
 include = ["imote*"]
 
 [tool.setuptools.package-data]
-imote = ["output/saved_viz_trees/tree_14-08-26_12-45-55__1199_BNG_echoMonths.pmlb-Pilot-12-30-10-5.pkl"]
+imote = ["data/initial_tree.pkl"]

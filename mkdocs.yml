@@ -54,7 +54,7 @@ extra_css:
   - assets/stylesheets/custom_api.css
 
 nav:
-  - Home: home.md
+  - Home: index.md
 
   - User Guide:
     - Interface Overview: user-guide/interface-overview.md

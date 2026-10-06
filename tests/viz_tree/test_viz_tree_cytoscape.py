@@ -1,6 +1,6 @@
 import pytest
 
-from imote.config import MAX_EDGE_WIDTH, MAX_NODE_HEIGHT, MIN_EDGE_WIDTH, MIN_NODE_HEIGHT, NODE_TYPE_COLORS
+from imote.config import NODE_TYPE_COLORS
 from imote.nodes.internal_node import LinearNode
 from imote.nodes.node_model import ConstantNodeModel, SimpleLinearNodeModel
 from imote.nodes.split_node import PconNode

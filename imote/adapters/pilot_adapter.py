@@ -15,7 +15,7 @@ class PilotAdapter(BaseAdapter):
         n_features = X_train.shape[1]
         root_indices = np.ones(X_train.shape[0], dtype=bool)
         if tree.parent_node_id[0]:
-            raise ValueError(f'First node is not the root node')
+            raise ValueError('First node is not the root node')
         return PilotAdapter._build_recursive(
             tree, 0, X_train, root_indices, y_train,
             np.zeros(n_features), 0.0,
@@ -26,11 +26,12 @@ class PilotAdapter(BaseAdapter):
                                accumulated_coefficients, accumulated_intercept) -> BaseNode:
         node_type = tree.node_type[node_index]
         if node_type == 'con' or node_type == 'END':
+            leaf_intercept = accumulated_intercept + np.nan_to_num(tree.intercept_left[node_index])
             return LeafNode(
                 indices=current_indices,
                 y_res=current_y_res,
-                rss=-1,
-                node_model=LinearNodeModel(accumulated_coefficients, accumulated_intercept),
+                rss=float(np.sum(current_y_res ** 2)),
+                node_model=LinearNodeModel(accumulated_coefficients, leaf_intercept),
             )
 
         children_index = np.where(tree.parent_node_id == tree.node_id[node_index])[0]
@@ -51,7 +52,7 @@ class PilotAdapter(BaseAdapter):
             return LinearNode(
                 indices=current_indices,
                 y_res=current_y_res,
-                rss=-1,
+                rss=float(np.sum(current_y_res ** 2)),
                 pivot_idx=pivot_idx,
                 linear_model=SimpleLinearNodeModel(pivot_idx, coef, intercept),
                 child=child,
@@ -97,7 +98,7 @@ class PilotAdapter(BaseAdapter):
                 return PconNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=-1,
+                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -109,7 +110,7 @@ class PilotAdapter(BaseAdapter):
                 return PconcNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=-1,
+                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -121,7 +122,7 @@ class PilotAdapter(BaseAdapter):
                 return BlinNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=-1,
+                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -133,7 +134,7 @@ class PilotAdapter(BaseAdapter):
                 return PlinNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=-1,
+                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,

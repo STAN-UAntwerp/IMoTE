@@ -1,3 +1,9 @@
+import os
+import tempfile
+
+# Before any imote import: files the app writes during tests go to a temporary folder
+os.environ.setdefault("IMOTE_HOME", tempfile.mkdtemp(prefix="imote-tests-"))
+
 import matplotlib
 import matplotlib.pyplot as plt
 import pytest

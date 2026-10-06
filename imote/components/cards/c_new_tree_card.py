@@ -13,7 +13,6 @@ from imote.config import (
     NO_FILE_SELECTED_PLACEHOLDER,
     ADAPTER_OPTIONS,
     DEFAULT_ADAPTER_NAME,
-    DIR_BASE,
 )
 from imote.dataset.dataset_registry import build_dropdown_options
 
@@ -106,7 +105,7 @@ def make_new_tree_card() -> dbc.Card:
                                     dbc.Input(
                                         id=ids.INPUT_LOAD_TREE,
                                         type="text",
-                                        placeholder="path to saved_viz_trees/...",
+                                        placeholder="path to a saved tree (.pkl), empty = most recent",
                                     ),
                                     dbc.Button("Load saved viz_tree", id=ids.BTN_LOAD_TREE, size="sm"),
                                 ],
@@ -148,8 +147,7 @@ def make_new_tree_card() -> dbc.Card:
                                     dbc.Input(
                                         id=ids.INPUT_LOAD_TREE_ADAPTER,
                                         type="text",
-                                        placeholder="path to model_adapter/...",
-                                        value=str(DIR_BASE / "output" / "r_partykit_trees" / "tree.json"),
+                                        placeholder="path to the exported model, e.g. ~/models/tree.json",
                                     ),
                                     dbc.Button("Load with Adapter", id=ids.BTN_LOAD_TREE_ADAPTER, size="sm"),
                                 ],

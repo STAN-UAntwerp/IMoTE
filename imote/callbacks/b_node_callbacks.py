@@ -164,7 +164,7 @@ def register_callbacks(app):
                     else:
                         return "Prediction plots (type 1) can't be made for nodes with no linear model.", None
             else:
-                return f"No plot available for this type of leaf node.", None
+                return "No plot available for this type of leaf node.", None
         elif isinstance(node, InternalNode):
             file_dir = DIR_LIVE_OUTPUT / "regplots" / f"regplot_node{node.id}_{viz_tree.tree_id}.svg"
             make_regression_plot(

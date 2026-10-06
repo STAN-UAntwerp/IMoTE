@@ -1,4 +1,5 @@
 from m5py import M5Prime
+import logging
 import os
 import pickle
 import time
@@ -9,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from imote import ids
-from imote.config import DIR_BASE, DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
+from imote.config import DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
 from imote.viz_tree.viz_tree import VizTree
 from imote.adapters.base_adapter import ADAPTERS_REGISTRY
 
@@ -20,6 +21,8 @@ from imote.dataset.dataset_registry import (
     get_target_col,
 )
 from imote.dataset.dataset import Dataset
+
+logger = logging.getLogger(__name__)
 
 
 def get_dataset_X_y(input_dataset):
@@ -43,7 +46,7 @@ def _resolve_saved_tree_path(load_path) -> tuple[str | None, str | None]:
         return str(max(saved_trees, key=os.path.getmtime)), None
 
     candidate = Path(load_path.strip()).expanduser()
-    path = next((p for p in (candidate, DIR_SAVED_VIZ_TREES / candidate, DIR_BASE / candidate) if p.exists()), candidate)
+    path = next((p for p in (candidate, DIR_SAVED_VIZ_TREES / candidate) if p.exists()), candidate)
     if path.suffix != ".pkl":
         return None, f"Can't load {load_path}: not a .pkl file."
     if not path.exists():
@@ -79,15 +82,13 @@ def _tree_file_name(viz_tree_dict, tree_params) -> str:
     return f"tree_{viz_tree_dict['tree_id']}__{dataset_name}-{tree_params['method_name']}-{tree_params['max_depth']}-{tree_params['max_model_depth']}-{tree_params['min_sample_split']}-{tree_params['min_sample_leaf']}"
 
 def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf) -> tuple[VizTree, str]:
-    print('Fitting model dataset:')
-    print(input_dataset, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
+    logger.info("Fitting %s on %s (max_depth=%s, max_model_depth=%s, min_sample_split=%s, min_sample_leaf=%s)",
+                method_name, input_dataset, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
     X, y, cat_ids = get_dataset_X_y(input_dataset)
 
     adapter = ADAPTERS_REGISTRY[method_name]
     if method_name == "Pilot":
-        print("importing PILOT...")
         from pilot import PILOT
-        print("import done")
         start_time = time.perf_counter()
         model = PILOT(max_depth=max_depth,
                       max_model_depth=max_model_depth,
@@ -285,7 +286,6 @@ def register_callbacks(app):
     def fit_tree(n_clicks, dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf, feature_color):
         if n_clicks is None:
             raise PreventUpdate
-        print("fitting tree")
         viz_tree, training_time = fit_new_tree(dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
         viz_tree_dict = viz_tree.to_dict()
         tree_params = _make_tree_params(viz_tree, dataset_name, method_name, max_depth, max_model_depth,
@@ -301,6 +301,7 @@ def register_callbacks(app):
         Output(ids.STORE_TREE_PARAMS, "data", allow_duplicate=True),
         Output(ids.STORE_TREE_PARAMS_BASE, "data", allow_duplicate=True),
         Output(ids.NEW_TREE_TRIGGER, "data", allow_duplicate=True),
+        Output(ids.DEBUG_INFO, "children", allow_duplicate=True),
 
         Input(ids.BTN_LOAD_TREE_ADAPTER, "n_clicks"),
         State(ids.INPUT_DATASET, "value"),
@@ -312,8 +313,14 @@ def register_callbacks(app):
         if n_clicks is None:
             raise PreventUpdate
 
+        if not model_path or not model_path.strip():
+            return no_update, no_update, no_update, no_update, no_update, "Enter the path to a model file first."
+
         adapter = ADAPTERS_REGISTRY[adapter_name]
-        model = adapter.load_model(model_path)
+        try:
+            model = adapter.load_model(str(Path(model_path.strip()).expanduser()))
+        except (NotImplementedError, OSError, ValueError) as e:
+            return no_update, no_update, no_update, no_update, no_update, f"Could not load the model: {e}"
         X, y, cat_ids = get_dataset_X_y(input_dataset)
 
         viz_tree = VizTree.from_model(adapter, X, y, model)
@@ -321,7 +328,7 @@ def register_callbacks(app):
         viz_tree_dict = viz_tree.to_dict()
         tree_params = _make_tree_params(viz_tree, input_dataset, adapter_name)
 
-        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time()
+        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), f"Loaded {model_path} with the {adapter_name} adapter."
 
     # --- NEW TREE TRIGGER ---
     @app.callback(
@@ -351,7 +358,6 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def save_tree(n_clicks, viz_tree_dict, tree_params):
-        print("saving tree")
         output_path = str(DIR_SAVED_VIZ_TREES / f"{_tree_file_name(viz_tree_dict, tree_params)}.pkl")
         output_dict = {"tree_params": tree_params, 
                        "viz_tree_dict": viz_tree_dict}
@@ -370,6 +376,5 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def download_tree_svg(n_clicks, viz_tree_dict, tree_params):
-        print("downloading tree")
         file_name = _tree_file_name(viz_tree_dict, tree_params)
         return {"type": "svg", "action": "download", "filename": file_name}

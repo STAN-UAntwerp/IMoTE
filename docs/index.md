@@ -45,6 +45,18 @@ When fitting a new tree you can choose between M5 and PILOT in the [New Tree](us
 
 - **Load your own tree** by coding a new adapter wich let you upload any tree and gives you full flexibility.
 
+## Installation
+
+Install IMoTE from PyPI and start the app (Python 3.10 or newer):
+
+```bash
+pip install imote
+imote
+```
+
+Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). Saved trees, uploaded datasets and
+generated plots are stored in `~/.imote`, set the environment variable `IMOTE_HOME` to use another folder.
+
 ## Where to start
 
 Start with [Interface Overview](user-guide/interface-overview.md) for a short tour, then you
@@ -61,8 +73,6 @@ The right side of the app is organized into so called *interaction* cards, each 
 | [Layout](user-guide/e-layout.md)              | Control how the tree graph is laid out on screen             |
 | [Highlight](user-guide/f-highlight.md)        | Trace a specific data point's path through the tree          |
 
-!!! note "Explain page"
-    The app also has an "Explain" page. It's still under development and isn't documented yet.
 
 ## References
 <a id="1">[1]</a> 
