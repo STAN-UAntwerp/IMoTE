@@ -1,63 +1,66 @@
 # IMoTE: Interactive MOdel Tree Explorer
 
-**IMoTE** (*Interactive MOdel Tree Explorer*) is a Python application for visualizing and exploring **linear model trees** with dash cytoscape. The application provides an interactive interface to inspect tree structures, understand individual node models, and analyze how predictions are made.
+**IMoTE** is an interactive app to fit, visualise and explore **linear model trees** for regression.
+Inspect the tree as an interactive graph, see the linear model and data behind every node, and trace a single
+data point through the tree to understand its prediction.
 
-The application currently supports two linear model tree algorithms:
+![IMoTE: the tree graph with the interaction cards on the right](https://flordebois.github.io/model-tree-cytoscape/assets/screenshots/app-overview.png)
 
-* **PILOT** (*PIecewise Linear Organic Tree*) — a fast and interpretable linear model tree algorithm for regression, using the [fast-model-trees](https://github.com/STAN-UAntwerp/fast-model-trees) implementation.
-* **M5** — a classic model tree algorithm that combines decision tree splits with linear regression models in the leaves.
+## Overview
 
-The main goal of this project is to make linear model trees easier to understand and explain through interactive visualization.
+IMoTE supports two linear model tree algorithms out of the box:
 
-## Documentation
+- **PILOT** (*PIecewise Linear Organic Tree*): a fast linear model tree algorithm, using the
+  [fast-model-trees](https://github.com/STAN-UAntwerp/fast-model-trees) implementation.
+- **M5**: the classic model tree algorithm, using [m5py](https://pypi.org/project/m5py/).
 
-Full documentation, including explanations of the interface and visualization options, is available [here](https://flordebois.github.io/model-tree-cytoscape/home/).
+Trees fitted with other tools can be loaded by writing an **adapter**. A partykit (R) adapter is included as an example.
 
 ## Installation
 
-Clone the repository:
-
 ```bash
-git clone https://github.com/flordebois/model-tree-cytoscape
-cd model-tree-cytoscape
+pip install imote
 ```
 
-Create and activate a virtual environment:
+IMoTE needs Python 3.10 or newer.
 
-```bash
-python -m venv .venv
-```
+## Quick start
 
-Activate the environment:
-
-**Windows**
-
-```bash
-.venv\Scripts\activate
-```
-
-**Linux/macOS**
-
-```bash
-source .venv/bin/activate
-```
-
-Install IMoTE and its dependencies (`-e` installs it in editable mode, so code changes take effect immediately):
-
-```bash
-pip install -e .
-```
-
-## Running the application
-
-Start the application with:
+### Start the app
 
 ```bash
 imote
 ```
 
-For development, `python -m imote.app` starts it in Dash debug mode, which reloads on code changes.
+Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). From the **New Tree** card you can
+fit PILOT or M5 on a built-in dataset or on your own CSV file.
 
-The application will start a local web server. Open the provided URL in your browser to access the visualization interface.
+IMoTE stores saved trees, uploaded datasets and generated plots in `~/.imote`. Set the `IMOTE_HOME` environment
+variable to use another folder.
 
+## Documentation
 
+The full documentation, with a guide to every part of the interface and how to write your own adapter, is at
+<https://flordebois.github.io/model-tree-cytoscape/>.
+
+## Papers
+
+- **PILOT**: Raymaekers, J., Rousseeuw, P. J., Verdonck, T., & Yao, R. (2024). Fast linear model trees by PILOT.
+  *Machine Learning*, 113(9), 6561-6610. <https://doi.org/10.1007/s10994-024-06590-3>
+- **M5**: Quinlan, J. R. (1992). Learning with continuous classes. In *5th Australian Joint Conference on Artificial
+  Intelligence* (Vol. 92, pp. 343-348).
+
+## Development
+
+```bash
+git clone https://github.com/flordebois/model-tree-cytoscape
+cd model-tree-cytoscape
+pip install -e ".[dev]"   # IMoTE in editable mode, plus pytest, build and twine
+python -m imote.app       # start the app in Dash debug mode, it reloads on code changes
+```
+
+To work on the documentation: `pip install -e ".[docs]"`, then `mkdocs serve`.
+
+## License
+
+MIT, see [LICENSE](https://github.com/flordebois/model-tree-cytoscape/blob/main/LICENSE).

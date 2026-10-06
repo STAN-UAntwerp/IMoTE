@@ -1,0 +1,30 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:  # only rebuild when something that ends up on the site changed
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'imote/**'  # for API reference pages
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and publish the documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install documentation tools
+        run: pip install -e ".[docs]"
+
+      - name: Build and deploy
+        run: mkdocs gh-deploy

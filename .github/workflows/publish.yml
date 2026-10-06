@@ -1,0 +1,64 @@
+name: Publish Python Package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    # the version lives in imote/__init__.py (__version__)
+    # check that the tag matches it and stop if it wasn't changed
+    - name: Check that the tag matches imote.__version__
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        CODE_VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' imote/__init__.py)
+        echo "tag: $TAG_VERSION, imote/__init__.py: $CODE_VERSION"
+        test "$TAG_VERSION" = "$CODE_VERSION"
+
+    - name: Build sdist
+      run: |
+        pip install build
+        python -m build --sdist
+
+    - name: Upload sdist
+      uses: actions/upload-artifact@v4
+      with:
+        name: cibw-sdist
+        path: dist/*.tar.gz
+
+  publish:
+    name: Publish to PyPI
+    needs: [build_sdist]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: cibw-*
+        path: dist
+        merge-multiple: true
+
+    - name: Install twine
+      run: pip install twine
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: twine upload dist/*
