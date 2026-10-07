@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77"]
+requires = ["setuptools>=77", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -68,8 +68,8 @@ Documentation = "https://stan-uantwerp.github.io/IMoTE/"
 Repository = "https://github.com/STAN-UAntwerp/IMoTE"
 Issues = "https://github.com/STAN-UAntwerp/IMoTE/issues"
 
-[tool.setuptools.dynamic]
-version = {attr = "imote.__version__"}
+# the version comes from the latest git tag (v0.2.0 -> 0.2.0), see publish.yml
+[tool.setuptools_scm]
 
 [tool.setuptools.packages.find]
 include = ["imote*"]

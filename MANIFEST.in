@@ -1,0 +1,5 @@
+# setuptools-scm adds every git-tracked file to the sdist, leave out what users don't need
+prune docs
+prune experimental
+prune .github
+exclude mkdocs.yml .gitignore

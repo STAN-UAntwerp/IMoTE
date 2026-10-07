@@ -1,6 +1,11 @@
 """IMoTE: Interactive MOdel Tree Explorer."""
 
-__version__ = "0.1.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("imote")  # set from the git tag by setuptools-scm at install time
+except PackageNotFoundError:  # running from a source tree that was never pip installed
+    __version__ = "0+unknown"
 
 from imote.adapters import M5Adapter, PartyKitAdapter, PilotAdapter
 from imote.adapters.base_adapter import ADAPTERS_REGISTRY, BaseAdapter, register_adapter

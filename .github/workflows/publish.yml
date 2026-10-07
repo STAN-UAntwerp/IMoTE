@@ -17,21 +17,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # setuptools-scm needs the tags to work out the version
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-
-    # the version lives in imote/__init__.py (__version__)
-    # check that the tag matches it and stop if it wasn't changed
-    - name: Check that the tag matches imote.__version__
-      if: startsWith(github.ref, 'refs/tags/v')
-      run: |
-        TAG_VERSION=${GITHUB_REF#refs/tags/v}
-        CODE_VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' imote/__init__.py)
-        echo "tag: $TAG_VERSION, imote/__init__.py: $CODE_VERSION"
-        test "$TAG_VERSION" = "$CODE_VERSION"
 
     # IMoTE is pure Python, so one py3-none-any wheel covers every platform
     - name: Build sdist and wheel
@@ -39,6 +31,16 @@ jobs:
         pip install build twine
         python -m build
         twine check dist/*
+
+    # setuptools-scm takes the version from the tag, check that it really did
+    # (a dirty checkout, or a tag like v1.0.0-rc1 that normalizes to 1.0.0rc1, would not match)
+    - name: Check that the built version matches the tag
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        ls dist
+        test -f "dist/imote-$TAG_VERSION.tar.gz"
+        test -f "dist/imote-$TAG_VERSION-py3-none-any.whl"
 
     - name: Upload distributions
       uses: actions/upload-artifact@v4
