@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_call:  # run by publish.yml before uploading to PyPI
 
 jobs:
   test:

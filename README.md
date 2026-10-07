@@ -4,7 +4,7 @@
 Inspect the tree as an interactive graph, see the linear model and data behind every node, and trace a single
 data point through the tree to understand its prediction.
 
-![IMoTE: the tree graph with the interaction cards on the right](https://flordebois.github.io/model-tree-cytoscape/assets/screenshots/app-overview.png)
+![IMoTE: the tree graph with the interaction cards on the right](https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/screenshots/app-overview.png)
 
 ## Overview
 
@@ -41,7 +41,7 @@ variable to use another folder.
 ## Documentation
 
 The full documentation, with a guide to every part of the interface and how to write your own adapter, is at
-<https://flordebois.github.io/model-tree-cytoscape/>.
+<https://stan-uantwerp.github.io/IMoTE/>.
 
 ## Papers
 
@@ -53,8 +53,8 @@ The full documentation, with a guide to every part of the interface and how to w
 ## Development
 
 ```bash
-git clone https://github.com/flordebois/model-tree-cytoscape
-cd model-tree-cytoscape
+git clone https://github.com/STAN-UAntwerp/IMoTE
+cd IMoTE
 pip install -e ".[dev]"   # IMoTE in editable mode, plus pytest, build and twine
 python -m imote.app       # start the app in Dash debug mode, it reloads on code changes
 ```
@@ -63,4 +63,4 @@ To work on the documentation: `pip install -e ".[docs]"`, then `mkdocs serve`.
 
 ## License
 
-MIT, see [LICENSE](https://github.com/flordebois/model-tree-cytoscape/blob/main/LICENSE).
+MIT, see [LICENSE](https://github.com/STAN-UAntwerp/IMoTE/blob/main/LICENSE).

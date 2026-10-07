@@ -62,11 +62,11 @@ docs = [
 [project.scripts]
 imote = "imote.app:main"
 
-[project.urls] # Change to links with new the new name
-Homepage = "https://flordebois.github.io/model-tree-cytoscape"
-Documentation = "https://flordebois.github.io/model-tree-cytoscape#readme"
-Repository = "https://github.com/flordebois/model-tree-cytoscape"
-Issues = "https://github.com/flordebois/model-tree-cytoscape/issues"
+[project.urls]
+Homepage = "https://github.com/STAN-UAntwerp/IMoTE"
+Documentation = "https://stan-uantwerp.github.io/IMoTE/"
+Repository = "https://github.com/STAN-UAntwerp/IMoTE"
+Issues = "https://github.com/STAN-UAntwerp/IMoTE/issues"
 
 [tool.setuptools.dynamic]
 version = {attr = "imote.__version__"}
