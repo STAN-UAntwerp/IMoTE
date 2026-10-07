@@ -13,3 +13,5 @@ imote/dataset/uploaded/
 build/
 dist/
 *.egg-info/
+
+firebase-debug.log
