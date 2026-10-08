@@ -44,7 +44,8 @@ def make_status_bar() -> html.Div:
     children, class_name = render_status_message(status.WELCOME)
     return html.Div(
         [
-            html.Div(children, id=ids.STATUS_MESSAGE, className=class_name, role="status", **{"aria-live": "polite"}),
+            html.Div(children, id={"type": ids.STATUS_MESSAGE, "index": 0}, className=class_name, role="status",
+                     **{"aria-live": "polite"}),
             dbc.Button(
                 html.I(className="bi bi-clock-history"),
                 id=ids.STATUS_HISTORY_BUTTON,
@@ -56,7 +57,7 @@ def make_status_bar() -> html.Div:
             dbc.Popover(
                 [
                     dbc.PopoverHeader("Message history"),
-                    dbc.PopoverBody(render_status_history([]), id=ids.STATUS_HISTORY_LIST),
+                    dbc.PopoverBody(render_status_history([]), id={"type": ids.STATUS_HISTORY_LIST, "index": 0}),
                 ],
                 target=ids.STATUS_HISTORY_BUTTON,
                 trigger="legacy",
