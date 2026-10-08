@@ -17,7 +17,6 @@ def register_callbacks(app):
 
     @app.callback(
         Output(ids.CYTOSCAPE_GRAPH, "layout", allow_duplicate=True),
-        Output(ids.DEBUG_INFO, "children", allow_duplicate=True),
 
         Input(ids.BTN_LAYOUT, "n_clicks"),
         Input(ids.DISPLAY_DIRECTION, "value"),
@@ -36,4 +35,4 @@ def register_callbacks(app):
             "animate": True,
             "fit": True,
             "_time": time.time(),  # dummy changing field, forces cytoscape to re-layout
-        }, "Layout updated."
+        }

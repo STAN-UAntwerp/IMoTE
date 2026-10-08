@@ -9,7 +9,7 @@ import base64
 from pathlib import Path
 import numpy as np
 
-from imote import ids
+from imote import ids, status
 from imote.config import DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
 from imote.viz_tree.viz_tree import VizTree
 from imote.adapters.base_adapter import ADAPTERS_REGISTRY
@@ -77,6 +77,9 @@ def _make_tree_params(viz_tree: VizTree, dataset_name, method_name, max_depth=-1
         "pruned": False,
     }
 
+def _dataset_label(input_dataset: str) -> str:
+    return Path(input_dataset).stem
+
 def _tree_file_name(viz_tree_dict, tree_params) -> str:
     dataset_name = Path(tree_params['dataset_name']).name
     return f"tree_{viz_tree_dict['tree_id']}__{dataset_name}-{tree_params['method_name']}-{tree_params['max_depth']}-{tree_params['max_model_depth']}-{tree_params['min_sample_split']}-{tree_params['min_sample_leaf']}"
@@ -115,7 +118,12 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
     else:
         raise ValueError(f'Method name {method_name} not recognized.')
     viz_tree = VizTree.from_model(adapter, X, y, model)
-    time_string = f"{int(elapsed_time // 60)}min {int(elapsed_time % 60)}sec"
+    if elapsed_time < 1:
+        time_string = "less than 1 sec"
+    elif elapsed_time < 60:
+        time_string = f"{int(elapsed_time)} sec"
+    else:
+        time_string = f"{int(elapsed_time // 60)} min {int(elapsed_time % 60)} sec"
     return viz_tree, time_string
 
 def register_callbacks(app):
@@ -151,7 +159,9 @@ def register_callbacks(app):
         State(ids.MODAL_CSV_FILE_NAME, "children"),
         prevent_initial_call=True,
     )
-    def cancel_csv_modal(_, file_name):
+    def cancel_csv_modal(n_clicks, file_name):
+        if n_clicks is None:
+            raise PreventUpdate
         file_path = str(DIR_DATASET_UPLOAD / file_name)
         if file_name != NO_FILE_SELECTED_PLACEHOLDER:
             path = Path(file_path)
@@ -167,28 +177,32 @@ def register_callbacks(app):
         Output(ids.INPUT_DATASET, "value", allow_duplicate=True),
         Output(ids.MODAL_CSV_FILE_NAME, "children", allow_duplicate=True),
         Output(ids.MODAL_CSV_INPUT_TARGET_COL, "value", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.MODAL_CSV_BTN_CONFIRM, "n_clicks"),
         State(ids.MODAL_CSV_FILE_NAME, "children"),
         State(ids.MODAL_CSV_INPUT_TARGET_COL, "value"),
         prevent_initial_call=True,
     )
-    def confirm_csv_modal(_, file_name, target_col):
+    def confirm_csv_modal(n_clicks, file_name, target_col):
+        if n_clicks is None:
+            raise PreventUpdate
         file_path = str(DIR_DATASET_UPLOAD / file_name)
         if file_name == NO_FILE_SELECTED_PLACEHOLDER:
-            return "No file was uploaded yet.", no_update, no_update, no_update, no_update, no_update
+            return "No file was uploaded yet.", no_update, no_update, no_update, no_update, no_update, no_update
 
         if not target_col:
-            return "No target column was given.", no_update, no_update, no_update, no_update, no_update
+            return "No target column was given.", no_update, no_update, no_update, no_update, no_update, no_update
 
         try:
             Dataset.from_csv(file_path, target_col=target_col)
         except (ValueError, KeyError, TypeError) as e:
-            return f"Could not load CSV: {e}", no_update, no_update, no_update, no_update, no_update
+            return f"Could not load CSV: {e}", no_update, no_update, no_update, no_update, no_update, no_update
 
         path = Path(file_path)
         path.with_suffix(".target.txt").write_text(target_col)
-        return None, False, build_dropdown_options(), str(path), NO_FILE_SELECTED_PLACEHOLDER, None
+        message = status.success(f"Dataset {path.stem} added and selected, click Fit Tree to fit a tree on it.")
+        return None, False, build_dropdown_options(), str(path), NO_FILE_SELECTED_PLACEHOLDER, None, message
 
     # --- CSV UPLOAD ---
     @app.callback(
@@ -201,6 +215,8 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def csv_upload(contents, filename, old_file_name):
+        if contents is None:
+            raise PreventUpdate
         DIR_DATASET_UPLOAD.mkdir(parents=True, exist_ok=True)
 
         old_file_path = str(DIR_DATASET_UPLOAD / old_file_name)
@@ -228,7 +244,7 @@ def register_callbacks(app):
         Output(ids.STORE_TREE_PARAMS, "data", allow_duplicate=True),
         Output(ids.STORE_TREE_PARAMS_BASE, "data", allow_duplicate=True),
         Output(ids.NEW_TREE_TRIGGER, "data", allow_duplicate=True),
-        Output(ids.DEBUG_INFO, "children", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_LOAD_TREE, "n_clicks"),
         State(ids.INPUT_LOAD_TREE, "value"),
@@ -239,19 +255,26 @@ def register_callbacks(app):
             raise PreventUpdate
         resolved_path, error = _resolve_saved_tree_path(load_path)
         if error:
-            return no_update, no_update, no_update, no_update, no_update, error
-        with open(resolved_path, "rb") as f:
-            input_dict = pickle.load(f)
-        
-        tree_params = input_dict["tree_params"]
-        viz_tree_dict = input_dict["viz_tree_dict"]
-        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), f"Loaded tree from {resolved_path}"
+            return no_update, no_update, no_update, no_update, no_update, status.warning(error)
+        try:
+            with open(resolved_path, "rb") as f:
+                input_dict = pickle.load(f)
+            tree_params = {**input_dict["tree_params"], "highlight_x": None}
+            viz_tree_dict = input_dict["viz_tree_dict"]
+        except Exception as e:
+            message = status.error(f"Could not load {resolved_path}, is it a tree saved by IMoTE? ({e})")
+            return no_update, no_update, no_update, no_update, no_update, message
+
+        most_recent = " (the most recently saved tree)" if not load_path or not load_path.strip() else ""
+        message = status.success(f"Loaded {Path(resolved_path).name}{most_recent}.")
+        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), message
 
     # --- RELOAD BASE TREE ---
     @app.callback(
         Output(ids.STORE_VIZ_TREE, "data", allow_duplicate=True),
         Output(ids.STORE_TREE_PARAMS, "data", allow_duplicate=True),
         Output(ids.NEW_TREE_TRIGGER, "data", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_RELOAD_TREE, "n_clicks"),
         State(ids.STORE_VIZ_TREE_BASE, "data"),
@@ -261,7 +284,8 @@ def register_callbacks(app):
     def reload_tree(n_clicks, viz_tree_dict, tree_params):
         if n_clicks is None:
             raise PreventUpdate
-        return  viz_tree_dict, tree_params, time.time()
+        message = status.success("Reloaded the tree as it was right after fitting or loading it.")
+        return viz_tree_dict, tree_params, time.time(), message
 
     # --- FIT NEW TREE ---
     @app.callback(
@@ -272,6 +296,7 @@ def register_callbacks(app):
         Output(ids.NEW_TREE_TRIGGER, "data", allow_duplicate=True),
         Output(ids.SWITCH_COLOR_FEATURES, "value", allow_duplicate=True),
         Output(ids.TRIGGER_FOR_SPINNER, "children"),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_FIT_NEW_TREE, "n_clicks"),
         State(ids.INPUT_DATASET, "value"),
@@ -286,13 +311,23 @@ def register_callbacks(app):
     def fit_tree(n_clicks, dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf, feature_color):
         if n_clicks is None:
             raise PreventUpdate
-        viz_tree, training_time = fit_new_tree(dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
+        if None in (max_depth, max_model_depth, min_sample_split, min_sample_leaf):
+            message = status.warning("Fill in all tree parameters (max depth, max model depth, min sample split "
+                                     "and min sample leaf) before fitting.")
+            return no_update, no_update, no_update, no_update, no_update, no_update, "", message
+        try:
+            viz_tree, training_time = fit_new_tree(dataset_name, method_name, max_depth, max_model_depth,
+                                                   min_sample_split, min_sample_leaf)
+        except Exception as e:
+            message = status.error(f"Could not fit {method_name} on {_dataset_label(dataset_name)}: {e}")
+            return no_update, no_update, no_update, no_update, no_update, no_update, "", message
         viz_tree_dict = viz_tree.to_dict()
         tree_params = _make_tree_params(viz_tree, dataset_name, method_name, max_depth, max_model_depth,
                                         min_sample_split, min_sample_leaf, training_time)
 
         color_switch = no_update if feature_color or method_name == "Pilot" else True
-        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), color_switch, ""
+        message = status.success(f"Fitted {method_name} on {_dataset_label(dataset_name)} in {training_time}.")
+        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), color_switch, "", message
 
     # --- LOAD NEW TREE WITH ADAPTER ---
     @app.callback(
@@ -301,7 +336,7 @@ def register_callbacks(app):
         Output(ids.STORE_TREE_PARAMS, "data", allow_duplicate=True),
         Output(ids.STORE_TREE_PARAMS_BASE, "data", allow_duplicate=True),
         Output(ids.NEW_TREE_TRIGGER, "data", allow_duplicate=True),
-        Output(ids.DEBUG_INFO, "children", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_LOAD_TREE_ADAPTER, "n_clicks"),
         State(ids.INPUT_DATASET, "value"),
@@ -314,43 +349,61 @@ def register_callbacks(app):
             raise PreventUpdate
 
         if not model_path or not model_path.strip():
-            return no_update, no_update, no_update, no_update, no_update, "Enter the path to a model file first."
+            message = status.warning("Enter the path to a model file first.")
+            return no_update, no_update, no_update, no_update, no_update, message
 
         adapter = ADAPTERS_REGISTRY[adapter_name]
         try:
             model = adapter.load_model(str(Path(model_path.strip()).expanduser()))
         except (NotImplementedError, OSError, ValueError) as e:
-            return no_update, no_update, no_update, no_update, no_update, f"Could not load the model: {e}"
-        X, y, cat_ids = get_dataset_X_y(input_dataset)
-
-        viz_tree = VizTree.from_model(adapter, X, y, model)
+            message = status.error(f"Could not load the model with the {adapter_name} adapter: {e}")
+            return no_update, no_update, no_update, no_update, no_update, message
+        try:
+            X, y, cat_ids = get_dataset_X_y(input_dataset)
+            viz_tree = VizTree.from_model(adapter, X, y, model)
+        except Exception as e:
+            message = status.error(f"Could not build the tree from {Path(model_path).name} on "
+                                   f"{_dataset_label(input_dataset)}, does the dataset match the model? ({e})")
+            return no_update, no_update, no_update, no_update, no_update, message
 
         viz_tree_dict = viz_tree.to_dict()
         tree_params = _make_tree_params(viz_tree, input_dataset, adapter_name)
 
-        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), f"Loaded {model_path} with the {adapter_name} adapter."
+        message = status.success(f"Loaded {Path(model_path).name} with the {adapter_name} adapter on {_dataset_label(input_dataset)}.")
+        return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), message
 
     # --- NEW TREE TRIGGER ---
     @app.callback(
         Output(ids.SWITCH_MINIMAL, "value", allow_duplicate=True),
         Output(ids.ELEMENTS_TRIGGER, "data", allow_duplicate=True),
+        Output(ids.STORE_HIGHLIGHT_X, "data", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.NEW_TREE_TRIGGER, "data"),
         State(ids.SWITCH_MINIMAL, "value"),
         State(ids.STORE_TREE_PARAMS, "data"),
+        State(ids.STORE_STATUS, "data"),
         prevent_initial_call=True,
     )
-    def new_tree_trigger(_, minimal, tree_params):
-        if minimal == 0 and 8 < tree_params["n_leafs"] < 18:
-            return 1, no_update
-        elif tree_params["n_leafs"] >= 18:
-            return 2, no_update
+    def new_tree_trigger(_, minimal, tree_params, message):
+        n_leafs = tree_params["n_leafs"]
+        if n_leafs >= 18:
+            new_minimal = 2
+        elif n_leafs > 8:
+            new_minimal = 1
         else:
-            return no_update, time.time()
+            new_minimal = 0
+
+        if new_minimal == minimal:
+            return no_update, time.time(), None, no_update
+        else:
+            size_name = {0: "Normal", 1: "Minimal", 2: "Tiny"}[new_minimal]
+            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_leafs} leafs.")
+            return new_minimal, no_update, None, note
 
     # --- SAVE TREE ---
     @app.callback(
-        Output(ids.DEBUG_INFO, "children", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_SAVE_TREE, "n_clicks"),
         State(ids.STORE_VIZ_TREE, "data"),
@@ -358,17 +411,23 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def save_tree(n_clicks, viz_tree_dict, tree_params):
+        if n_clicks is None:
+            raise PreventUpdate
         output_path = str(DIR_SAVED_VIZ_TREES / f"{_tree_file_name(viz_tree_dict, tree_params)}.pkl")
-        output_dict = {"tree_params": tree_params, 
+        output_dict = {"tree_params": tree_params,
                        "viz_tree_dict": viz_tree_dict}
-        with open(output_path, "wb") as handle:
-            # noinspection PyTypeChecker
-            pickle.dump(output_dict, handle)
-        return f"Tree saved to {output_path}"
+        try:
+            with open(output_path, "wb") as handle:
+                # noinspection PyTypeChecker
+                pickle.dump(output_dict, handle)
+        except OSError as e:
+            return status.error(f"Could not save the tree: {e}")
+        return status.success(f"Tree saved to {output_path}")
 
     # --- DOWNLOAD SVG ---
     @app.callback(
         Output(ids.CYTOSCAPE_GRAPH, "generateImage"),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_SAVE_TREE_SVG, "n_clicks"),
         State(ids.STORE_VIZ_TREE, "data"),
@@ -376,5 +435,8 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def download_tree_svg(n_clicks, viz_tree_dict, tree_params):
+        if n_clicks is None:
+            raise PreventUpdate
         file_name = _tree_file_name(viz_tree_dict, tree_params)
-        return {"type": "svg", "action": "download", "filename": file_name}
+        message = status.info(f"Downloading the shown tree as {file_name}.svg.")
+        return {"type": "svg", "action": "download", "filename": file_name}, message

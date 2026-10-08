@@ -1,9 +1,9 @@
 import time
 import numpy as np
-from dash import Input, Output, State, no_update, ctx
+from dash import Input, Output, State, html, no_update, ctx
 from dash.exceptions import PreventUpdate
 
-from imote import ids
+from imote import ids, status
 from imote.config import DIR_LIVE_OUTPUT
 from imote.viz_tree.viz_tree import VizTree
 from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
@@ -96,6 +96,7 @@ def register_callbacks(app):
 
     @app.callback(
         Output(ids.CYTOSCAPE_GRAPH, "elements", allow_duplicate=True),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.ELEMENTS_TRIGGER, "data"),
         Input(ids.MODAL_BTN_CONFIRM, "n_clicks"),
@@ -160,26 +161,29 @@ def register_callbacks(app):
                            tree_params["collapsed_nodes_count"] != 0 or
                            tree_params["pruned"])
 
-        elements = viz_tree_to_cytoscape_elements(
-            viz_tree,
-            str(DIR_LIVE_OUTPUT),
-            combine_lin=combine_lin,
-            use_color_features = use_color_features,
-            show_rss=show_rss,
-            show_node_plots=show_node_plots,
-            fig_size=(figw, figh),
-            predsplot_n_max=nmax,
-            predsplot_use_intercept=use_intercept,
-            predsplot_display_type=display_type,
-            predsplot_truncate_total_pred=truncate_total_pred,
-            predsplot_staircase=staircase,
-            predsplot_type2=type2,
-            highlight_x=highlight_x_arr,
-            only_show_highlight=only_show_highlight,
-            use_edge_width = use_edge_width,
-            use_node_size = use_node_size,
-            show_all_labels = show_all_labels,
-        )
+        try:
+            elements = viz_tree_to_cytoscape_elements(
+                viz_tree,
+                str(DIR_LIVE_OUTPUT),
+                combine_lin=combine_lin,
+                use_color_features = use_color_features,
+                show_rss=show_rss,
+                show_node_plots=show_node_plots,
+                fig_size=(figw, figh),
+                predsplot_n_max=nmax,
+                predsplot_use_intercept=use_intercept,
+                predsplot_display_type=display_type,
+                predsplot_truncate_total_pred=truncate_total_pred,
+                predsplot_staircase=staircase,
+                predsplot_type2=type2,
+                highlight_x=highlight_x_arr,
+                only_show_highlight=only_show_highlight,
+                use_edge_width = use_edge_width,
+                use_node_size = use_node_size,
+                show_all_labels = show_all_labels,
+            )
+        except Exception as e:
+            return no_update, status.error(f"Could not draw the tree: {e}")
 
         if use_minimal > 0:
             if use_minimal == 1:
@@ -192,4 +196,4 @@ def register_callbacks(app):
                     classes.append(class_name)
                     el["classes"] = " ".join(classes)
 
-        return elements
+        return elements, no_update

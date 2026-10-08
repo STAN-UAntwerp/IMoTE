@@ -38,6 +38,7 @@ def make_highlight_card() -> dbc.Card:
                             value=[],
                             inline=True,
                         ),
+                        html.Div(id=ids.HIGHLIGHT_RESULT),
                     ]
                 ),
                 id=ids.HIGHLIGHT_COLLAPSE,

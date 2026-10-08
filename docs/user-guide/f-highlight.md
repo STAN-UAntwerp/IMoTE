@@ -16,5 +16,16 @@ The **Highlight** card lets you trace the path of a specific data point through 
 3. Optionally enable **Only show highlighted path** to hide all other branches. This can make the highlighted path much easier to follow, especially in large trees.
 4. Click **Clear highlight** to remove the highlight and return to the normal view.
 
+The highlight is cleared when another tree is fitted, loaded or reloaded.
+
+## Result
+
+Below the input, the card shows where the highlighted point ends up:
+
+* **Ends in leaf** – The id of the leaf node the point ends in.
+* **Prediction** – The prediction of the tree for the point, made by the linear model of that leaf.
+* **Actual value** – When the point is a row of the training data (e.g. after **Random point**), its true target
+  value. For other points this is "—".
+
 !!! warning "Highlighting in subtrees"
     When viewing a subtree, the application always displays a highlighted path, even if the selected data point would not pass through that subtree in the original tree. This is a known limitation of the current implementation and should be taken into account when highlighting points in subtrees.

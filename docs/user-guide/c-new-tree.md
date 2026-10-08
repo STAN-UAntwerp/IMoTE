@@ -32,8 +32,8 @@ The following actions are also available:
 * **Reload tree** – Restores the original fitted tree. This is useful after exploring subtrees or making temporary
   modifications to the visualization. The tree is restored to the state it had immediately after being fitted or loaded.
 * **Load tree** – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text
-  field and click **Load tree**. If no valid path is provided, the application automatically loads the most recently
-  saved tree from `~/.imote/saved_trees`.
+  field and click **Load tree**. If the field is left empty, the application loads the most recently saved tree from
+  `~/.imote/saved_trees`.
 
 ## Uploading a CSV dataset
 

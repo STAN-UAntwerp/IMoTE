@@ -159,3 +159,17 @@ def test_round_trip_with_collapsed_node(pilot_tree):
     assert_same_tree(restored, pilot_tree)
     restored.expand_all_nodes()
     assert types(restored) == original_types
+
+
+# --- Decision path of a single point ---
+def path_ids(tree, x):
+    return [n.id for n in tree.get_decision_path(np.asarray(x, dtype=float))]
+
+
+def test_decision_path_ends_in_leaf(pilot_tree):
+    assert path_ids(pilot_tree, X[0]) == [0, 1, 2, 4]
+    assert path_ids(pilot_tree, X[1]) == [0, 1, 2, 5]
+    assert path_ids(pilot_tree, X[4]) == [0, 1, 3]
+    pilot_tree.collapse(pilot_tree.nodes[1])
+    assert path_ids(pilot_tree, X[0]) == [0, 1, 2, 4]
+    assert path_ids(pilot_tree, X[4]) == [0, 1, 3]

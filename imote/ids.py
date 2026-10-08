@@ -11,6 +11,13 @@ STORE_TREE_PARAMS = "store-tree-params"
 STORE_TREE_PARAMS_BASE = "store-tree-params-base"
 STORE_MODAL_DONT_ASK = "store-modal-dont-ask"
 STORE_LAST_PLOT_PATH = "store-last-plot-path"
+STORE_STATUS = "store-status"
+STORE_STATUS_HISTORY = "store-status-history"
+
+# --- Status bar (above the graph) -------------------------------------------
+STATUS_MESSAGE = "status-message"
+STATUS_HISTORY_BUTTON = "status-history-button"
+STATUS_HISTORY_LIST = "status-history-list"
 
 # --- A Tree Information card ----------------------------------------------
 TREE_INFO_TEXT = "tree-info"
@@ -114,9 +121,7 @@ BTN_CLEAR_HIGHLIGHT = "btn-clear-highlight"
 INPUT_HIGHLIGHT = "input-highlight"
 BTN_RANDOM_POINT = "btn-random-point"
 HIGHLIGHT_OPTIONS = "highlight-options"
-
-# --- Extra -------------------------------------------------------------------
-DEBUG_INFO = "debug-info"
+HIGHLIGHT_RESULT = "highlight-result"
 
 # --- Explain page ------------------------------------------------------------
 EXPLAIN_COMPUTE_BUTTON = "explain-compute-button"

@@ -145,6 +145,36 @@ class VizTree:
         raise ValueError(f"Can't predict node of type {type(node)}")
 
 
+    def get_decision_path(self, x: np.ndarray) -> List[BaseNode]:
+        """Follows a single data point from the root node down to the leaf it ends up in.
+
+        Collapsed parts of the tree are followed through the nodes hidden in them,
+        so the path always ends in a leaf.
+
+        Args:
+            x: Feature values of one data point.
+
+        Returns:
+            List of nodes on the path, from the root node to the leaf inclusive.
+
+        Raises:
+            ValueError: If the path reaches a node type that isn't recognized.
+        """
+        node = self.root_node
+        path = [node]
+        while not isinstance(node, LeafNode):
+            children = node.get_children()
+            if isinstance(children[0], CollapsedNode):
+                node = children[0].parent  # copy of node that still has its children
+            if isinstance(node, LinearNode):
+                node = node.child
+            elif isinstance(node, SplitNode):
+                node = node.left_child if node.goes_left(x[node.pivot_idx]) else node.right_child
+            else:
+                raise ValueError(f"Can't follow a data point through node of type {type(node)}")
+            path.append(node)
+        return path
+
     def _calculate_y_hat(self) -> np.ndarray:
         """Computes predictions of the tree on X_train.
 

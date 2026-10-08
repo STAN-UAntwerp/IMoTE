@@ -27,8 +27,8 @@ def make_cytoscape_graph() -> cyto.Cytoscape:
             "fit": True,
         },
         style={
-            "width": "99%",
-            "height": "99%",
+            "width": "100%",
+            "height": "100%",
             "border": "1px solid #ddd",
             "borderRadius": "6px",
         },

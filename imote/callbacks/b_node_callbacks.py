@@ -1,12 +1,17 @@
-from imote import ids
-from dash import Input, Output, State, html, dcc
+import logging
+import warnings
+from pathlib import Path
+
+from imote import ids, status
+from dash import Input, Output, State, html, dcc, no_update
+from dash.exceptions import PreventUpdate
 import numpy as np
 import matplotlib.pyplot as plt
 from urllib.parse import quote
 import dash_bootstrap_components as dbc
 
 from imote.callbacks.d_edit_tree_callbacks import find_node_by_cytoscape_id
-from imote.config import DIR_LIVE_OUTPUT, NODE_TYPE_COLORS
+from imote.config import DIR_LIVE_OUTPUT, DIR_PACKAGE, NODE_TYPE_COLORS
 from imote.nodes.internal_node import InternalNode
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.node_model import LinearNodeModel
@@ -15,6 +20,13 @@ from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
 from imote.viz_tree.viz_tree import VizTree
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
+
+logger = logging.getLogger(__name__)
+
+NO_NODE_SELECTED_LABEL = "Click a node in the graph to see its details."
+
+def _plot_note(text: str, level: str = "muted", icon: str = "bi-info-circle"):
+    return html.Small([html.I(className=f"bi {icon} me-1"), text], className=f"text-{level} d-block")
 
 def register_callbacks(app):
     @app.callback(
@@ -36,10 +48,12 @@ def register_callbacks(app):
         badge_color = NODE_TYPE_COLORS.get(node_type, "#6c757d")
         badge_style = {"backgroundColor": badge_color, "color": "#ffffff"}
 
-        label = node.get("label", "No node selected.")
+        label = node.get("label", NO_NODE_SELECTED_LABEL)
 
-        if not metric_names or not node:
-            metrics_components = "No node or metrics selected."
+        if not node:
+            metrics_components = "Select a node to see its metrics."
+        elif not metric_names:
+            metrics_components = "Choose metrics in the dropdown above."
         else:
             metric_cols = []
             viz_tree = VizTree.from_dict(viz_tree_dict)
@@ -68,15 +82,18 @@ def register_callbacks(app):
 
     @app.callback(
         Output(ids.DOWNLOAD_PLOT, "data"),
+        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_DOWNLOAD_PLOT, "n_clicks"),
         State(ids.STORE_LAST_PLOT_PATH, "data"),
         prevent_initial_call=True,
     )
-    def download_tree_svg(n_clicks, plot_path):
+    def download_node_plot(n_clicks, plot_path):
+        if n_clicks is None:
+            raise PreventUpdate
         if not plot_path:
-            return None
-        return dcc.send_file(plot_path)
+            return no_update, status.warning("There is no node plot to download, select a node that has a plot first.")
+        return dcc.send_file(plot_path), status.info(f"Downloading the node plot as {Path(plot_path).name}.")
 
     @app.callback(
         Output(ids.NODE_INFO_PLOT_CONTAINER, "children"),
@@ -107,7 +124,7 @@ def register_callbacks(app):
                          predsplot_type,
                          ):
         if not switch_on or not selected_node:
-            return "Plot will appear here, no node selected.", None
+            return _plot_note("Select a node in the graph to see its plot."), None
 
         use_intercept = "intercept" in predsplot_options
         truncate_total_pred = "truncate" in predsplot_options
@@ -121,13 +138,16 @@ def register_callbacks(app):
         cmap = plt.colormaps['tab20'].resampled(n_features)
         feature_colors = [cmap(i) for i in range(n_features)]
 
-        if isinstance(node, LeafNode):
-            if isinstance(node.node_model, LinearNodeModel):
+        try:
+            if isinstance(node, LeafNode):
+                if not isinstance(node.node_model, LinearNodeModel):
+                    message = "No plot available for this type of leaf node."
+                    return _plot_note(message), None
                 if type2:
                     file_dir = DIR_LIVE_OUTPUT / "predsplots" / f"predsplot2_node{node.id}_{viz_tree.tree_id}.svg"
                     predsplot2(viz_tree=viz_tree,
                                leaf_node=node,
-                               y_hat = viz_tree.y_hat,
+                               y_hat=viz_tree.y_hat,
                                n_max=nmax,
                                fig_size=(figw, figh),
                                truncate_total_pred=truncate_total_pred,
@@ -140,44 +160,47 @@ def register_callbacks(app):
                                all_feature_colors=feature_colors,
                                )
                 else:
-                    if np.any(np.array(node.node_model.coefficients) != 0):
-                        file_dir = DIR_LIVE_OUTPUT / "predsplots" / f"predsplot_node{node.id}_{viz_tree.tree_id}.svg"
-                        node_X = viz_tree.X_train[node.indices, :]
-                        if use_intercept:
-                            intercept = node.node_model.intercept
-                        else:
-                            intercept = None
-                        predsplot(node_X,
-                                  np.array(node.node_model.coefficients),
-                                  y_hat=node.node_model.predict(node_X),
-                                  n_max=nmax,
-                                  intercept=intercept,
-                                  fig_size=(figw, figh),
-                                  feature_names=None,
-                                  all_feature_colors=feature_colors,
-                                  display_type=display_type,
-                                  truncate_total_pred=truncate_total_pred,
-                                  variable_tick_width=True,
-                                  file_directory=str(file_dir),
-                                  highlight_x=highlight_x_arr,
-                                  staircase=staircase)
+                    if not np.any(np.array(node.node_model.coefficients) != 0):
+                        message =  ("This leaf predicts a constant, so there is no prediction plot. "
+                                "Turn on Global predsplot in the plot settings to see how the tree gets to this value.")
+                        return _plot_note(message), None
+                    file_dir = DIR_LIVE_OUTPUT / "predsplots" / f"predsplot_node{node.id}_{viz_tree.tree_id}.svg"
+                    node_X = viz_tree.X_train[node.indices, :]
+                    if use_intercept:
+                        intercept = node.node_model.intercept
                     else:
-                        return "Prediction plots (type 1) can't be made for nodes with no linear model.", None
+                        intercept = None
+                    predsplot(node_X,
+                              np.array(node.node_model.coefficients),
+                              y_hat=node.node_model.predict(node_X),
+                              n_max=nmax,
+                              intercept=intercept,
+                              fig_size=(figw, figh),
+                              feature_names=None,
+                              all_feature_colors=feature_colors,
+                              display_type=display_type,
+                              truncate_total_pred=truncate_total_pred,
+                              variable_tick_width=True,
+                              file_directory=str(file_dir),
+                              highlight_x=highlight_x_arr,
+                              staircase=staircase)
+            elif isinstance(node, InternalNode):
+                file_dir = DIR_LIVE_OUTPUT / "regplots" / f"regplot_node{node.id}_{viz_tree.tree_id}.svg"
+                make_regression_plot(
+                    node,
+                    viz_tree.X_train,
+                    str(file_dir),
+                    (figw, figh),
+                    feature_colors,
+                    None,
+                    highlight_x_arr
+                )
             else:
-                return "No plot available for this type of leaf node.", None
-        elif isinstance(node, InternalNode):
-            file_dir = DIR_LIVE_OUTPUT / "regplots" / f"regplot_node{node.id}_{viz_tree.tree_id}.svg"
-            make_regression_plot(
-                node,
-                viz_tree.X_train,
-                str(file_dir),
-                (figw, figh),
-                feature_colors,
-                None,
-                highlight_x_arr
-            )
-        else:
-            return f"No plot available for class {node.__class__.__name__}.", None
+                message =  f"No plot available for a {node.__class__.__name__}."
+                return _plot_note(message), None
+        except Exception as e:
+            logger.exception("Could not make the plot of node %s", node.id)
+            return _plot_note(f"Could not make the plot: {e}", "danger", "bi-x-circle-fill"), None
 
         svg_data = file_dir.read_text(encoding="utf-8")
         encoded_svg = quote(svg_data)

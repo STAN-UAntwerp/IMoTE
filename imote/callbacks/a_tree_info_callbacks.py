@@ -2,6 +2,9 @@ import dash_bootstrap_components as dbc
 from dash import html, Output, Input
 from imote import ids
 
+def _param(value) -> str:
+    return "—" if value in (-1, None) else str(value)
+
 def format_tree_info(
         dataset_name: str,
         method_name: str,
@@ -29,9 +32,7 @@ def format_tree_info(
         badges.append(dbc.Badge(f"Subtree at {subtree_node_id}", color="info", className="me-2"))
     else:
         badges.append(dbc.Badge(f"Subtree (Pruned) at {subtree_node_id}", color="info", className="me-2"))
-    if collapsed_nodes_count == 0:
-        badges.append(dbc.Badge("No Collapsed Nodes", color="warning", className="me-2"))
-    else:
+    if collapsed_nodes_count > 0:
         badges.append(dbc.Badge(f"{collapsed_nodes_count} Collapsed Nodes", color="warning", className="me-2"))
     if highlight_x is not None:
         badges.append(dbc.Badge("Highlighted point", color="danger", className="me-2"))
@@ -58,15 +59,15 @@ def format_tree_info(
                 [
                     html.Strong("Parameters"),
                     html.Br(),
-                    f"Max depth: {max_depth}",
+                    f"Max depth: {_param(max_depth)}",
                     html.Br(),
-                    f"Max model depth: {max_model_depth}",
+                    f"Max model depth: {_param(max_model_depth)}",
                     html.Br(),
-                    f"Min sample split: {min_sample_split}",
+                    f"Min sample split: {_param(min_sample_split)}",
                     html.Br(),
-                    f"Min sample leaf: {min_sample_leaf}",
+                    f"Min sample leaf: {_param(min_sample_leaf)}",
                     html.Br(),
-                    f"Training time: {training_time}",
+                    f"Training time: {_param(training_time)}",
                 ],
                 target="method-tooltip",
                 placement="bottom",

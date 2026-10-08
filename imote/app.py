@@ -6,9 +6,10 @@ matplotlib.use('agg')
 import dash
 import dash_bootstrap_components as dbc
 import dash_cytoscape as cyto
-from dash import Dash, html
+from dash import Dash, html, set_props
 from flask import send_from_directory
 
+from imote import ids, status
 from imote.callbacks import register_all_callbacks
 from imote.components.stores import make_global_stores
 from imote.config import DIR_LIVE_OUTPUT, DIR_SAVED_VIZ_TREES
@@ -21,11 +22,18 @@ for plot_dir in (DIR_LIVE_OUTPUT / "regplots", DIR_LIVE_OUTPUT / "predsplots"):
         old_plot.unlink(missing_ok=True)
 DIR_SAVED_VIZ_TREES.mkdir(parents=True, exist_ok=True)
 
+def _report_callback_error(err: Exception):
+    set_props(ids.STORE_STATUS, {"data": status.error(
+        f"Something went wrong: {err.__class__.__name__}: {err}. See the terminal for details."
+    )})
+
+
 app: Dash = dash.Dash(
     __name__,
     use_pages=True,
     external_stylesheets=[dbc.themes.FLATLY, dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True,
+    on_error=_report_callback_error,
 )
 app.title = "IMoTE: Interactive MOdel Tree Explorer"
 

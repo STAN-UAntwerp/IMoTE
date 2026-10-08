@@ -26,7 +26,7 @@ def make_node_info_card() -> dbc.Card:
                 dbc.Row([
                     dbc.Col([
                         html.Small("Label", className="text-muted d-block fw-bold"),
-                        html.Span(id = ids.NODE_INFO_LABEL, children="No node selected.", className="fs-6")
+                        html.Span(id = ids.NODE_INFO_LABEL, children="Click a node in the graph to see its details.", className="fs-6")
                     ], width=12),
                 ], className="mb-3"),
 
@@ -49,7 +49,7 @@ def make_node_info_card() -> dbc.Card:
                         ),
                         html.Div(
                             id=ids.NODE_INFO_METRICS,
-                            children="No node or metrics selected."
+                            children="Select a node to see its metrics."
                         )
                     ], width=12),
                 ], className="mb-3"),
@@ -65,7 +65,7 @@ def make_node_info_card() -> dbc.Card:
                         dbc.Spinner(
                             html.Div(
                                 id=ids.NODE_INFO_PLOT_CONTAINER,
-                                children="Plot will appear here, no node selected.",
+                                children="Select a node in the graph to see its plot.",
                                 style={"marginBottom": "8px"},
                             ),
                             delay_show=300,
