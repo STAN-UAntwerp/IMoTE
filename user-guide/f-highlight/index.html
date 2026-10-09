@@ -749,6 +749,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1411,6 +1422,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1447,6 +1469,15 @@
 <li>Optionally enable <strong>Only show highlighted path</strong> to hide all other branches. This can make the highlighted path much easier to follow, especially in large trees.</li>
 <li>Click <strong>Clear highlight</strong> to remove the highlight and return to the normal view.</li>
 </ol>
+<p>The highlight is cleared when another tree is fitted, loaded or reloaded.</p>
+<h2 id="result">Result<a class="headerlink" href="#result" title="Permanent link">&para;</a></h2>
+<p>Below the input, the card shows where the highlighted point ends up:</p>
+<ul>
+<li><strong>Ends in leaf</strong> – The id of the leaf node the point ends in.</li>
+<li><strong>Prediction</strong> – The prediction of the tree for the point, made by the linear model of that leaf.</li>
+<li><strong>Actual value</strong> – When the point is a row of the training data (e.g. after <strong>Random point</strong>), its true target
+  value. For other points this is "—".</li>
+</ul>
 <div class="admonition warning">
 <p class="admonition-title">Highlighting in subtrees</p>
 <p>When viewing a subtree, the application always displays a highlighted path, even if the selected data point would not pass through that subtree in the original tree. This is a known limitation of the current implementation and should be taken into account when highlighting points in subtrees.</p>
