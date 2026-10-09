@@ -74,12 +74,6 @@ The full documentation is at **<https://stan-uantwerp.github.io/IMoTE/>**, it in
 - an [API reference](https://stan-uantwerp.github.io/IMoTE/reference/reference_overview/) of the tree and node classes used for visualisation.
 
 
-## Questions and bugs
-
-Questions and ideas are welcome in [Discussions](https://github.com/STAN-UAntwerp/IMoTE/discussions), bugs can be
-reported as an [issue](https://github.com/STAN-UAntwerp/IMoTE/issues).
-
-
 <!--
 ## Citing IMoTE
 
@@ -112,15 +106,14 @@ python -m imote.app       # start the app in Dash debug mode, it reloads on code
 
 To work on the documentation: `pip install -e ".[docs]"`, then `mkdocs serve`.
 
-## References
+Questions and ideas are welcome in [Discussions](https://github.com/STAN-UAntwerp/IMoTE/discussions), bugs can be
+reported as an [issue](https://github.com/STAN-UAntwerp/IMoTE/issues).
 
-<sub>
+### References
 
-[1] Raymaekers, J., Rousseeuw, P. J., Verdonck, T., & Yao, R. (2024). Fast linear model trees by PILOT. *Machine
-Learning*, 113(9), 6561-6610. <https://doi.org/10.1007/s10994-024-06590-3> (implementation:
-[fast-model-trees](https://github.com/STAN-UAntwerp/fast-model-trees))
+<sub>[1] Raymaekers, J., Rousseeuw, P. J., Verdonck, T., & Yao, R. (2024). Fast linear model trees by PILOT.
+*Machine Learning*, 113(9), 6561-6610. <https://doi.org/10.1007/s10994-024-06590-3> (implementation:
+[fast-model-trees](https://github.com/STAN-UAntwerp/fast-model-trees))</sub>
 
-[2] Quinlan, J. R. (1992). Learning with continuous classes. In *5th Australian Joint Conference on Artificial
-Intelligence* (Vol. 92, pp. 343-348). (implementation: [m5py](https://pypi.org/project/m5py/))
-
-</sub>
+<sub>[2] Quinlan, J. R. (1992). Learning with continuous classes. In *5th Australian Joint Conference on Artificial
+Intelligence* (Vol. 92, pp. 343-348). (implementation: [m5py](https://pypi.org/project/m5py/))</sub>
