@@ -16,7 +16,8 @@ from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
 from datetime import datetime
-from imote.config import NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT
+from imote.config import (NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT,
+                          NODE_PLOTS_FIG_SIZE)
 
 # ── Convert a VizTree into Cytoscape elements (nodes + edges) ──────────────────
 def viz_tree_to_cytoscape_elements(
@@ -26,7 +27,7 @@ def viz_tree_to_cytoscape_elements(
         show_rss: bool = False,
         use_color_features: bool = False,
         show_node_plots: bool = False,
-        fig_size = (5, 3),
+        fig_size = NODE_PLOTS_FIG_SIZE,
         predsplot_n_max = 5,
         predsplot_use_intercept = False,
         predsplot_display_type = "histogram",
@@ -193,6 +194,7 @@ def viz_tree_to_cytoscape_elements(
                            staircase=predsplot_staircase,
                            feature_names=None,
                            all_feature_colors=feature_colors,
+                           short_labels=True,
                            )
                 data["dir_predsplot"] = f"/internal_predsplots/predsplot2_node{node.id}_{elements_id}.svg"
                 classes.append("predsplot")
@@ -289,5 +291,9 @@ def viz_tree_to_cytoscape_elements(
             classes.append("data_width")
 
         elements.append({"data": edge_data, "classes": " ".join(classes)})
+
+    if show_node_plots:
+        for element in elements:
+            element["classes"] = f"{element['classes']} plots_on".strip()
 
     return elements

@@ -211,13 +211,13 @@ def screenshot_highlight(browser: Browser, url: str):
 
 
 SCREENSHOTS = [
-    # screenshot_overview,
-    # screenshot_tree_info,
+    screenshot_overview,
+    screenshot_tree_info,
     screenshot_node_info,
-    # screenshot_new_tree,
-    # screenshot_edit_tree,
-    # screenshot_layout,
-    # screenshot_highlight,
+    screenshot_new_tree,
+    screenshot_edit_tree,
+    screenshot_layout,
+    screenshot_highlight,
 ]
 
 

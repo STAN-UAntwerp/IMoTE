@@ -2,6 +2,8 @@ import time
 from dash import Input, Output, State
 
 from imote import ids
+from imote.config import NODE_PLOTS_EXTRA_SEP
+
 _DISPLAY_DIRECTION_TO_DAGRE = {"Top Bottom": "TB", "Left Right": "LR"}
 _NODE_RANKER_TO_DAGRE = {"Compact": "network-simplex", "Align leaves to bottom": "longest-path"}
 
@@ -23,9 +25,13 @@ def register_callbacks(app):
         Input(ids.NODE_RANKER, "value"),
         Input(ids.RANK_SEP, "value"),
         Input(ids.NODE_SEP, "value"),
+        Input(ids.SWITCH_NODE_PLOTS, "value"),
         prevent_initial_call=True,
     )
-    def update_layout(n_clicks, rank_dir, node_rank, rank_sep, node_sep):
+    def update_layout(n_clicks, rank_dir, node_rank, rank_sep, node_sep, show_node_plots):
+        if show_node_plots:
+            rank_sep += NODE_PLOTS_EXTRA_SEP
+            node_sep += NODE_PLOTS_EXTRA_SEP
         return {
             "name": "dagre",
             "rankDir": _DISPLAY_DIRECTION_TO_DAGRE[rank_dir],

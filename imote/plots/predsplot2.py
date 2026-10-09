@@ -24,7 +24,7 @@ DOT_SIZE = 4
 
 def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(10, 5),
               feature_names=None, all_feature_colors=None, display_type="histogram", truncate_total_pred=False,
-              variable_tick_width=True, file_directory=None, highlight_x=None, staircase=False):
+              variable_tick_width=True, file_directory=None, highlight_x=None, staircase=False, short_labels=False):
     """
     Create a prediction plot for a vizualization of tree and a leaf node.
 
@@ -54,9 +54,11 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
         x values of point to highlight
     staircase : bool, default=False
         If True and highlight_x is not None, uses staircase view of highlighted point
+    short_labels : bool, default=False
+        If True, the right axis label is only "Total prediction", without the mean prediction, so it fits small plots
     """
     fig_width, fig_height = fig_size
-    if fig_height < 3:
+    if fig_height < 3 and not short_labels:
         warnings.warn(
             "Plot height is small, the default titles will be cropped. "
             "Consider making the figure larger or higher."
@@ -299,7 +301,10 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
         predictions_min_with_margin + center_predictions,
         predictions_max_with_margin + center_predictions
     ])
-    ax_right.set_ylabel(f"Total prediction (with {center_label} = {np.round(center_predictions, 2)})")
+    if short_labels:
+        ax_right.set_ylabel("Total prediction")
+    else:
+        ax_right.set_ylabel(f"Total prediction (with {center_label} = {np.round(center_predictions, 2)})")
 
     if highlight:
         if highlight_x_sum_contributions < 0:

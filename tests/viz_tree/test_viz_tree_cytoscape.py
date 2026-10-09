@@ -105,3 +105,8 @@ def test_no_predsplot_for_zero_coefficient_leaf(split_tree, live_dir):
     nodes = nodes_of(elements(split_tree, live_dir, show_node_plots=True))
     assert "dir_predsplot" not in nodes["node4"]["data"]
     assert "dir_predsplot" in nodes["node3"]["data"]
+
+
+def test_node_plots_mark_all_elements(pilot_tree, live_dir):
+    assert all("plots_on" in e["classes"] for e in elements(pilot_tree, live_dir, show_node_plots=True))
+    assert not any("plots_on" in e["classes"] for e in elements(pilot_tree, live_dir))

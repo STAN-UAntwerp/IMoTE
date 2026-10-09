@@ -74,7 +74,7 @@ DEFAULT_COLLAPSE_LEVEL = 5
 DEFAULT_DISPLAY_TYPE = "histogram"
 DEFAULT_NMAX = 7
 DEFAULT_FIG_W = 6
-DEFAULT_FIG_H = 4
+DEFAULT_FIG_H = 3.4
 
 MIN_EDGE_WIDTH = 0.8
 MAX_EDGE_WIDTH = 8
@@ -95,6 +95,11 @@ def get_initial_graph_info():
 # ── Stylesheet ────────────────────────────────────────────────────────────
 font_family = "Arial, sans-serif"
 font_size = 12
+
+NODE_PLOTS_FIG_SIZE = (4.4, 2.6)
+NODE_PLOTS_N_MAX = 6
+NODE_PLOTS_EXTRA_SEP = 40
+plots_on_font_size = 28
 selected_color = "#000000"
 CYTOSCAPE_STYLESHEET = [
     # ── Default node ──────────────────────────────────────────────────────
@@ -139,24 +144,46 @@ CYTOSCAPE_STYLESHEET = [
             "shape": "rectangle",
         },
     },
+    # ── Show all node plots ───────────────────────────────────────────────
+    {
+        "selector": "node.plots_on",
+        "style": {
+            "font-size": f"{plots_on_font_size}px",
+            "text-max-width": "300px",
+            "width": "220px",
+            "height": "90px",
+            "border-width": "3px",
+        },
+    },
+    {
+        "selector": "node.LeafNode.plots_on",
+        "style": {
+            "width": "340px",
+            "height": "130px",
+        },
+    },
+    {
+        "selector": "node.regplot, node.predsplot",
+        "style": {
+            "label": "",
+            "shape": "rectangle",
+            "width": f"{NODE_PLOTS_FIG_SIZE[0] * 100}px",
+            "height": f"{NODE_PLOTS_FIG_SIZE[1] * 100}px",
+            "background-fit": "contain",
+            "background-opacity": 0,
+            "border-width": 0,
+        },
+    },
     {
         "selector": "node.regplot",
         "style": {
-            "label": "",
             "background-image": 'data(dir_regplot)',
-            "shape": "rectangle",
-            "width": "500px",
-            "height": "300px",
         },
     },
     {
         "selector": "node.predsplot",
         "style": {
-            "label": "",
             "background-image": 'data(dir_predsplot)',
-            "shape": "rectangle",
-            "width": "500px",
-            "height": "300px",
         },
     },
     {
@@ -218,6 +245,15 @@ CYTOSCAPE_STYLESHEET = [
         },
     },
     {
+        "selector": "edge.plots_on",
+        "style": {
+            "width": 4,
+            "arrow-scale": 2,
+            "font-size": f"{plots_on_font_size}px",
+            "text-background-padding": "8px",
+        },
+    },
+    {
         "selector": "edge.data_width",
         "style": {
             "width": "data(width)"
@@ -247,6 +283,12 @@ CYTOSCAPE_STYLESHEET = [
             "line-color": selected_color,
             "target-arrow-color": selected_color,
             "width": 4,
+        },
+    },
+    {
+        "selector": "edge.highlight.plots_on",
+        "style": {
+            "width": 10,
         },
     },
 ]
