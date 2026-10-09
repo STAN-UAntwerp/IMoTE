@@ -75,4 +75,4 @@ Issues = "https://github.com/STAN-UAntwerp/IMoTE/issues"
 include = ["imote*"]
 
 [tool.setuptools.package-data]
-imote = ["data/initial_tree.pkl"]
+imote = ["assets/initial_tree.pkl", "assets/*.css"]

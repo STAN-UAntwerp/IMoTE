@@ -53,7 +53,7 @@ navbar = dbc.NavbarSimple(
         for page in dash.page_registry.values()
     ],
     brand="IMoTE: Interactive MOdel Tree Explorer",
-    color="dark",
+    color="#1f77b4",
     dark=True,
 )
 

@@ -21,10 +21,13 @@ def make_layout_card() -> dbc.Card:
                         dbc.Button("Refit layout", id=ids.BTN_LAYOUT, size="sm", class_name="mb-3"),
                         html.Div(
                             [
-                                "Display direction:",
-                                dcc.RadioItems(
+                                html.Span("Display direction: "),
+                                dbc.RadioItems(
                                     id=ids.DISPLAY_DIRECTION,
-                                    options=["Top Bottom", "Left Right"],
+                                    options=[
+                                        {"label": "Top Bottom", "value": "Top Bottom"},
+                                        {"label": "Left Right", "value": "Left Right"},
+                                    ],
                                     value="Top Bottom",
                                     inline=True,
                                 ),
@@ -33,10 +36,13 @@ def make_layout_card() -> dbc.Card:
                         ),
                         html.Div(
                             [
-                                "Layout type:",
-                                dcc.RadioItems(
+                                html.Span("Layout type: "),
+                                dbc.RadioItems(
                                     id=ids.NODE_RANKER,
-                                    options=["Compact", "Align leaves to bottom"],
+                                    options=[
+                                        {"label": "Compact", "value": "Compact"},
+                                        {"label": "Align leaves to bottom", "value": "Align leaves to bottom"},
+                                    ],
                                     value="Compact",
                                     inline=True,
                                 ),

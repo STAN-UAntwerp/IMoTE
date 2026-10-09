@@ -20,7 +20,9 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
     min_x = X[:, feature_idx].min()
     max_x = X[:, feature_idx].max()
     scaled_weights = (w.flatten() - np.mean(w)) * 100 + 10
-    plt.scatter(X[:, feature_idx], node.y_res, s=scaled_weights, color='slategrey')
+    n = len(node.y_res)
+    alpha = float(np.clip(20 / np.sqrt(n), 0.1, 1.0))
+    plt.scatter(X[:, feature_idx], node.y_res, s=scaled_weights, color='slategrey', alpha=alpha, linewidths=0, rasterized=True)
     if highlight_x is not None:
         matches = np.all(X == highlight_x, axis=1)
         idx_point = np.argmax(matches) if np.any(matches) else None

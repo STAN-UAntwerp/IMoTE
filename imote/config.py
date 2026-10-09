@@ -6,7 +6,7 @@ import pickle
 # --- Filesystem ---------------------------------------------------------
 # Read-only files shipped inside the package.
 DIR_PACKAGE = Path(__file__).resolve().parent
-INITIAL_TREE_PATH = DIR_PACKAGE / "data" / "initial_tree.pkl"
+INITIAL_TREE_PATH = DIR_PACKAGE / "assets" / "initial_tree.pkl"
 
 # Files the app writes at runtime go to a folder. Override with environment variable IMOTE_HOME.
 DIR_USER_DATA = Path(os.environ.get("IMOTE_HOME", Path.home() / ".imote")).expanduser()
@@ -60,10 +60,10 @@ NODE_TYPE_COLORS = {
 
 DEFAULT_METHOD_NAME = "Pilot"
 DEFAULT_DATASET_NAME = "547_no2.pmlb"
-DEFAULT_MAX_DEPTH = 12
-DEFAULT_MAX_MODEL_DEPTH = 30
-DEFAULT_MIN_SAMPLE_SPLIT = 10
-DEFAULT_MIN_SAMPLE_LEAF = 5
+DEFAULT_MAX_DEPTH = 8
+DEFAULT_MAX_MODEL_DEPTH = 15
+DEFAULT_MIN_SAMPLE_SPLIT = 100
+DEFAULT_MIN_SAMPLE_LEAF = 25
 
 # --- Layout card defaults ------------------------------------------------
 DEFAULT_RANK_SEP = 10
@@ -72,9 +72,9 @@ DEFAULT_NODE_SEP = 10
 # --- Settings node plot defaults -----------------------------------------
 DEFAULT_COLLAPSE_LEVEL = 5
 DEFAULT_DISPLAY_TYPE = "histogram"
-DEFAULT_NMAX = 5
-DEFAULT_FIG_W = 5
-DEFAULT_FIG_H = 3
+DEFAULT_NMAX = 7
+DEFAULT_FIG_W = 6
+DEFAULT_FIG_H = 4
 
 MIN_EDGE_WIDTH = 0.8
 MAX_EDGE_WIDTH = 8

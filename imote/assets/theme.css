@@ -1,0 +1,27 @@
+/* Adjustments to the Flatly theme. */
+
+:root {
+    --bs-link-color: #1f77b4;
+    --bs-link-color-rgb: 31, 119, 180;
+    --bs-link-hover-color: #2c3e50;
+    --bs-link-hover-color-rgb: 24, 95, 144;
+}
+
+.alert-info {
+    background-color: #1f77b4;
+}
+
+.navbar-dark {
+    --bs-navbar-color: rgba(255, 255, 255, 0.75);
+    --bs-navbar-hover-color: #fff;
+    --bs-navbar-active-color: #fff;
+    --bs-navbar-brand-hover-color: #fff;
+}
+
+/* Dash's own components (sliders, checklists, dropdowns) have a purple accent in Dash 4, use Flatly's primary color
+   #2c3e50 like the dbc components. Dash adds its colors in a ":root" style at runtime, which can come after this file,
+   so "html:root" to win regardless of the order. */
+html:root {
+    --Dash-Fill-Interactive-Strong: #2c3e50;
+    --Dash-Fill-Interactive-Weak: rgba(44, 62, 80, 0.1);
+}

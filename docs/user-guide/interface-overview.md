@@ -8,7 +8,6 @@ This page give a short orientation of the full application.
 
 The app window is split into four main areas:
 
-- **The navigation bar**, allows you to switch between different pages (at the moment only one page, the tree view is supported).
 - **The status bar**, directly above the graph, tells you what happened after each action and can show you the history of all messages.
 - **The interactive tree graph**, showing the current tree as an interactive [Cytoscape](https://js.cytoscape.org/) graph. You can pan, zoom and click on or shift nodes.
 - **The interaction cards**, containing a stack of (collapsible) *interaction* cards, each controlling or adjusting a different aspect the graph on the left of the stack.

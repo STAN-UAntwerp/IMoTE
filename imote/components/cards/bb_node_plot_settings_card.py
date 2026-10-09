@@ -85,7 +85,7 @@ def make_settings_card() -> dbc.Card:
                                             {"label": "Truncate total pred", "value": "truncate"},
                                             {"label": "Staircase (highlight only)", "value": "staircase"},
                                         ],
-                                        value=["truncate"],
+                                        value=[],
                                         inline=True,
                                         switch=True,  # Optional: set to False if you want square checkboxes
                                     ),
