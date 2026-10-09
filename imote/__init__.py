@@ -1,4 +1,4 @@
-"""IMoTE: Interactive MOdel Tree Explorer."""
+"""IMoTE: Interactive Model Tree Explorer."""
 
 from importlib.metadata import PackageNotFoundError, version
 

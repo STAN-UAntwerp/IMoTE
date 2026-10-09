@@ -1,4 +1,4 @@
-# IMoTE: Interactive MOdel Tree Explorer
+# IMoTE: Interactive Model Tree Explorer
 
 [![PyPI](https://img.shields.io/pypi/v/imote)](https://pypi.org/project/imote/)
 [![Python](https://img.shields.io/pypi/pyversions/imote)](https://pypi.org/project/imote/)

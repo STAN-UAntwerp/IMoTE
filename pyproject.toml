@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "IMoTE"
 dynamic = ["version"]
-description = "IMoTE: Interactive MOdel Tree Explorer, an interactive app to visualise and explore linear model trees"
+description = "IMoTE: Interactive Model Tree Explorer, an interactive app to visualise and explore linear model trees"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

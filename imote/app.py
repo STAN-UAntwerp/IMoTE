@@ -35,7 +35,7 @@ app: Dash = dash.Dash(
     suppress_callback_exceptions=True,
     on_error=_report_callback_error,
 )
-app.title = "IMoTE: Interactive MOdel Tree Explorer"
+app.title = "IMoTE: Interactive Model Tree Explorer"
 
 @app.server.route("/internal_regplots/<path:filename>")
 def serve_regplots(filename):
@@ -52,7 +52,7 @@ navbar = dbc.NavbarSimple(
         dbc.NavLink(page["name"], href=page["path"], active="exact")
         for page in dash.page_registry.values()
     ],
-    brand="IMoTE: Interactive MOdel Tree Explorer",
+    brand="IMoTE: Interactive Model Tree Explorer",
     color="#1f77b4",
     dark=True,
 )
