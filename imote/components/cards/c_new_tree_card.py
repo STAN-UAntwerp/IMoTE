@@ -111,46 +111,61 @@ def make_new_tree_card() -> dbc.Card:
                                 ],
                             ),
                             html.Hr(style={"margin": "12px 0"}),
-                            html.Div(
-                                style={"display": "flex", "gap": "10px", "flexWrap": "nowrap", "marginBottom": "10px"},
-                                children=[
-                                    html.Div(
-                                        [
-                                            html.Div("Adapter", style={"marginBottom": "4px"}),
-                                            dcc.Dropdown(
-                                                id=ids.INPUT_ADAPTER,
-                                                options=ADAPTER_OPTIONS,
-                                                value=DEFAULT_ADAPTER_NAME,
-                                                clearable=False,
-                                                style={"width": "220px"},
-                                            ),
-                                        ],
-                                        style={"flex": "1"},
-                                    ),
-                                    html.Div(
-                                        [
-                                            html.Div("Dataset for Adapter", style={"marginBottom": "4px"}),
-                                            html.Div(
-                                                "The Training dataset selected above is also the one used when loading via the "
-                                                "adapter. (It can be a subset from the total dataset used for training.)",
-                                                style={"marginBottom": "8px", "fontSize": "12px", "color": "#666"},
-                                            ),
-                                        ],
-                                        style={"flex": "1"},
-                                    ),
-                                ],
+                            dbc.Button(
+                                "Load a tree with an adapter",
+                                id=ids.ADAPTER_TOGGLE_BUTTON,
+                                color="link",
+                                size="sm",
+                                class_name="p-0 mb-2 text-decoration-none",
                             ),
-                            html.Div("Adapter model", style={"marginBottom": "4px"}),
-                            html.Div(
-                                style={"display": "flex", "gap": "8px"},
-                                children=[
-                                    dbc.Input(
-                                        id=ids.INPUT_LOAD_TREE_ADAPTER,
-                                        type="text",
-                                        placeholder="path to the exported model, e.g. ~/models/tree.json",
-                                    ),
-                                    dbc.Button("Load with Adapter", id=ids.BTN_LOAD_TREE_ADAPTER, size="sm"),
-                                ],
+                            dbc.Collapse(
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            style={"display": "flex", "gap": "10px", "flexWrap": "nowrap", "marginBottom": "10px"},
+                                            children=[
+                                                html.Div(
+                                                    [
+                                                        html.Div("Adapter", style={"marginBottom": "4px"}),
+                                                        dcc.Dropdown(
+                                                            id=ids.INPUT_ADAPTER,
+                                                            options=ADAPTER_OPTIONS,
+                                                            value=DEFAULT_ADAPTER_NAME,
+                                                            clearable=False,
+                                                            style={"width": "220px"},
+                                                        ),
+                                                    ],
+                                                    style={"flex": "1"},
+                                                ),
+                                                html.Div(
+                                                    [
+                                                        html.Div("Dataset for Adapter", style={"marginBottom": "4px"}),
+                                                        html.Div(
+                                                            "The Training dataset selected above is also the one used when loading via the "
+                                                            "adapter. (It can be a subset from the total dataset used for training.)",
+                                                            style={"marginBottom": "8px", "fontSize": "12px", "color": "#666"},
+                                                        ),
+                                                    ],
+                                                    style={"flex": "1"},
+                                                ),
+                                            ],
+                                        ),
+                                        html.Div("Adapter model", style={"marginBottom": "4px"}),
+                                        html.Div(
+                                            style={"display": "flex", "gap": "8px"},
+                                            children=[
+                                                dbc.Input(
+                                                    id=ids.INPUT_LOAD_TREE_ADAPTER,
+                                                    type="text",
+                                                    placeholder="path to the exported model, e.g. ~/models/tree.json",
+                                                ),
+                                                dbc.Button("Load with Adapter", id=ids.BTN_LOAD_TREE_ADAPTER, size="sm"),
+                                            ],
+                                        ),
+                                    ]
+                                ),
+                                id=ids.ADAPTER_COLLAPSE,
+                                is_open=False,
                             ),
                             html.Div(id=ids.TRIGGER_FOR_SPINNER, style={"display": "none"}),
                             dbc.Modal(

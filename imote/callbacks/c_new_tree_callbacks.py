@@ -136,6 +136,15 @@ def register_callbacks(app):
     def toggle_card(_, is_open):
         return not is_open
 
+    @app.callback(
+        Output(ids.ADAPTER_COLLAPSE, "is_open"),
+        Input(ids.ADAPTER_TOGGLE_BUTTON, "n_clicks"),
+        State(ids.ADAPTER_COLLAPSE, "is_open"),
+        prevent_initial_call=True,
+    )
+    def toggle_adapter(_, is_open):
+        return not is_open
+
     # --- OPEN CSV MODAL ---
     @app.callback(
         Output(ids.MODAL_CSV, "is_open"),
