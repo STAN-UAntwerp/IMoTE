@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 from imote.nodes.internal_node import InternalNode, LinearNode
 from imote.nodes.split_node import SplitNode
 
 MAX_DISCRETE_VALUES = 20
 """Features with at most this many unique values in the node get one bar per value."""
 MAX_BINS = 30
-MAX_BINS_HALF = 20
+LEFT_SPAN_COLOR = "k"
+LEFT_SPAN_ALPHA = 0.12
 
 
 def _class_label(c) -> str:
@@ -18,7 +20,7 @@ def _class_label(c) -> str:
 def _bin_edges(x: np.ndarray, node: InternalNode) -> tuple[np.ndarray, bool]:
     """Returns the bin edges and whether the feature is shown as discrete values.
 
-    The bins on each side of the pivot are made separately so the pivot is not inside a bin.
+    For a numeric split the pivot is a bin edge and both sides use the same bin width.
     """
     values = np.unique(x)
     if len(values) <= MAX_DISCRETE_VALUES:
@@ -28,20 +30,26 @@ def _bin_edges(x: np.ndarray, node: InternalNode) -> tuple[np.ndarray, bool]:
 
     if isinstance(node, SplitNode) and not node.categorical and values[0] < node.pivot_value < values[-1]:
         pivot = node.pivot_value
-        edges_left = np.histogram_bin_edges(x[x >= pivot], bins="auto")
-        if len(edges_left) > MAX_BINS_HALF + 1:
-            edges_left = np.linspace(edges_left[0], edges_left[-1], MAX_BINS_HALF + 1)
-
-        edges_right = np.histogram_bin_edges(x[x <= pivot], bins="auto")
-        if len(edges_right) > MAX_BINS_HALF + 1:
-            edges_right = np.linspace(edges_right[0], edges_right[-1], MAX_BINS_HALF + 1)
-
-        return np.r_[edges_left, edges_right[1:]], False
+        auto_edges = np.histogram_bin_edges(x, bins="auto")
+        width = max(auto_edges[1] - auto_edges[0], (values[-1] - values[0]) / MAX_BINS)
+        n_left = int(np.ceil((pivot - values[0]) / width))
+        n_right = int(np.ceil((values[-1] - pivot) / width))
+        return pivot + width * np.arange(-n_left, n_right + 1), False
 
     edges = np.histogram_bin_edges(x, bins="auto")
     if len(edges) > MAX_BINS + 1:
         edges = np.linspace(values[0], values[-1], MAX_BINS + 1)
     return edges, False
+
+
+def _pivot_line_position(x: np.ndarray, pivot: float, discrete: bool) -> float:
+    if not discrete:
+        return pivot
+    values = np.unique(x)
+    left, right = values[values <= pivot], values[values > pivot]
+    if len(left) == 0 or len(right) == 0:
+        return pivot
+    return (left[-1] + right[0]) / 2
 
 
 def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directory_plot_file, fig_size,
@@ -71,17 +79,21 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
         plt.xticks(np.unique(x) if len(np.unique(x)) <= 10 else None)
 
     node_name = node.__class__.__name__
+    left_legend_handle = None
     if isinstance(node, LinearNode):
         plt.title(f"LIN - Feature: {feature_label}")
     elif isinstance(node, SplitNode) and node.categorical:
-        # mark the categories that go to the left child
-        for value in node.pivot_value:
-            plt.axvspan(value - 0.5 * (edges[1] - edges[0]), value + 0.5 * (edges[1] - edges[0]),
-                        color="k", alpha=0.08, linewidth=0)
         left_values = ", ".join(f"{v:g}" for v in node.pivot_value)
+        values = np.unique(x)
+        for i, value in enumerate(values):
+            if value in node.pivot_value:
+                lo, hi = (edges[i], edges[i + 1]) if discrete else (value - 0.5, value + 0.5)
+                plt.axvspan(lo, hi, color=LEFT_SPAN_COLOR, alpha=LEFT_SPAN_ALPHA, linewidth=0)
+        left_legend_handle = Patch(facecolor=LEFT_SPAN_COLOR, alpha=LEFT_SPAN_ALPHA,
+                                   label=f"{{{left_values}}} go left")
         plt.title(f"{node_name} - Feature: {feature_label} - Left: {{{left_values}}}")
     elif isinstance(node, SplitNode):
-        plt.axvline(x=node.pivot_value, color="k", linewidth=1.5)
+        plt.axvline(x=_pivot_line_position(x, node.pivot_value, discrete), color="k", linewidth=1.5)
         plt.title(f"{node_name} - Feature: {feature_label} - Pivot: {node.pivot_value:.3g}")
     else:
         plt.title(f"{node_name} - Feature: {feature_label}")
@@ -91,6 +103,10 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
 
     plt.xlabel(feature_label)
     plt.ylabel("Count")
-    plt.legend(fontsize="small", ncols=1 if len(classes) <= 5 else 2)
+    ax = plt.gca()
+    class_legend = ax.legend(fontsize="small", ncols=1 if len(classes) <= 5 else 2, loc="upper right")
+    if left_legend_handle is not None:
+        ax.add_artist(class_legend)
+        ax.legend(handles=[left_legend_handle], fontsize="small", loc="upper left")
     fig.savefig(directory_plot_file)
     plt.close(fig)
