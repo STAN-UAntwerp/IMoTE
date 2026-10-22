@@ -115,6 +115,21 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
         )
         model.fit(X, y)
         elapsed_time = time.perf_counter() - start_time
+    elif method_name == "BcPilot":
+        from imote.bcpilot.bcPilot import Pilot as BcPilot
+        classes = np.unique(y)
+        if len(classes) != 2:
+            raise ValueError(f"PILOT (classification) needs a binary target, this dataset has {len(classes)} classes.")
+        y = (y == classes[1]).astype(float)
+        start_time = time.perf_counter()
+        model = BcPilot(max_depth=max_depth,
+                        max_model_depth=max_model_depth,
+                        min_samples_split=min_sample_split,
+                        min_samples_leaf=min_sample_leaf,
+                        )
+        bc_cat_ids = None if np.array_equal(cat_ids, np.array([-1])) else list(cat_ids)
+        model.fit(X.astype(float), y, cat_ids=bc_cat_ids)
+        elapsed_time = time.perf_counter() - start_time
     else:
         raise ValueError(f'Method name {method_name} not recognized.')
     viz_tree = VizTree.from_model(adapter, X, y, model)
@@ -334,7 +349,7 @@ def register_callbacks(app):
         tree_params = _make_tree_params(viz_tree, dataset_name, method_name, max_depth, max_model_depth,
                                         min_sample_split, min_sample_leaf, training_time)
 
-        color_switch = no_update if feature_color or method_name == "Pilot" else True
+        color_switch = no_update if feature_color or method_name in ("Pilot", "BcPilot") else True
         message = status.success(f"Fitted {method_name} on {_dataset_label(dataset_name)} in {training_time}.")
         return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), color_switch, "", message
 
