@@ -27,6 +27,9 @@ class BaseAdapter(ABC):
     into the BaseNode linked tree structure that VizTree expects.
     """
 
+    task: str = "regression"
+    """Kind of model the adapter builds trees for, "regression" or "classification"."""
+
     @staticmethod
     @abstractmethod
     def build_root_node(X_train: np.ndarray, y_train: np.ndarray, model) -> BaseNode:

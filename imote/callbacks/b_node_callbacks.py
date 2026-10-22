@@ -18,6 +18,7 @@ from imote.nodes.node_model import LinearNodeModel
 from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
+from imote.plots.classplot import make_classification_plot
 from imote.viz_tree.viz_tree import VizTree
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
 
@@ -186,15 +187,19 @@ def register_callbacks(app):
                               staircase=staircase)
             elif isinstance(node, InternalNode):
                 file_dir = DIR_LIVE_OUTPUT / "regplots" / f"regplot_node{node.id}_{viz_tree.tree_id}.svg"
-                make_regression_plot(
-                    node,
-                    viz_tree.X_train,
-                    str(file_dir),
-                    (figw, figh),
-                    feature_colors,
-                    None,
-                    highlight_x_arr
-                )
+                if viz_tree.task == "classification":
+                    make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, str(file_dir),
+                                             (figw, figh), feature_colors, None, highlight_x_arr)
+                else:
+                    make_regression_plot(
+                        node,
+                        viz_tree.X_train,
+                        str(file_dir),
+                        (figw, figh),
+                        feature_colors,
+                        None,
+                        highlight_x_arr
+                    )
             else:
                 message =  f"No plot available for a {node.__class__.__name__}."
                 return _plot_note(message), None

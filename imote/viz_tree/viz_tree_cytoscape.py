@@ -15,6 +15,7 @@ from matplotlib.colors import to_hex
 from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
+from imote.plots.classplot import make_classification_plot
 from datetime import datetime
 from imote.config import (NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT,
                           NODE_PLOTS_FIG_SIZE)
@@ -167,15 +168,20 @@ def viz_tree_to_cytoscape_elements(
             node_highlight_x = highlight_x
 
         if show_node_plots and isinstance(node, InternalNode):
-            make_regression_plot(
-                node,
-                viz_tree.X_train,
-                f"{dir_live}/regplots/regplot_node{node.id}_{elements_id}.svg",
-                fig_size,
-                feature_colors,
-                None,
-                node_highlight_x
-            )
+            plot_file = f"{dir_live}/regplots/regplot_node{node.id}_{elements_id}.svg"
+            if viz_tree.task == "classification":
+                make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, plot_file, fig_size,
+                                         feature_colors, None, node_highlight_x)
+            else:
+                make_regression_plot(
+                    node,
+                    viz_tree.X_train,
+                    plot_file,
+                    fig_size,
+                    feature_colors,
+                    None,
+                    node_highlight_x
+                )
             data["dir_regplot"] = f"/internal_regplots/regplot_node{node.id}_{elements_id}.svg"
             classes.append("regplot")
 

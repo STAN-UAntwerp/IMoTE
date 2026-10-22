@@ -29,6 +29,8 @@ class BcPilotAdapter(BaseAdapter):
     The y_res of a node is the working response the node is fit on.
     """
 
+    task = "classification"
+
     @staticmethod
     def build_root_node(X_train, y_train, model) -> BaseNode:
         if model.warm_start is not None:

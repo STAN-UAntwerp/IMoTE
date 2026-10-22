@@ -25,6 +25,7 @@ class VizTree:
         y_train: Training target values used to fit the tree.
         y_hat: Predictions of the tree on X_train.
         tree_id: Identifier for this tree, defaults to a unique ID.
+        task: "regression" or "classification"
     """
 
     root_node: BaseNode
@@ -34,13 +35,15 @@ class VizTree:
     y_train: np.ndarray
     y_hat: np.ndarray
     tree_id: str
+    task: str
 
     def __init__(self,
                  root: BaseNode,
                  X_train: np.ndarray,
                  y_train: np.ndarray,
                  y_hat: np.ndarray,
-                 tree_id: str = None
+                 tree_id: str = None,
+                 task: str = "regression",
                  ):
         """
         Args:
@@ -51,7 +54,9 @@ class VizTree:
                 None to compute them via predict().
             tree_id: Identifier for this tree. Defaults to the current
                 timestamp (format "%d-%m-%y_%H-%M-%S") if not given.
+            task: "regression" or "classification".
         """
+        self.task = task
         if tree_id is None:
             self.tree_id = datetime.now().strftime('%d-%m-%y_%H-%M-%S')
         else:
@@ -88,7 +93,7 @@ class VizTree:
         """
         root_node = adapter.build_root_node(X_train, y_train, model)
         y_hat = adapter.predict(X_train, model)
-        return cls(root_node, X_train, y_train, y_hat)
+        return cls(root_node, X_train, y_train, y_hat, task=adapter.task)
 
     def collect_nodes(self) -> List[BaseNode]:
         """Collects all nodes in the tree.
@@ -424,6 +429,7 @@ class VizTree:
         """
         return {
             "tree_id": self.tree_id,
+            "task": self.task,
             "X_train": self.X_train.tolist(),
             "y_train": self.y_train.tolist(),
             "y_hat": self.y_hat.tolist(),
@@ -449,6 +455,7 @@ class VizTree:
 
         obj = cls.__new__(cls)
         obj.tree_id = viz_dict["tree_id"]
+        obj.task = viz_dict.get("task", "regression")
         obj.X_train = np.array(viz_dict["X_train"])
         obj.y_train = np.array(viz_dict["y_train"])
         obj.y_hat = np.array(viz_dict["y_hat"])

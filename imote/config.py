@@ -31,12 +31,14 @@ PMLB_OPTIONS = [
     {"label": "PMLB: 210_cloud", "value": "210_cloud.pmlb"},
     {"label": "PMLB: 1028_SWD", "value": "1028_SWD.pmlb"},
     {"label": "PMLB: 197_cpu_act", "value": "197_cpu_act.pmlb"},
-    # binary classification datasets, for PILOT (classification)
     {"label": "PMLB (class.): titanic", "value": "titanic.pmlb"},
     {"label": "PMLB (class.): banana", "value": "banana.pmlb"},
     {"label": "PMLB (class.): churn", "value": "churn.pmlb"},
     {"label": "PMLB (class.): phoneme", "value": "phoneme.pmlb"},
     {"label": "PMLB (class.): saheart", "value": "saheart.pmlb"},
+    {"label": "PMLB (class.): mushroom", "value": "mushroom.pmlb"},
+    {"label": "PMLB (class.): coil2000", "value": "coil2000.pmlb"},
+    {"label": "PMLB (class.): magic", "value": "magic.pmlb"},
 ]
 
 METHOD_OPTIONS = [
