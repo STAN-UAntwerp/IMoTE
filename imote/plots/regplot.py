@@ -2,9 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from imote.nodes.internal_node import InternalNode, LinearNode
 from imote.nodes.split_node import PconcNode, SplitNode, PconNode, SplitCNode, PlinNode, BlinNode
+from imote.plots.labels import feature_label, plot_math_string
 
 
-def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file, fig_size, feature_colors, feature_names, highlight_x=None):
+def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file, fig_size, feature_colors, feature_names,
+                         highlight_x=None, target_name=None):
     X = viz_tree_X[node.indices,:]
     
     fig = plt.figure(figsize=fig_size, layout="constrained")
@@ -13,10 +15,7 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
     feature_idx = node.pivot_idx
     fig.patch.set_linewidth(2)
     fig.patch.set_edgecolor(feature_colors[feature_idx])
-    if feature_names is None:
-        feature_label = "$X_{" + f"{feature_idx}" + "}$"
-    else:
-        feature_label = feature_names[feature_idx]
+    x_label = feature_label(feature_names, feature_idx, max_length=40)
     min_x = X[:, feature_idx].min()
     max_x = X[:, feature_idx].max()
     scaled_weights = (w.flatten() - np.mean(w)) * 100 + 10
@@ -35,7 +34,7 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
         x = np.array([min_x, max_x])
         y = node.linear_model.predict(x)
         plt.plot(x, y, color=feature_colors[feature_idx], linewidth=3)
-        plt.title(f"LIN - Feature: {feature_label}")
+        plt.title(f"LIN - Feature: {x_label}")
 
     elif isinstance(node, (PconcNode,SplitCNode)):
         left_child_values = node.pivot_value
@@ -55,7 +54,7 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
                 y = node.right_model.predict(np.array([value]))
             plt.plot([value-left_len, value+right_len], [y, y], color=feature_colors[feature_idx], linewidth=3)
         self_name = str(node.__class__.__name__)
-        plt.title(f"{self_name} - Feature: {feature_label}")
+        plt.title(f"{self_name} - Feature: {x_label}")
 
     elif isinstance(node, (PconNode, PlinNode, BlinNode)):
         pivot = node.pivot_value
@@ -65,19 +64,16 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
         y2 = node.right_model.predict(x2)
         plt.plot(x1, y1, x2, y2, color=feature_colors[feature_idx], linewidth=3)
         self_name = str(node.__class__.__name__)
-        plt.title(f"{self_name} - Feature: {feature_label} - Pivot: {pivot:.3g}")
+        plt.title(f"{self_name} - Feature: {x_label} - Pivot: {pivot:.3g}")
 
     elif isinstance(node, SplitNode):
         pivot = node.pivot_value
         plt.axvline(x=pivot, color='k')
         self_name = str(node.__class__.__name__)
-        plt.title(f"{self_name} - Feature: {feature_label} - Pivot: {pivot:.3g}")
+        plt.title(f"{self_name} - Feature: {x_label} - Pivot: {pivot:.3g}")
 
-    plt.xlabel(feature_label)
-    if isinstance(node, (SplitNode, SplitCNode)):
-        y_label = "y"
-    else:
-        y_label = "y" if node.id == 0 else "Residuals"
-    plt.ylabel(y_label)
+    plt.xlabel(x_label)
+    shows_raw_target = node.id == 0 or type(node) in (SplitNode, SplitCNode)
+    plt.ylabel(plot_math_string(target_name or "y") if shows_raw_target else "Residuals")
     fig.savefig(directory_regplot_file)
     plt.close(fig)

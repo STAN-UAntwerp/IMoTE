@@ -39,6 +39,7 @@ INPUT_FIG_W = "input-fig-w"
 INPUT_FIG_H = "input-fig-h"
 PREDSPLOT_OPTIONS = "predsplot-options"
 PREDSPLOT_TYPE = "predsplot-type"
+PREDSPLOT_SETTINGS = "predsplot-settings"
 BTN_REFIT_PLOTS = "btn_refit-plots"
 
 # --- C New Tree card -----------------------------------------------------
@@ -85,7 +86,6 @@ BTN_PRUNE = "btn-prune"
 BTN_EXPAND_ALL = "btn-expand-all"
 BTN_COLLAPSE_LEVEL = "btn-collapse-level"
 INPUT_COLLAPSE_LEVEL = "input-collapse-level"
-COLLAPSE_LEVEL_OPTIONS = "collapse-level-options"
 
 # Display-switches
 SWITCH_COMBINE_LIN = "switch-combine-lin"

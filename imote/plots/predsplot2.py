@@ -8,6 +8,7 @@ from matplotlib.transforms import blended_transform_factory
 from imote.viz_tree.contributions import get_split_and_lin_contributions_test
 from imote.nodes.leaf_node import LeafNode
 from imote.viz_tree.viz_tree import VizTree
+from imote.plots.labels import feature_labels
 
 # Layout constants (in absolute figure units)
 OUTER_MARGIN_HEIGHT = 0.2  # Top and bottom margin for outer plot
@@ -103,13 +104,8 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
 
 
     # Define feature labels
-    if feature_names is None:
-        lin_feature_labels = ["$X_{" + f"{i}" + "}$" for i in range(n_features)]
-        split_feature_labels = ["Split\n$X_{" + f"{i}" + "}$" for i in range(n_features)]
-
-    else:
-        lin_feature_labels = feature_names
-        split_feature_labels = [f"Split {feature_name}" for feature_name in feature_names]
+    lin_feature_labels = feature_labels(feature_names, n_features)
+    split_feature_labels = [f"Split\n{label}" for label in lin_feature_labels]
     all_feature_labels = lin_feature_labels + split_feature_labels
 
     # Remove zero features and possibly combine last features

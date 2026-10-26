@@ -81,6 +81,14 @@ def register_callbacks(app):
         return bool(switch_on)
 
     @app.callback(
+        Output(ids.PREDSPLOT_SETTINGS, "disabled"),
+        Input(ids.CYTOSCAPE_GRAPH, "selectedNodeData"),
+        prevent_initial_call=True,
+    )
+    def toggle_predsplot_settings(selected_node):
+        return bool(selected_node) and selected_node[0]["node_type"] != "LeafNode"
+
+    @app.callback(
         Output(ids.DOWNLOAD_PLOT, "data"),
         Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
@@ -156,7 +164,7 @@ def register_callbacks(app):
                                file_directory=str(file_dir),
                                highlight_x=highlight_x_arr,
                                staircase=staircase,
-                               feature_names=None,
+                               feature_names=viz_tree.feature_names,
                                all_feature_colors=feature_colors,
                                )
                 else:
@@ -176,7 +184,7 @@ def register_callbacks(app):
                               n_max=nmax,
                               intercept=intercept,
                               fig_size=(figw, figh),
-                              feature_names=None,
+                              feature_names=viz_tree.feature_names,
                               all_feature_colors=feature_colors,
                               display_type=display_type,
                               truncate_total_pred=truncate_total_pred,
@@ -192,8 +200,9 @@ def register_callbacks(app):
                     str(file_dir),
                     (figw, figh),
                     feature_colors,
-                    None,
-                    highlight_x_arr
+                    viz_tree.feature_names,
+                    highlight_x_arr,
+                    viz_tree.target_name,
                 )
             else:
                 message =  f"No plot available for a {node.__class__.__name__}."

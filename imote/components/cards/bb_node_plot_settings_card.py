@@ -4,114 +4,90 @@ from dash import html, dcc
 from imote import ids
 from imote.config import DEFAULT_DISPLAY_TYPE, DEFAULT_FIG_H, DEFAULT_FIG_W, DEFAULT_NMAX
 
+LABEL_CLASS = "small fw-bold text-muted mb-1"
+
 def make_settings_card() -> dbc.Card:
     return dbc.Card(
         [
             dbc.CardBody(
                 [
-                    html.H6("Plot Settings", className="mb-0 fw-bold text-primary white-space"),
-                    # Row 1: Main Controls Grid
+                    html.H6("Plot Settings", className="mb-2 fw-bold text-primary white-space"),
                     dbc.Row(
                         [
-                            # Display Type Dropdown
+                            dbc.Label("Figure size (inches)", className=LABEL_CLASS, width="auto"),
                             dbc.Col(
-                                [
-                                    dbc.Label("Display Type", className="small fw-bold text-muted mb-1"),
-                                    dbc.Select(
-                                        id=ids.INPUT_DISPLAY_TYPE,
-                                        options=[
-                                            {"label": "Histogram", "value": "histogram"},
-                                            {"label": "Density", "value": "density"},
-                                        ],
-                                        value=DEFAULT_DISPLAY_TYPE,
-                                    ),
-                                ],
-                                md=4,
-                                sm=12,
-                            ),
-                            # Number of Variables Input
-                            dbc.Col(
-                                [
-                                    dbc.Label("# Variables", className="small fw-bold text-muted mb-1"),
-                                    dbc.Input(
-                                        id=ids.INPUT_NMAX,
-                                        type="number",
-                                        value=DEFAULT_NMAX,
-                                        min=1,
-                                    ),
-                                ],
-                                md=3,
-                                sm=6,
-                            ),
-                            # Figure Size Inputs
-                            dbc.Col(
-                                [
-                                    dbc.Label("Figure Size (Inches)", className="small fw-bold text-muted mb-1"),
-                                    dbc.InputGroup(
-                                        [
-                                            dbc.Input(
-                                                id=ids.INPUT_FIG_W,
-                                                type="number",
-                                                value=DEFAULT_FIG_W,
-                                                placeholder="W",
-                                            ),
-                                            dbc.InputGroupText("×"),
-                                            dbc.Input(
-                                                id=ids.INPUT_FIG_H,
-                                                type="number",
-                                                value=DEFAULT_FIG_H,
-                                                placeholder="H",
-                                            ),
-                                        ]
-                                    ),
-                                ],
+                                dbc.InputGroup(
+                                    [
+                                        dbc.Input(id=ids.INPUT_FIG_W, type="number", value=DEFAULT_FIG_W, placeholder="W"),
+                                        dbc.InputGroupText("×"),
+                                        dbc.Input(id=ids.INPUT_FIG_H, type="number", value=DEFAULT_FIG_H, placeholder="H"),
+                                    ],
+                                    size="sm",
+                                ),
                                 md=5,
-                                sm=6,
+                                sm=8,
                             ),
                         ],
-                        className="g-3 mb-3",
+                        className="g-2 mb-2 align-items-center",
                     ),
-
-                    # Row 2: Checkboxes
-                    dbc.Row(
-                        [
-                            dbc.Col(
+                    html.Fieldset(
+                        id=ids.PREDSPLOT_SETTINGS,
+                        className="border-top pt-2 mb-3",
+                        children=[
+                            html.Div("Predsplot (leaf nodes)", className=LABEL_CLASS),
+                            dbc.Row(
                                 [
-                                    dbc.Label("Options", className="small fw-bold text-muted d-block mb-1"),
-                                    dbc.Checklist(
-                                        id=ids.PREDSPLOT_OPTIONS,
-                                        options=[
-                                            {"label": "Use intercept", "value": "intercept"},
-                                            {"label": "Truncate total pred", "value": "truncate"},
-                                            {"label": "Staircase (highlight only)", "value": "staircase"},
+                                    dbc.Col(
+                                        [
+                                            dbc.Label("Display type", className=LABEL_CLASS),
+                                            dbc.Select(
+                                                id=ids.INPUT_DISPLAY_TYPE,
+                                                options=[
+                                                    {"label": "Histogram", "value": "histogram"},
+                                                    {"label": "Density", "value": "density"},
+                                                ],
+                                                value=DEFAULT_DISPLAY_TYPE,
+                                                size="sm",
+                                            ),
                                         ],
-                                        value=[],
-                                        inline=True,
-                                        switch=True,  # Optional: set to False if you want square checkboxes
+                                        md=4,
+                                        sm=6,
+                                    ),
+                                    dbc.Col(
+                                        [
+                                            dbc.Label("# Variables", className=LABEL_CLASS),
+                                            dbc.Input(id=ids.INPUT_NMAX, type="number", value=DEFAULT_NMAX, min=1, size="sm"),
+                                        ],
+                                        md=3,
+                                        sm=6,
+                                    ),
+                                    dbc.Col(
+                                        dbc.Checklist(
+                                            id=ids.PREDSPLOT_TYPE,
+                                            options=[{"label": "Global predsplot", "value": "type2"}],
+                                            value=[],
+                                            switch=True,
+                                        ),
+                                        md=5,
+                                        sm=12,
+                                        className="d-flex align-items-end",
                                     ),
                                 ],
-                                md=8,
-                                sm=12,
+                                className="g-2 mb-2",
                             ),
-                            dbc.Col(
-                                [
-                                    dbc.Label("Plot Type", className="small fw-bold text-muted d-block mb-1"),
-                                    dbc.Checklist(
-                                        id=ids.PREDSPLOT_TYPE,
-                                        options=[{"label": "Global predsplot", "value": "type2"}],
-                                        value=[],
-                                        inline=True,
-                                        switch=True,
-                                    ),
+                            dbc.Checklist(
+                                id=ids.PREDSPLOT_OPTIONS,
+                                options=[
+                                    {"label": "Use intercept", "value": "intercept"},
+                                    {"label": "Truncate total pred", "value": "truncate"},
+                                    {"label": "Staircase (highlight only)", "value": "staircase"},
                                 ],
-                                md=4,
-                                sm=12,
+                                value=[],
+                                inline=True,
+                                switch=True,
                             ),
                         ],
-                        className="g-3 mb-3 pt-2",
                     ),
-
-                    # Action Buttons
                     dcc.Download(id=ids.DOWNLOAD_PLOT),
                     html.Div([
                         dbc.Stack([

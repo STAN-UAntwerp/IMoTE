@@ -38,12 +38,6 @@ def make_edit_tree_card() -> dbc.Card:
                                             id=ids.INPUT_COLLAPSE_LEVEL, type="number", value=DEFAULT_COLLAPSE_LEVEL,
                                             style={"width": "80px"}
                                         ),
-                                        dcc.Checklist(
-                                            id=ids.COLLAPSE_LEVEL_OPTIONS,
-                                            options=[{"label": "include linear nodes", "value": "include_lin"}],
-                                            value=["include_lin"],
-                                            inline=True,
-                                        ),
                                     ],
                                 ),
                             ],

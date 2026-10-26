@@ -81,34 +81,22 @@ def register_callbacks(app):
 
         Input(ids.BTN_COLLAPSE_LEVEL, "n_clicks"),
         State(ids.INPUT_COLLAPSE_LEVEL, "value"),
-        State(ids.COLLAPSE_LEVEL_OPTIONS, "value"),
         State(ids.STORE_VIZ_TREE, "data"),
         State(ids.STORE_TREE_PARAMS, "data"),
         prevent_initial_call=True,
     )
-    def collapse_to_level(n_clicks, collapse_level, collapse_level_options, viz_tree_dict, tree_params):
+    def collapse_to_level(n_clicks, collapse_level, viz_tree_dict, tree_params):
         if n_clicks is None:
             raise PreventUpdate
         if collapse_level is None:
             return _warn("Enter the level to collapse the tree to, next to the button.")
         collapse_level = int(collapse_level)
-        include_lin = "include_lin" in collapse_level_options
         viz_tree = VizTree.from_dict(viz_tree_dict)
         viz_tree.expand_all_nodes()
 
         nodes_to_collapse = [viz_tree.root_node]
         for _ in range(collapse_level - 1):
             nodes_to_collapse = sum([node.get_children() for node in nodes_to_collapse], [])
-
-            if not include_lin: #TODO: include lin doesn't seem to be correctly set up
-                new_nodes_to_collapse = nodes_to_collapse.copy()
-                for node in nodes_to_collapse:
-                    if isinstance(node, LinearNode):
-                        new_nodes_to_collapse.remove(node)
-                        while isinstance(node, LinearNode):
-                            node = node.get_children()[0]
-                        new_nodes_to_collapse.append(node)
-                nodes_to_collapse = new_nodes_to_collapse
 
         n_collapsed_nodes = 0
         for node in nodes_to_collapse:
@@ -206,6 +194,9 @@ def register_callbacks(app):
             raise PreventUpdate
         if tree_params['method_name'] != "Pilot":
             return _warn(f"Pruning is only available for PILOT trees, this tree was made with {tree_params['method_name']}.")
+        if tree_params["subtree_node_id"] != -1:
+            return _warn("Pruning only works on the full tree, not on a subtree. "
+                         "Use Reload tree in the New Tree card to get the full tree back, then prune.")
         if not selected_node:
             return _warn(NO_NODE_SELECTED)
 

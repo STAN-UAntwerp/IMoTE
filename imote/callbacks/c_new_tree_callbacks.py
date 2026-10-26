@@ -25,18 +25,13 @@ from imote.dataset.dataset import Dataset
 logger = logging.getLogger(__name__)
 
 
-def get_dataset_X_y(input_dataset):
+def load_dataset(input_dataset) -> Dataset:
     if input_dataset.endswith(".csv"):
         csv_path = Path(input_dataset)
-        dataset_name = input_dataset[:-4]
-        dataset = Dataset.from_csv(input_dataset, target_col=get_target_col(csv_path), name=dataset_name)
-    elif input_dataset.endswith(".pmlb"):
-        dataset_name = input_dataset[:-5]
-        dataset = Dataset.from_pmlb(dataset_name)
-    else:
-        raise ValueError("Unknown dataset type")
-
-    return dataset.X, dataset.y, dataset.cat_ids
+        return Dataset.from_csv(input_dataset, target_col=get_target_col(csv_path), name=csv_path.stem)
+    if input_dataset.endswith(".pmlb"):
+        return Dataset.from_pmlb(input_dataset[:-5])
+    raise ValueError("Unknown dataset type")
 
 def _resolve_saved_tree_path(load_path) -> tuple[str | None, str | None]:
     if not load_path or not load_path.strip():
@@ -87,7 +82,8 @@ def _tree_file_name(viz_tree_dict, tree_params) -> str:
 def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf) -> tuple[VizTree, str]:
     logger.info("Fitting %s on %s (max_depth=%s, max_model_depth=%s, min_sample_split=%s, min_sample_leaf=%s)",
                 method_name, input_dataset, max_depth, max_model_depth, min_sample_split, min_sample_leaf)
-    X, y, cat_ids = get_dataset_X_y(input_dataset)
+    dataset = load_dataset(input_dataset)
+    X, y, cat_ids = dataset.X, dataset.y, dataset.cat_ids
 
     adapter = ADAPTERS_REGISTRY[method_name]
     if method_name == "Pilot":
@@ -117,7 +113,7 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
         elapsed_time = time.perf_counter() - start_time
     else:
         raise ValueError(f'Method name {method_name} not recognized.')
-    viz_tree = VizTree.from_model(adapter, X, y, model)
+    viz_tree = VizTree.from_model(adapter, X, y, model, dataset.feature_names, dataset.target_name)
     if elapsed_time < 1:
         time_string = "less than 1 sec"
     elif elapsed_time < 60:
@@ -368,8 +364,8 @@ def register_callbacks(app):
             message = status.error(f"Could not load the model with the {adapter_name} adapter: {e}")
             return no_update, no_update, no_update, no_update, no_update, message
         try:
-            X, y, cat_ids = get_dataset_X_y(input_dataset)
-            viz_tree = VizTree.from_model(adapter, X, y, model)
+            dataset = load_dataset(input_dataset)
+            viz_tree = VizTree.from_model(adapter, dataset.X, dataset.y, model, dataset.feature_names, dataset.target_name)
         except Exception as e:
             message = status.error(f"Could not build the tree from {Path(model_path).name} on "
                                    f"{_dataset_label(input_dataset)}, does the dataset match the model? ({e})")

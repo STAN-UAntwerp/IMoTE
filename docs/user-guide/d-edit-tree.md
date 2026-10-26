@@ -16,7 +16,7 @@ These buttons determine which parts of the tree are currently visible.
 | **Collapse/Expand selected node** | Toggles whether the children of the currently selected internal node are visible. An internal or collapsed node must be selected.                                                                                                |
 | **Subtree from selected node**    | Look at the subtree rooted at the selected node. The rest of the tree is removed (and can be reloaded by using the reload tree button in [new tree](c-new-tree.md#saving-and-loading-trees)). An internal node must be selected. |
 | **Expand all nodes**              | Expands all previously collapsed nodes in the tree                                                                                                                                                                               |
-| **Collapse nodes to level: N**    | Collapses the tree so that only the first N levels remain. When **Include linear nodes** is enabled (PILOT only), linear (non-splitting) nodes are also counted when determining the collapse level.                             |
+| **Collapse nodes to level: N**    | Collapses the tree so that only the first N levels remain. Linear (non-splitting) nodes count as a level too.                                                                                                                     |
 
 ## Display switches
 

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from imote.plots.labels import feature_labels
 import seaborn as sns
 import warnings
 from matplotlib.patches import ConnectionPatch
@@ -93,10 +94,7 @@ def predsplot(X, coefficients, y_hat, n_max=5, intercept=None, fig_size=(10, 5),
     num_features_to_plot = min(num_nonzero_features, n_max)
 
     # Define feature labels
-    if feature_names is None:
-        all_feature_labels = ["$X_{" + f"{i}" + "}$" for i in range(X.shape[1])]
-    else:
-        all_feature_labels = feature_names
+    all_feature_labels = feature_labels(feature_names, X.shape[1])
 
     # Remove zero features and possibly combine last features
     if num_features_to_plot < num_nonzero_features:

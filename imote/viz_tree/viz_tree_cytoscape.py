@@ -173,8 +173,9 @@ def viz_tree_to_cytoscape_elements(
                 f"{dir_live}/regplots/regplot_node{node.id}_{elements_id}.svg",
                 fig_size,
                 feature_colors,
-                None,
-                node_highlight_x
+                viz_tree.feature_names,
+                node_highlight_x,
+                viz_tree.target_name,
             )
             data["dir_regplot"] = f"/internal_regplots/regplot_node{node.id}_{elements_id}.svg"
             classes.append("regplot")
@@ -192,7 +193,7 @@ def viz_tree_to_cytoscape_elements(
                            file_directory=f"{dir_live}/predsplots/predsplot2_node{node.id}_{elements_id}.svg",
                            highlight_x=node_highlight_x,
                            staircase=predsplot_staircase,
-                           feature_names=None,
+                           feature_names=viz_tree.feature_names,
                            all_feature_colors=feature_colors,
                            short_labels=True,
                            )
@@ -211,7 +212,7 @@ def viz_tree_to_cytoscape_elements(
                               n_max=predsplot_n_max,
                               intercept=intercept,
                               fig_size=fig_size,
-                              feature_names=None,
+                              feature_names=viz_tree.feature_names,
                               all_feature_colors=feature_colors,
                               display_type=predsplot_display_type,
                               truncate_total_pred=predsplot_truncate_total_pred,

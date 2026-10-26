@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple, Type
+from typing import List, Optional, Tuple, Type
 from datetime import datetime
 
 from imote.nodes.base_node import BaseNode
@@ -25,6 +25,8 @@ class VizTree:
         y_train: Training target values used to fit the tree.
         y_hat: Predictions of the tree on X_train.
         tree_id: Identifier for this tree, defaults to a unique ID.
+        feature_names: Names of the columns of X_train, or None if unknown.
+        target_name: Name of the target variable, or None if unknown.
     """
 
     root_node: BaseNode
@@ -34,13 +36,17 @@ class VizTree:
     y_train: np.ndarray
     y_hat: np.ndarray
     tree_id: str
+    feature_names: Optional[List[str]]
+    target_name: Optional[str]
 
     def __init__(self,
                  root: BaseNode,
                  X_train: np.ndarray,
                  y_train: np.ndarray,
                  y_hat: np.ndarray,
-                 tree_id: str = None
+                 tree_id: str = None,
+                 feature_names: Optional[List[str]] = None,
+                 target_name: Optional[str] = None,
                  ):
         """
         Args:
@@ -51,6 +57,11 @@ class VizTree:
                 None to compute them via predict().
             tree_id: Identifier for this tree. Defaults to the current
                 timestamp (format "%d-%m-%y_%H-%M-%S") if not given.
+            feature_names: Names of the columns of X_train, or None if unknown.
+            target_name: Name of the target variable, or None if unknown.
+
+        Raises:
+            ValueError: If the number of feature_names doesn't match the number of columns in X_train.
         """
         if tree_id is None:
             self.tree_id = datetime.now().strftime('%d-%m-%y_%H-%M-%S')
@@ -59,6 +70,8 @@ class VizTree:
 
         self.X_train = X_train
         self.y_train = y_train
+        self.feature_names = self._check_feature_names(feature_names, X_train.shape[1])
+        self.target_name = None if target_name is None else str(target_name)
 
         self.root_node = root
         self.nodes = self.collect_nodes()
@@ -72,8 +85,17 @@ class VizTree:
             self.y_hat = y_hat
         self.split_contributions, self.linear_contributions = self._calculate_contributions()
 
+    @staticmethod
+    def _check_feature_names(feature_names: Optional[List[str]], n_features: int) -> Optional[List[str]]:
+        if feature_names is None:
+            return None
+        if len(feature_names) != n_features:
+            raise ValueError(f"Got {len(feature_names)} feature names for {n_features} features")
+        return [str(name) for name in feature_names]
+
     @classmethod
-    def from_model(cls, adapter: Type[BaseAdapter], X_train: np.ndarray, y_train: np.ndarray, model) -> "VizTree":
+    def from_model(cls, adapter: Type[BaseAdapter], X_train: np.ndarray, y_train: np.ndarray, model,
+                   feature_names: Optional[List[str]] = None, target_name: Optional[str] = None) -> "VizTree":
         """Builds a VizTree from a fitted model via an adapter.
 
         Args:
@@ -82,13 +104,19 @@ class VizTree:
             X_train: Training feature matrix used to fit the model.
             y_train: Training target values used to fit the model.
             model: The fitted model to convert to a VizTree.
+            feature_names: Names of the columns of X_train, or None if unknown.
+            target_name: Name of the target variable, or None if unknown.
 
         Returns:
             A new VizTree instance wrapping the model's tree.
         """
         root_node = adapter.build_root_node(X_train, y_train, model)
         y_hat = adapter.predict(X_train, model)
-        return cls(root_node, X_train, y_train, y_hat)
+        return cls(root_node, X_train, y_train, y_hat, feature_names=feature_names, target_name=target_name)
+
+    def get_feature_name(self, idx: int) -> str:
+        """Returns the name of feature idx, or "X<idx>" if the feature names are unknown."""
+        return f"X{idx}" if self.feature_names is None else self.feature_names[idx]
 
     def collect_nodes(self) -> List[BaseNode]:
         """Collects all nodes in the tree.
@@ -418,7 +446,7 @@ class VizTree:
         """Serializes the tree to a dictionary.
 
         Returns:
-            Dictionary with tree_id, X_train, y_train, y_hat,
+            Dictionary with tree_id, X_train, y_train, y_hat, feature_names, target_name
             and the root node's class name and serialized form
             (which recursively serializes the whole linked tree).
         """
@@ -429,6 +457,8 @@ class VizTree:
             "y_hat": self.y_hat.tolist(),
             "split_contributions": self.split_contributions.tolist(),
             "linear_contributions": self.linear_contributions.tolist(),
+            "feature_names": self.feature_names,
+            "target_name": self.target_name,
 
             "root_node_class": self.root_node.__class__.__name__,
             "root_node_dict": self.root_node.to_dict(),
@@ -454,6 +484,8 @@ class VizTree:
         obj.y_hat = np.array(viz_dict["y_hat"])
         obj.split_contributions = np.array(viz_dict["split_contributions"])
         obj.linear_contributions = np.array(viz_dict["linear_contributions"])
+        obj.feature_names = viz_dict.get("feature_names")
+        obj.target_name = viz_dict.get("target_name")
 
         obj.root_node = root_child_class.from_dict(viz_dict["root_node_dict"])
         obj.nodes = obj.collect_nodes()

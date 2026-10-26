@@ -101,7 +101,7 @@ class Dataset:
         y = df["target"].to_numpy()
         X_df = df.drop(columns=["target"])
         X = X_df.to_numpy()
-        feature_names = list(X_df.columns)
+        feature_names = [str(column) for column in X_df.columns]
 
         if cat_ids is None:
             cat_ids = PMLB_DATASETS_CAT_IDS.get(dataset_name)
@@ -138,12 +138,10 @@ class Dataset:
         if isinstance(target_col, str):
             if target_col not in df.columns:
                 raise ValueError(f"target_col {target_col!r} not found in columns {list(df.columns)}")
-            target_name = target_col
             target_col_name = target_col
         elif isinstance(target_col, int):
             if not (-df.shape[1] <= target_col < df.shape[1]):
                 raise ValueError(f"target_col index {target_col} out of range for {df.shape[1]} columns")
-            target_name = None
             target_col_name = df.columns[target_col]
         else:
             raise TypeError(f"target_col must be str or int, got {type(target_col)}")
@@ -157,7 +155,7 @@ class Dataset:
         X = X.astype(float)
         y = y.astype(float)
 
-        feature_names = list(X_df.columns)
+        feature_names = [str(column) for column in X_df.columns]
 
         return cls(
             X=X,
@@ -165,6 +163,6 @@ class Dataset:
             feature_names=feature_names,
             cat_ids=cat_ids,
             name=name or path,
-            target_name=target_name,
+            target_name=str(target_col_name),
             cat_unique_threshold=cat_unique_threshold,
         )
