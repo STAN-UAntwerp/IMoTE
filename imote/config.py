@@ -13,6 +13,7 @@ DIR_USER_DATA = Path(os.environ.get("IMOTE_HOME", Path.home() / ".imote")).expan
 DIR_LIVE_OUTPUT = DIR_USER_DATA / "live"
 DIR_SAVED_VIZ_TREES = DIR_USER_DATA / "saved_trees"
 DIR_DATASET_UPLOAD = DIR_USER_DATA / "uploaded_datasets"
+DIR_PMLB_CACHE = DIR_USER_DATA / "pmlb_datasets"
 
 # --- New Tree card defaults / options -----------------------------------
 

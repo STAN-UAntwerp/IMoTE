@@ -54,8 +54,8 @@ pip install imote
 imote
 ```
 
-Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). Saved trees, uploaded datasets and
-generated plots are stored in `~/.imote`, set the environment variable `IMOTE_HOME` to use another folder.
+Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). Saved trees, uploaded datasets,
+downloaded PMLB datasets and generated plots are stored in `~/.imote`, set the environment variable `IMOTE_HOME` to use another folder.
 
 ## Where to start
 

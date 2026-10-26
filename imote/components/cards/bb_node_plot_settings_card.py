@@ -14,7 +14,7 @@ def make_settings_card() -> dbc.Card:
                     html.H6("Plot Settings", className="mb-2 fw-bold text-primary white-space"),
                     dbc.Row(
                         [
-                            dbc.Label("Figure size (inches)", className=LABEL_CLASS, width="auto"),
+                            dbc.Col(dbc.Label("Figure size (inches)", className=f"{LABEL_CLASS} mb-0"), width="auto"),
                             dbc.Col(
                                 dbc.InputGroup(
                                     [

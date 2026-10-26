@@ -8,7 +8,7 @@ from werkzeug.serving import make_server
 
 from imote import ids
 from imote.app import app
-from imote.config import get_initial_graph_info
+from imote.config import NEW_CSV_OPTION, get_initial_graph_info
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "docs" / "assets" / "screenshots"
 VIEWPORT = {"width": 1600, "height": 1000}
@@ -173,8 +173,7 @@ def screenshot_new_tree(browser: Browser, url: str):
     card(page, ids.NEW_TREE_TOGGLE_BUTTON).screenshot(path=OUTPUT_DIR / "c-new-tree.png")
 
     # Choosing "+ New dataset (CSV)" in the dataset dropdown opens the upload dialog
-    page.click(f"#{ids.INPUT_DATASET}")
-    page.get_by_text("+ New dataset (CSV)").click()
+    page.select_option(f"#{ids.INPUT_DATASET}", NEW_CSV_OPTION)
     page.wait_for_selector(f"#{ids.MODAL_CSV} .modal-content")
     wait_until_idle(page)
     # The dialog has rounded corners, hide the app behind it so they show white instead of the page
