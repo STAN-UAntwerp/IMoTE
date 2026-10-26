@@ -94,9 +94,9 @@ def make_new_tree_card() -> dbc.Card:
                                 style={"display": "flex", "gap": "8px", "flexWrap": "wrap", "marginBottom": "10px"},
                                 children=[
                                     dbc.Button("Fit Tree", id=ids.BTN_FIT_NEW_TREE, size="sm"),
-                                    dbc.Button("Save shown tree", id=ids.BTN_SAVE_TREE, size="sm"),
-                                    dbc.Button("Download shown tree", id=ids.BTN_SAVE_TREE_SVG, size="sm"),
                                     dbc.Button("Reload tree", id=ids.BTN_RELOAD_TREE, size="sm"),
+                                    dbc.Button("Save shown tree", id=ids.BTN_SAVE_TREE, size="sm", color='secondary'),
+                                    dbc.Button("Download shown tree", id=ids.BTN_SAVE_TREE_SVG, size="sm", color='secondary'),
                                 ],
                             ),
                             html.Div(

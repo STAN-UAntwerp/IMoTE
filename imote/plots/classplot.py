@@ -24,9 +24,7 @@ def _bin_edges(x: np.ndarray, node: InternalNode) -> tuple[np.ndarray, bool]:
     """
     values = np.unique(x)
     if len(values) <= MAX_DISCRETE_VALUES:
-        gaps = np.diff(values)
-        half = gaps.min() / 2 if len(gaps) else 0.5
-        return np.r_[values - half, values[-1] + half], True
+        return np.unique(np.r_[values - 0.5, values + 0.5]), True
 
     if isinstance(node, SplitNode) and not node.categorical and values[0] < node.pivot_value < values[-1]:
         pivot = node.pivot_value
@@ -87,7 +85,7 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
         values = np.unique(x)
         for i, value in enumerate(values):
             if value in node.pivot_value:
-                lo, hi = (edges[i], edges[i + 1]) if discrete else (value - 0.5, value + 0.5)
+                lo, hi = (value - 0.5, value + 0.5)
                 plt.axvspan(lo, hi, color=LEFT_SPAN_COLOR, alpha=LEFT_SPAN_ALPHA, linewidth=0)
         left_legend_handle = Patch(facecolor=LEFT_SPAN_COLOR, alpha=LEFT_SPAN_ALPHA,
                                    label=f"{{{left_values}}} go left")

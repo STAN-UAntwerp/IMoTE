@@ -93,7 +93,12 @@ MAX_NODE_HEIGHT = 50
 
 SPINNER_COLOR = "primary"
 
-DEFAULT_NODE_METRICS = ["ID", "# Samples", "RSS", 'MAE']
+DEFAULT_NODE_METRICS = {
+    "regression": ["ID", "# Samples", "RSS", "MAE"],
+    "classification": ["ID", "# Samples", "Class counts", "AUPRC"],
+}
+
+TASK_COLORS = {"regression": NODE_TYPE_COLORS["LinearNode"], "classification": NODE_TYPE_COLORS["PconcNode"]}
 
 @lru_cache(maxsize=1)
 def get_initial_graph_info():

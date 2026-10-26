@@ -75,6 +75,7 @@ def _make_tree_params(viz_tree: VizTree, dataset_name, method_name, max_depth=-1
         "n_samples": viz_tree.X_train.shape[0],
         "n_features": viz_tree.X_train.shape[1],
         "pruned": False,
+        "task": viz_tree.task,
     }
 
 def _dataset_label(input_dataset: str) -> str:
@@ -283,8 +284,9 @@ def register_callbacks(app):
         try:
             with open(resolved_path, "rb") as f:
                 input_dict = pickle.load(f)
-            tree_params = {**input_dict["tree_params"], "highlight_x": None}
             viz_tree_dict = input_dict["viz_tree_dict"]
+            tree_params = {**input_dict["tree_params"], "highlight_x": None,
+                           "task": viz_tree_dict.get("task", "regression")}
         except Exception as e:
             message = status.error(f"Could not load {resolved_path}, is it a tree saved by IMoTE? ({e})")
             return no_update, no_update, no_update, no_update, no_update, message

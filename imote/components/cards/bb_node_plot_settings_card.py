@@ -116,21 +116,21 @@ def make_settings_card() -> dbc.Card:
                     html.Div([
                         dbc.Stack([
                             dbc.Button(
-                                "Download Plot",
-                                id=ids.BTN_DOWNLOAD_PLOT,
-                                color="secondary",
-                                size="sm",
-                                className="px-4 fw-bold flex-fill",
-                            ),
-                            dbc.Button(
                                 "Refit Plot",
                                 id=ids.BTN_REFIT_PLOTS,
                                 color="primary",
                                 size="sm",
                                 className="px-4 fw-bold flex-fill",
                             ),
+                            dbc.Button(
+                                "Download Plot",
+                                id=ids.BTN_DOWNLOAD_PLOT,
+                                color="secondary",
+                                size="sm",
+                                className="px-4 fw-bold flex-fill",
+                            ),
                         ], direction="horizontal", gap=2)],
-                        className="d-flex justify-content-end",
+                        className="d-flex",
                     ),
                 ]
             ),

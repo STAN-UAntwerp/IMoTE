@@ -3,7 +3,7 @@ import warnings
 from pathlib import Path
 
 from imote import ids, status
-from dash import Input, Output, State, html, dcc, no_update
+from dash import Input, Output, State, html, dcc, no_update, NoUpdate
 from dash.exceptions import PreventUpdate
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +11,7 @@ from urllib.parse import quote
 import dash_bootstrap_components as dbc
 
 from imote.callbacks.d_edit_tree_callbacks import find_node_by_cytoscape_id
-from imote.config import DIR_LIVE_OUTPUT, DIR_PACKAGE, NODE_TYPE_COLORS
+from imote.config import DIR_LIVE_OUTPUT, DIR_PACKAGE, NODE_TYPE_COLORS, DEFAULT_NODE_METRICS
 from imote.nodes.internal_node import InternalNode
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.node_model import LinearNodeModel
@@ -20,7 +20,7 @@ from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
 from imote.plots.classplot import make_classification_plot
 from imote.viz_tree.viz_tree import VizTree
-from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, metrics_for_task
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +71,22 @@ def register_callbacks(app):
             metrics_components = dbc.Row(metric_cols, className="gy-2")
 
         return badge_label, badge_style, label, metrics_components
+
+    @app.callback(
+        Output(ids.NODE_INFO_METRICS_DROPDOWN, "options"),
+        Output(ids.NODE_INFO_METRICS_DROPDOWN, "value"),
+
+        Input(ids.STORE_TREE_PARAMS, "data"),
+        State(ids.NODE_INFO_METRICS_DROPDOWN, "value"),
+        prevent_initial_call=True
+    )
+    def update_metric_options(tree_params, metric_names):
+        task = tree_params.get("task", "regression")
+        options = metrics_for_task(task)
+        if np.all([(name in options) for name in metric_names]):
+            raise PreventUpdate
+        else:
+            return options, DEFAULT_NODE_METRICS[task]
 
 
     @app.callback(
@@ -139,6 +155,7 @@ def register_callbacks(app):
         cmap = plt.colormaps['tab20'].resampled(n_features)
         feature_colors = [cmap(i) for i in range(n_features)]
 
+        class_file_dir = None
         try:
             if isinstance(node, LeafNode):
                 if not isinstance(node.node_model, LinearNodeModel):
@@ -187,19 +204,19 @@ def register_callbacks(app):
                               staircase=staircase)
             elif isinstance(node, InternalNode):
                 file_dir = DIR_LIVE_OUTPUT / "regplots" / f"regplot_node{node.id}_{viz_tree.tree_id}.svg"
+                make_regression_plot(
+                    node,
+                    viz_tree.X_train,
+                    str(file_dir),
+                    (figw, figh),
+                    feature_colors,
+                    None,
+                    highlight_x_arr
+                )
                 if viz_tree.task == "classification":
-                    make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, str(file_dir),
+                    class_file_dir = DIR_LIVE_OUTPUT / "regplots" / f"classplot_node{node.id}_{viz_tree.tree_id}.svg"
+                    make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, str(class_file_dir),
                                              (figw, figh), feature_colors, None, highlight_x_arr)
-                else:
-                    make_regression_plot(
-                        node,
-                        viz_tree.X_train,
-                        str(file_dir),
-                        (figw, figh),
-                        feature_colors,
-                        None,
-                        highlight_x_arr
-                    )
             else:
                 message =  f"No plot available for a {node.__class__.__name__}."
                 return _plot_note(message), None
@@ -207,8 +224,10 @@ def register_callbacks(app):
             logger.exception("Could not make the plot of node %s", node.id)
             return _plot_note(f"Could not make the plot: {e}", "danger", "bi-x-circle-fill"), None
 
-        svg_data = file_dir.read_text(encoding="utf-8")
-        encoded_svg = quote(svg_data)
-
-        src_url =  f"data:image/svg+xml;utf8,{encoded_svg}"
-        return html.Img(src=src_url, style={"maxWidth": "100%"}), str(file_dir)
+        images = []
+        for plot_file in (file_dir, class_file_dir):
+            if plot_file is not None:
+                encoded_svg = quote(plot_file.read_text(encoding="utf-8"))
+                src_url = f"data:image/svg+xml;utf8,{encoded_svg}"
+                images.append(html.Img(src=src_url, style={"maxWidth": "100%"}))
+        return images, str(file_dir)

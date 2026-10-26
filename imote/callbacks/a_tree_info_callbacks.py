@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import html, Output, Input
 from imote import ids
+from imote.config import TASK_COLORS
 
 def _param(value) -> str:
     return "—" if value in (-1, None) else str(value)
@@ -21,7 +22,8 @@ def format_tree_info(
         subtree_node_id: int = -1,
         pruned: bool = False,
         collapsed_nodes_count: int = 0,
-        highlight_x = None
+        highlight_x = None,
+        task: str = "regression",
 ):
     badges = []
     if subtree_node_id == -1 and not pruned:
@@ -36,7 +38,7 @@ def format_tree_info(
         badges.append(dbc.Badge(f"{collapsed_nodes_count} Collapsed Nodes", color="warning", className="me-2"))
     if highlight_x is not None:
         badges.append(dbc.Badge("Highlighted point", color="danger", className="me-2"))
-    return dbc.CardBody([
+    return [dbc.CardBody([
         html.Div(
             className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom",
             children=[
@@ -97,7 +99,13 @@ def format_tree_info(
                 html.Span(str(depth), className="fs-6")
             ], width=3),
         ])
-    ])
+    ]),
+        dbc.CardFooter(
+            task.capitalize(),
+            className="text-center fw-bold text-white py-1",
+            style={"backgroundColor": TASK_COLORS[task]},
+        )
+    ]
 
 def register_callbacks(app):
     # --- UPDATE TREE PARAMS ---

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
+from sklearn.metrics import roc_auc_score, average_precision_score
 
 from imote.nodes.base_node import BaseNode
 from imote.nodes.split_node import SplitNode
@@ -23,9 +24,16 @@ def register_metric(name: str):
         return metric_cls
     return decorator
 
+def metrics_for_task(task: str) -> list[str]:
+    """Names of the registered metrics that apply to the task."""
+    return [name for name, metric_cls in NODE_METRICS_REGISTRY.items() if task in metric_cls.tasks]
+
 class BaseNodeMetric(ABC):
     """Base class for a single metric computed on a tree node."""
-    
+
+    tasks: tuple[str, ...] = ("regression", "classification")
+    """Tree tasks this metric applies to."""
+
     @staticmethod
     @abstractmethod
     def compute(node: BaseNode, X_train: np.ndarray, y_train: np.ndarray, y_hat: np.ndarray) -> object:
@@ -88,9 +96,15 @@ class NSamplesMetric(BaseNodeMetric):
     def compute(node, X_train, y_train, y_hat):
         return int(np.sum(node.indices))
 
+# ---------------------------------------------------------------------------
+# Regression metrics
+# ---------------------------------------------------------------------------
+
+
 @register_metric("RSS")
 class RSSMetric(BaseNodeMetric):
     """Residual sum of squares of the node's own residuals (y_res)."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
@@ -99,6 +113,7 @@ class RSSMetric(BaseNodeMetric):
 @register_metric("MAE")
 class MAEMetric(BaseNodeMetric):
     """Mean absolute error between true and predicted values at this node."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
@@ -107,6 +122,7 @@ class MAEMetric(BaseNodeMetric):
 @register_metric("MSE")
 class MSEMetric(BaseNodeMetric):
     """Mean squared error between true and predicted values at this node."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
@@ -115,6 +131,7 @@ class MSEMetric(BaseNodeMetric):
 @register_metric("RMSE")
 class RMSEMetric(BaseNodeMetric):
     """Root mean squared error between true and predicted values at this node."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
@@ -123,6 +140,7 @@ class RMSEMetric(BaseNodeMetric):
 @register_metric("R2")
 class R2Metric(BaseNodeMetric):
     """Coefficient of determination (R^2) at this node."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
@@ -137,6 +155,7 @@ class R2Metric(BaseNodeMetric):
 @register_metric("Mean Residual")
 class MeanResidualMetric(BaseNodeMetric):
     """Mean of the node's own residuals (y_res)."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
@@ -145,10 +164,77 @@ class MeanResidualMetric(BaseNodeMetric):
 @register_metric("Std Residual")
 class StdResidualMetric(BaseNodeMetric):
     """Standard deviation of the node's own residuals (y_res)."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, X_train, y_train, y_hat):
         return float(np.std(node.y_res))
+
+# ---------------------------------------------------------------------------
+# Classification metrics (y_train is 0/1, y_hat is on the log-odds scale)
+# ---------------------------------------------------------------------------
+
+@register_metric("Class counts")
+class ClassCountsMetric(BaseNodeMetric):
+    """Number of samples of class 0 and class 1 at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, X_train, y_train, y_hat):
+        y_true = y_train[node.indices]
+        return f"{int(np.sum(y_true == 0))} / {int(np.sum(y_true == 1))}"
+
+@register_metric("Mean Probability")
+class MeanProbabilityMetric(BaseNodeMetric):
+    """Mean predicted probability of class 1 at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, X_train, y_train, y_hat):
+        return float(np.mean(1 / (1 + np.exp(-y_hat[node.indices]))))
+
+@register_metric("Accuracy")
+class AccuracyMetric(BaseNodeMetric):
+    """Fraction of samples at this node that are classified correctly."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, X_train, y_train, y_hat):
+        return float(np.mean((y_hat[node.indices] > 0) == y_train[node.indices]))
+
+@register_metric("Log-loss")
+class LogLossMetric(BaseNodeMetric):
+    """Mean binary cross-entropy at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, X_train, y_train, y_hat):
+        f = y_hat[node.indices]
+        return float(np.mean(np.logaddexp(0, f) - y_train[node.indices] * f))
+
+@register_metric("AUROC")
+class AUROCMetric(BaseNodeMetric):
+    """Area under the ROC curve at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, X_train, y_train, y_hat):
+        y_true = y_train[node.indices]
+        if len(np.unique(y_true)) < 2:
+            return float("nan")
+        return float(roc_auc_score(y_true, y_hat[node.indices]))
+
+@register_metric("AUPRC")
+class AUPRCMetric(BaseNodeMetric):
+    """Area under the precision recall curve at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, X_train, y_train, y_hat):
+        y_true = y_train[node.indices]
+        if len(np.unique(y_true)) < 2:
+            return float("nan")
+        return float(average_precision_score(y_true, y_hat[node.indices]))
 
 # ---------------------------------------------------------------------------
 # Split node specific metrics
