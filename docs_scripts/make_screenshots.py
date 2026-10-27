@@ -159,8 +159,8 @@ def screenshot_node_info(browser: Browser, url: str):
     screenshot_from(page, ids.NODE_INFO_PLOT_CONTAINER, node_card, OUTPUT_DIR / "b-node-info-reg.png")
 
     # Global predsplot of a leaf
-    page.get_by_label("Global predsplot").check()
     click_node(page, deepest_leaf(page))
+    page.get_by_label("Global predsplot").check()
     page.wait_for_selector(f"#{ids.NODE_INFO_PLOT_CONTAINER} img")
     wait_until_idle(page)
     screenshot_from(page, ids.NODE_INFO_PLOT_CONTAINER, node_card, OUTPUT_DIR / "b-node-info-pred.png")
