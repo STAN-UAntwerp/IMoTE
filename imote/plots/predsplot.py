@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from imote.plots.labels import feature_labels
+from imote.plots.plot_labels import feature_labels
 import seaborn as sns
 import warnings
 from matplotlib.patches import ConnectionPatch

@@ -28,9 +28,11 @@ class BaseNodeMetric(ABC):
 
     Attributes:
         higher_is_better: True or False if a higher value means a better metric, None if the metric has no better side.
+        value_range: (low, high) of the values a metric can have.
     """
 
     higher_is_better: bool | None = None
+    value_range: tuple[float, float] | None = None
 
     @staticmethod
     @abstractmethod
@@ -137,6 +139,7 @@ class R2Metric(BaseNodeMetric):
     """Coefficient of determination (R^2) at this node."""
 
     higher_is_better = True
+    value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):
@@ -172,6 +175,8 @@ class StdResidualMetric(BaseNodeMetric):
 @register_metric("Split Balance")
 class SplitBalanceMetric(BaseNodeMetric):
     """Fraction of samples routed to the right child (0.5 = perfectly balanced)."""
+
+    value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):

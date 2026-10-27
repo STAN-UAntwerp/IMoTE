@@ -55,6 +55,9 @@ def register_callbacks(app):
             out[1] = False # node_plots
             out[3] = 1  # minimal
 
+        elif trig == ids.SWITCH_COLOR_FEATURES:
+            out[2] = NODE_LABEL_STRUCTURE
+
         out.append(time.time())
         return out
 

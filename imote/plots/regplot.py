@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from imote.nodes.internal_node import InternalNode, LinearNode
 from imote.nodes.split_node import PconcNode, SplitNode, PconNode, SplitCNode, PlinNode, BlinNode
-from imote.plots.labels import feature_label, plot_math_string
+from imote.plots.plot_labels import feature_label, plot_math_string
 
 
 def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file, fig_size, feature_colors, feature_names,

@@ -18,7 +18,7 @@ from imote.plots.regplot import make_regression_plot
 from datetime import datetime
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
 from imote.nodes.label_formatter import LabelFormatter
-from imote.viz_tree.node_labels import display_names, metric_colors, metric_text
+from imote.node_metrics.node_labels import display_names, metric_colors, metric_text
 from imote.config import (NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT,
                           NODE_PLOTS_FIG_SIZE, LABEL_NAME_LENGTH, MINIMAL_LABEL_NAME_LENGTH)
 
@@ -127,11 +127,11 @@ def viz_tree_to_cytoscape_elements(
         feature_colors = [cmap(i) for i in range(n_features)]
         feature_colors_hex = [to_hex(color) for color in feature_colors]
 
-    depth = min(max(3, viz_tree.get_depth()), 12)
-    power = -0.7 / 9 * (depth - 3) + 1
     if use_edge_width or use_node_size:
         node_sizes = [np.sum(node.indices) for node in nodes]
         max_n_samples_node, min_n_samples_node = max(node_sizes), min(node_sizes)
+        depth = min(max(3, viz_tree.get_depth()), 12)
+        power = -0.7 / 9 * (depth - 3) + 1
 
     nodes = [node for node in nodes if not isinstance(node, NoneNode)]
     if highlight_x is not None and only_show_highlight:
@@ -139,13 +139,10 @@ def viz_tree_to_cytoscape_elements(
 
     n_features = viz_tree.X_train.shape[1]
     shown_names = viz_tree.feature_names if use_feature_names else None
-    label_fmt = LabelFormatter(display_names(shown_names, n_features, LABEL_NAME_LENGTH))
-    minimal_fmt = LabelFormatter(display_names(shown_names, n_features, MINIMAL_LABEL_NAME_LENGTH))
-    description_fmt = LabelFormatter(viz_tree.feature_names)
     if label_metric:
         metric = NODE_METRICS_REGISTRY[label_metric]
         values = [metric.compute(node, viz_tree.y_train) for node in nodes]
-        colors = metric_colors(values, metric.higher_is_better, power)
+        colors = metric_colors(values, metric)
 
     for i, node in enumerate(nodes):
         node_type = node.__class__.__name__
@@ -158,6 +155,8 @@ def viz_tree_to_cytoscape_elements(
             color = colors[i]
             classes.append("metric")
         else:
+            label_fmt = LabelFormatter(display_names(shown_names, n_features, LABEL_NAME_LENGTH))
+            minimal_fmt = LabelFormatter(display_names(shown_names, n_features, MINIMAL_LABEL_NAME_LENGTH))
             label = node.get_label(label_fmt)
             label_minimal = node.get_minimal_label(minimal_fmt)
             if use_color_features and isinstance(node, InternalNode):
@@ -171,7 +170,7 @@ def viz_tree_to_cytoscape_elements(
             "color": color,
             "label": label,
             "label_minimal": label_minimal,
-            "description": node.get_description(description_fmt),
+            "description": node.get_description(LabelFormatter(viz_tree.feature_names)),
             "n_samples": n_samples,
             "rss": float(f"{node.rss:.5g}"),
             "rss_root_reduction": float(f"{(1 - node.rss/viz_tree.root_node.rss)*100:.3g}"),

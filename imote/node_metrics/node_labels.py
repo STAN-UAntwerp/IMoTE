@@ -7,11 +7,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import to_hex
 
-from imote.config import NO_METRIC_COLOR, NEAR_ZERO
+from imote.config import NEAR_ZERO, NO_METRIC_COLOR
+from imote.node_metrics.node_metric import BaseNodeMetric
 
 WORD_SEPARATOR = r"[_\-.\s]"
 VOWELS = set("aeiouAEIOU")
 MIN_SYLLABLE_LENGTH = 4
+LOG_SCALE_DECADES = 6
+TARGET_LOG_SCALE_DECADES = 3
 
 
 def shorten_name(name: str, max_length: int) -> str:
@@ -60,7 +63,9 @@ def metric_text(value, compact: bool = False) -> str:
     """Formats a metric value for a node label, compact for minimal labels."""
     if not _is_number(value) or not np.isfinite(value):
         return str(value)
-    if value != 0 and abs(value) < NEAR_ZERO:
+    if value == 0:
+        return "0"
+    if abs(value) < NEAR_ZERO:
         return "≈0"
     if not compact:
         return str(int(value)) if float(value).is_integer() else f"{value:.4g}"
@@ -73,16 +78,12 @@ def metric_text(value, compact: bool = False) -> str:
     return f"{value:.3g}"
 
 
-def metric_colors(values: list, higher_is_better: bool | None, power: float = 1.0) -> list[str]:
-    """Colors every value on a gradient from the lowest to the highest value, better values are green.
 
-    Like the data flow sizes, the position on the gradient is scaled from 0 to 1 and raised to power, so with a power
-    below 1 the many small values (e.g. the RSS of the nodes below the root) are spread over more colors. Metrics
-    without a better side get a neutral gradient, values that aren't numbers get NO_METRIC_COLOR.
-    """
-    finite = [float(v) for v in values if _is_number(v) and np.isfinite(v)]
-    low, high = (min(finite), max(finite)) if finite else (0.0, 1.0)
-    if higher_is_better is None:
+def metric_colors(values: list, metric: type[BaseNodeMetric]) -> list[str]:
+    """Colors the nodes by their metric values"""
+
+    unique_values = np.unique([float(v) for v in values if _is_number(v) and np.isfinite(v)])
+    if metric.higher_is_better is None:
         cmap, start, stop = plt.colormaps["YlGnBu"], 0.05, 0.55
     else:
         cmap, start, stop = plt.colormaps["RdYlGn"], 0.1, 0.9
@@ -92,8 +93,17 @@ def metric_colors(values: list, higher_is_better: bool | None, power: float = 1.
         if not _is_number(value) or not np.isfinite(value):
             colors.append(NO_METRIC_COLOR)
             continue
-        x = ((float(value) - low) / max(high - low, 1e-12)) ** power
-        if higher_is_better is False:
-            x = 1 - x
-        colors.append(to_hex(cmap(start + x * (stop - start))))
+        if metric.value_range is not None:
+            low, high = metric.value_range
+            if value < low or value > high:
+                colors.append(NO_METRIC_COLOR)
+                continue
+            else:
+                scale = 0.5 if high == low else (value - low) / (high - low)
+        else:
+            scale = 0.5 if len(unique_values) < 2 else np.searchsorted(unique_values, float(value)) / (len(unique_values) - 1)
+
+        if metric.higher_is_better is False:
+            scale = 1 - scale
+        colors.append(to_hex(cmap(start + scale * (stop - start))))
     return colors

@@ -8,7 +8,7 @@ from matplotlib.transforms import blended_transform_factory
 from imote.viz_tree.contributions import get_split_and_lin_contributions_test
 from imote.nodes.leaf_node import LeafNode
 from imote.viz_tree.viz_tree import VizTree
-from imote.plots.labels import feature_labels
+from imote.plots.plot_labels import feature_labels
 
 # Layout constants (in absolute figure units)
 OUTER_MARGIN_HEIGHT = 0.2  # Top and bottom margin for outer plot
