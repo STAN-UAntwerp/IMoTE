@@ -22,13 +22,11 @@ def make_node_info_card() -> dbc.Card:
                         )
                     ]
                 ),
-                # Label
-                dbc.Row([
-                    dbc.Col([
-                        html.Small("Label", className="text-muted d-block fw-bold"),
-                        html.Span(id = ids.NODE_INFO_LABEL, children="Click a node in the graph to see its details.", className="fs-6")
-                    ], width=12),
-                ], className="mb-3"),
+                html.Div(
+                    id=ids.NODE_INFO_DESCRIPTION,
+                    children="Click a node in the graph to see its details.",
+                    className="fs-6 mb-3",
+                ),
 
                 # Metrics
                 dbc.Row([

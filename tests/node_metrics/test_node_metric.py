@@ -9,7 +9,7 @@ from tests.helpers import X, make_pilot_tree, y
 @pytest.mark.parametrize("name", NODE_METRICS_REGISTRY)
 def test_every_metric_runs_on_every_node(name, node_id):
     tree = make_pilot_tree()
-    out = NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], X, y, tree.y_hat)
+    out = NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], y)
     assert isinstance(out, str) and out
 
 
@@ -33,7 +33,7 @@ def test_every_metric_runs_on_every_node(name, node_id):
 ])
 def test_metric_values(name, node_id, expected):
     tree = make_pilot_tree()
-    assert NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], X, y, tree.y_hat) == expected
+    assert NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], y) == expected
 
 
 @pytest.mark.parametrize("value, expected", [

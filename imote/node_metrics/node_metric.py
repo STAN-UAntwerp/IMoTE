@@ -24,18 +24,22 @@ def register_metric(name: str):
     return decorator
 
 class BaseNodeMetric(ABC):
-    """Base class for a single metric computed on a tree node."""
-    
+    """Base class for a single metric computed on a tree node.
+
+    Attributes:
+        higher_is_better: True or False if a higher value means a better metric, None if the metric has no better side.
+    """
+
+    higher_is_better: bool | None = None
+
     @staticmethod
     @abstractmethod
-    def compute(node: BaseNode, X_train: np.ndarray, y_train: np.ndarray, y_hat: np.ndarray) -> object:
+    def compute(node: BaseNode, y_train: np.ndarray) -> object:
         """Compute the raw value of this metric for a node.
 
         Args:
             node: The node to compute the metric for.
-            X_train: Full training feature matrix.
             y_train: Full training target array.
-            y_hat: Full-tree prediction array.
         Returns:
             The raw computed value (int, float, str, ...).
         """
@@ -63,9 +67,9 @@ class BaseNodeMetric(ABC):
         return str(value)
 
     @classmethod
-    def run(cls, node: BaseNode, X_train: np.ndarray, y_train: np.ndarray, y_hat: np.ndarray) -> str:
+    def run(cls, node: BaseNode, y_train: np.ndarray) -> str:
         """Compute and format the metric in one step."""
-        return cls.format(cls.compute(node, X_train, y_train, y_hat))
+        return cls.format(cls.compute(node, y_train))
 
 
 # ---------------------------------------------------------------------------
@@ -77,7 +81,7 @@ class IdMetric(BaseNodeMetric):
     """Node identifier."""
 
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         return node.id
 
 @register_metric("# Samples")
@@ -85,50 +89,59 @@ class NSamplesMetric(BaseNodeMetric):
     """Number of samples reaching this node."""
 
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         return int(np.sum(node.indices))
 
 @register_metric("RSS")
 class RSSMetric(BaseNodeMetric):
     """Residual sum of squares of the node's own residuals (y_res)."""
 
+    higher_is_better = False
+
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         return float(np.sum(node.y_res ** 2))
 
 @register_metric("MAE")
 class MAEMetric(BaseNodeMetric):
     """Mean absolute error between true and predicted values at this node."""
 
+    higher_is_better = False
+
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
-        return float(np.mean(np.abs(y_train[node.indices] - y_hat[node.indices])))
+    def compute(node, y_train):
+        return float(np.mean(np.abs(node.y_res)))
 
 @register_metric("MSE")
 class MSEMetric(BaseNodeMetric):
     """Mean squared error between true and predicted values at this node."""
 
+    higher_is_better = False
+
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
-        return float(np.mean((y_train[node.indices] - y_hat[node.indices]) ** 2))
+    def compute(node, y_train):
+        return float(np.mean((node.y_res) ** 2))
 
 @register_metric("RMSE")
 class RMSEMetric(BaseNodeMetric):
     """Root mean squared error between true and predicted values at this node."""
 
+    higher_is_better = False
+
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
-        return float(np.sqrt(np.mean((y_train[node.indices] - y_hat[node.indices]) ** 2)))
+    def compute(node, y_train):
+        return float(np.sqrt(np.mean((node.y_res) ** 2)))
 
 @register_metric("R2")
 class R2Metric(BaseNodeMetric):
     """Coefficient of determination (R^2) at this node."""
 
+    higher_is_better = True
+
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         y_true = y_train[node.indices]
-        y_pred = y_hat[node.indices]
-        ss_res = np.sum((y_true - y_pred) ** 2)
+        ss_res = np.sum((node.y_res) ** 2)
         ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
         if ss_tot == 0:
             return float("nan")
@@ -139,15 +152,17 @@ class MeanResidualMetric(BaseNodeMetric):
     """Mean of the node's own residuals (y_res)."""
 
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         return float(np.mean(node.y_res))
 
 @register_metric("Std Residual")
 class StdResidualMetric(BaseNodeMetric):
     """Standard deviation of the node's own residuals (y_res)."""
 
+    higher_is_better = False
+
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         return float(np.std(node.y_res))
 
 # ---------------------------------------------------------------------------
@@ -159,7 +174,7 @@ class SplitBalanceMetric(BaseNodeMetric):
     """Fraction of samples routed to the right child (0.5 = perfectly balanced)."""
 
     @staticmethod
-    def compute(node, X_train, y_train, y_hat):
+    def compute(node, y_train):
         if isinstance(node, SplitNode):
             n_right = np.sum(node.right_child.indices)
             n_total = np.sum(node.indices)

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import List, Type, TypeVar
+from typing import List, Optional, Type, TypeVar
 
 T = TypeVar("T", bound="BaseNode")
 
@@ -60,9 +60,17 @@ class BaseNode(ABC):
             descendants.extend(child.get_all_children())
         return descendants
 
+    @staticmethod
+    def feature_name(names: Optional[List[str]], idx: int) -> str:
+        """Returns names[idx], or "X<idx>" if no names are given."""
+        return f"X{idx}" if names is None else names[idx]
+
     @abstractmethod
-    def get_label(self) -> str:
+    def get_label(self, names: Optional[List[str]] = None) -> str:
         """Returns the full display label for this node.
+
+        Args:
+            names: Display name of every feature, or None to use X0, X1, ...
 
         Returns:
             String of label, shown in a tree visualization.
@@ -70,11 +78,26 @@ class BaseNode(ABC):
         pass
 
     @abstractmethod
-    def get_minimal_label(self) -> str:
+    def get_minimal_label(self, names: Optional[List[str]] = None) -> str:
         """Returns a short display label for this node.
+
+        Args:
+            names: Display name of every feature, or None to use X0, X1, ...
 
         Returns:
             String of minimal label, used when space is limited.
+        """
+        pass
+
+    @abstractmethod
+    def get_description(self, names: Optional[List[str]] = None) -> str:
+        """Returns a one line description of what this node does, without its type.
+
+        Args:
+            names: Display name of every feature, or None to use X0, X1, ...
+
+        Returns:
+            String of description, shown in the node information.
         """
         pass
 

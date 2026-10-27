@@ -1,12 +1,12 @@
 import pytest
 
-from imote.config import NODE_TYPE_COLORS
+from imote.config import NODE_TYPE_COLORS, NO_METRIC_COLOR
 from imote.nodes.internal_node import LinearNode
 from imote.nodes.node_model import ConstantNodeModel, SimpleLinearNodeModel
 from imote.nodes.split_node import PconNode
 from tests.helpers import X, leaf, mask, y
 from imote.viz_tree.viz_tree import VizTree
-from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
+from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements, metric_colors, metric_text
 
 
 def nodes_of(els):
@@ -110,3 +110,33 @@ def test_no_predsplot_for_zero_coefficient_leaf(split_tree, live_dir):
 def test_node_plots_mark_all_elements(pilot_tree, live_dir):
     assert all("plots_on" in e["classes"] for e in elements(pilot_tree, live_dir, show_node_plots=True))
     assert not any("plots_on" in e["classes"] for e in elements(pilot_tree, live_dir))
+
+
+# --- Labels ---
+def test_feature_names_in_labels(pilot_tree, tmp_path):
+    pilot_tree.feature_names = ["first", "second", "a_very_long_name"]
+    root = nodes_of(elements(pilot_tree, tmp_path))["node0"]["data"]
+    assert root["label"] == "LIN\na_very_long…" and root["label_minimal"] == "a_ver…"
+    assert "a_very_long_name" in root["description"]
+    root = nodes_of(elements(pilot_tree, tmp_path, use_feature_names=False))["node0"]["data"]
+    assert root["label"] == "LIN\nX2" and root["label_minimal"] == "X2"
+
+
+def test_metric_labels(pilot_tree, tmp_path):
+    nodes = nodes_of(elements(pilot_tree, tmp_path, label_metric="# Samples"))
+    assert nodes["node0"]["data"]["label"] == "8" and nodes["node0"]["data"]["label_minimal"] == "8"
+    assert all("metric" in el["classes"] for el in nodes.values())
+
+
+def test_metric_text():
+    assert metric_text(1_880_000.5) == "1.88e+06"
+    assert metric_text(1_880_000.0, compact=True) == "1.88M"
+    assert metric_text(11672, compact=True) == "11.7k"
+    assert metric_text("-") == "-"
+
+
+def test_metric_colors_better_is_green():
+    best, middle, worst = metric_colors([1.0, 2.0, 3.0], higher_is_better=False)
+    assert best == metric_colors([3.0, 2.0, 1.0], higher_is_better=True)[0]
+    assert best != worst and middle not in (best, worst)
+    assert metric_colors(["-", float("nan")], None) == [NO_METRIC_COLOR, NO_METRIC_COLOR]

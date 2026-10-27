@@ -6,14 +6,18 @@ full linear model).
 """
 
 from abc import ABC, abstractmethod
+from typing import List, Optional
 import numpy as np
 
 class NodeModel(ABC):
     """Abstract base class for all node prediction models."""
 
     @abstractmethod
-    def get_label(self) -> str:
+    def get_label(self, names: Optional[List[str]] = None) -> str:
         """Returns a short display label describing the model.
+
+        Args:
+            names: Display name of every feature, or None to use X0, X1, ...
 
         Returns:
             String of label
@@ -75,7 +79,7 @@ def node_model_from_dict(dic: dict) -> NodeModel:
 class NoneNodeModel(NodeModel):
     """Identity model used as a placeholder when no model is applied."""
 
-    def get_label(self) -> str:
+    def get_label(self, names: Optional[List[str]] = None) -> str:
         """Returns an empty label, since no model is applied.
 
         Returns:
@@ -125,7 +129,7 @@ class ConstantNodeModel(NodeModel):
         """
         self.value = value
 
-    def get_label(self) -> str:
+    def get_label(self, names: Optional[List[str]] = None) -> str:
         """Returns the constant value as a display label.
 
         Returns:
@@ -196,13 +200,14 @@ class SimpleLinearNodeModel(NodeModel):
         self.coefficient = coefficient
         self.intercept = intercept
 
-    def get_label(self) -> str:
+    def get_label(self, names: Optional[List[str]] = None) -> str:
         """Returns the linear term as a display label.
 
         Returns:
             Label of the linear model.
         """
-        return f"{self.coefficient:.3g}·X{self.idx} + {self.intercept:.3g}"
+        name = f"X{self.idx}" if names is None else names[self.idx]
+        return f"{self.coefficient:.3g}·{name} + {self.intercept:.3g}"
 
     def to_dict(self) -> dict:
         """Serializes the model to a dictionary.
@@ -263,7 +268,7 @@ class LinearNodeModel(NodeModel):
         self.coefficients = coefficients
         self.intercept = intercept
 
-    def get_label(self) -> str:
+    def get_label(self, names: Optional[List[str]] = None) -> str:
         """Returns the linear model as a display label.
 
         Only features with a non-zero coefficient are included.
@@ -274,7 +279,8 @@ class LinearNodeModel(NodeModel):
         parts = []
         for i, coef in enumerate(self.coefficients):
             if coef != 0:
-                parts.append(f"{coef:.3g}·X{i}")
+                name = f"X{i}" if names is None else names[i]
+                parts.append(f"{coef:.3g}·{name}")
         parts.append(f"{self.intercept:.3g}")
         return " + ".join(parts)
 

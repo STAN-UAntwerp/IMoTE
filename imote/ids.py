@@ -24,7 +24,7 @@ TREE_INFO_TEXT = "tree-info"
 
 # --- B Node Information card ----------------------------------------------
 NODE_INFO_TYPE = "node-info-type"
-NODE_INFO_LABEL = "node-info-label"
+NODE_INFO_DESCRIPTION = "node-info-description"
 NODE_INFO_PLOT_SWITCH = "node-info-plot-switch"
 NODE_INFO_PLOT_COLLAPSE = "node-info-plot-collapse"
 NODE_INFO_PLOT_CONTAINER = "node-info-plot-container"
@@ -92,7 +92,8 @@ SWITCH_COMBINE_LIN = "switch-combine-lin"
 SWITCH_NODE_PLOTS = "switch-node-plots"
 SWITCH_MINIMAL = "switch-minimal"
 SWITCH_COLOR_FEATURES = "switch-color-features"
-SWITCH_RSS = "switch-rss"
+SWITCH_FEATURE_NAMES = "switch-feature-names"
+NODE_LABEL_SELECT = "node-label-select"
 
 # Modal for show all node plots
 MODAL_NODE_PLOTS = "modal-node-plots"

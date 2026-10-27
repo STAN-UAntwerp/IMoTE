@@ -23,7 +23,7 @@ from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
 
 logger = logging.getLogger(__name__)
 
-NO_NODE_SELECTED_LABEL = "Click a node in the graph to see its details."
+NO_NODE_SELECTED_DESCRIPTION = "Click a node in the graph to see its details."
 
 def _plot_note(text: str, level: str = "muted", icon: str = "bi-info-circle"):
     return html.Small([html.I(className=f"bi {icon} me-1"), text], className=f"text-{level} d-block")
@@ -32,7 +32,7 @@ def register_callbacks(app):
     @app.callback(
         Output(ids.NODE_INFO_TYPE, "children"),
         Output(ids.NODE_INFO_TYPE, "style"),
-        Output(ids.NODE_INFO_LABEL, "children"),
+        Output(ids.NODE_INFO_DESCRIPTION, "children"),
         Output(ids.NODE_INFO_METRICS, "children"),
 
         Input(ids.CYTOSCAPE_GRAPH, "selectedNodeData"),
@@ -48,7 +48,7 @@ def register_callbacks(app):
         badge_color = NODE_TYPE_COLORS.get(node_type, "#6c757d")
         badge_style = {"backgroundColor": badge_color, "color": "#ffffff"}
 
-        label = node.get("label", NO_NODE_SELECTED_LABEL)
+        description = node.get("description", NO_NODE_SELECTED_DESCRIPTION)
 
         if not node:
             metrics_components = "Select a node to see its metrics."
@@ -60,7 +60,7 @@ def register_callbacks(app):
             viz_tree_node = find_node_by_cytoscape_id(viz_tree, node["id"])
             for metric_name in metric_names:
                 metric_cls = NODE_METRICS_REGISTRY[metric_name]
-                metric_value = metric_cls.run(viz_tree_node, viz_tree.X_train, viz_tree.y_train, viz_tree.y_hat)
+                metric_value = metric_cls.run(viz_tree_node, viz_tree.y_train)
                 metric_cols.append(
                     dbc.Col([
                         html.Small(metric_name, className="text-muted d-block fw-bold"),
@@ -69,7 +69,7 @@ def register_callbacks(app):
                 )
             metrics_components = dbc.Row(metric_cols, className="gy-2")
 
-        return badge_label, badge_style, label, metrics_components
+        return badge_label, badge_style, description, metrics_components
 
 
     @app.callback(

@@ -93,6 +93,11 @@ def get_initial_graph_info():
         input_dict = pickle.load(f)
     return input_dict["viz_tree_dict"], input_dict["tree_params"]
 
+LABEL_NAME_LENGTH = 12
+MINIMAL_LABEL_NAME_LENGTH = 6
+NODE_LABEL_STRUCTURE = "Structure"
+NO_METRIC_COLOR = "#adb5bd"
+
 # ── Stylesheet ────────────────────────────────────────────────────────────
 font_family = "Arial, sans-serif"
 font_size = 12
@@ -143,6 +148,12 @@ CYTOSCAPE_STYLESHEET = [
         "selector": "node.CollapsedNode",
         "style": {
             "shape": "rectangle",
+        },
+    },
+    {
+        "selector": "node.metric",
+        "style": {
+            "color": "#000000",
         },
     },
     # ── Show all node plots ───────────────────────────────────────────────

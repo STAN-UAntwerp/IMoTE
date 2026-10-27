@@ -121,17 +121,30 @@ class SplitNode(InternalNode):
         self.left_child = children[0]
         self.right_child = children[1]
 
-    def get_label(self) -> str:
+    def get_label(self, names=None) -> str:
         """Returns the full display label for this node.
 
         Returns:
-            Label of the form "<NAME>\\nX<pivot_idx> > <pivot_value>", or
-            "<NAME> X<pivot_idx>\\nidx ∉ <categories>" for a categorical split.
+            Label of the form "<NAME>\\n<feature> > <pivot_value>", or
+            "<NAME> <feature>\\nidx ∉ <categories>" for a categorical split.
         """
         name = type(self).__name__.removesuffix("Node").upper()
+        feature = self.feature_name(names, self.pivot_idx)
         if self.categorical:
-            return f"{name} X{self.pivot_idx}\nidx ∉ {self.pivot_value}"
-        return f"{name}\nX{self.pivot_idx} > {self.pivot_value:.3g}"
+            return f"{name} {feature}\nidx ∉ {self.pivot_value}"
+        return f"{name}\n{feature} > {self.pivot_value:.3g}"
+
+    def get_description(self, names=None) -> str:
+        """Returns the split rule and the models on both sides."""
+        feature = self.feature_name(names, self.pivot_idx)
+        if self.categorical:
+            description = f"{feature} in {self.pivot_value} goes left"
+        else:
+            description = f"{feature} ≤ {self.pivot_value:.3g} goes left"
+        left, right = self.left_model.get_label(names), self.right_model.get_label(names)
+        if left:
+            description += f", left adds {left}, right adds {right}"
+        return description
 
     def to_dict(self) -> dict:
         """Serializes the node to a dictionary.

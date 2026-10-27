@@ -25,13 +25,13 @@ class InternalNode(BaseNode, ABC):
         super().__init__(indices, y_res, rss)
         self.pivot_idx = pivot_idx
 
-    def get_minimal_label(self) -> str:
+    def get_minimal_label(self, names=None) -> str:
         """Returns a short display label for this node.
 
         Returns:
             String of minimal label, used when space is limited.
         """
-        return f"X{self.pivot_idx}"
+        return self.feature_name(names, self.pivot_idx)
 
     @abstractmethod
     def set_children(self, children: List[BaseNode]):
@@ -86,13 +86,17 @@ class LinearNode(InternalNode):
         """
         self.child = children[0]
 
-    def get_label(self) -> str:
+    def get_label(self, names=None) -> str:
         """Returns the full display label for this node.
 
         Returns:
-            Label of the form "LIN\\nX<pivot_idx>".
+            Label of the form "LIN\\n<feature>".
         """
-        return f"LIN\nX{self.pivot_idx}"
+        return f"LIN\n{self.feature_name(names, self.pivot_idx)}"
+
+    def get_description(self, names=None) -> str:
+        """Returns the linear term added by this node."""
+        return f"Adds {self.linear_model.get_label(names)}"
 
     def to_dict(self) -> dict:
         """Serializes the node to a dictionary.

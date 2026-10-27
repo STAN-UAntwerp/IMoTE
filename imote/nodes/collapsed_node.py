@@ -19,11 +19,14 @@ class CollapsedNode(BaseNode):
     def get_children(self):
         return []
 
-    def get_label(self) -> str:
+    def get_label(self, names=None) -> str:
         return f"{self.n_nodes} collapsed\nnodes"
 
-    def get_minimal_label(self) -> str:
+    def get_minimal_label(self, names=None) -> str:
         return f"+{self.n_nodes}"
+
+    def get_description(self, names=None) -> str:
+        return f"Hides {self.n_nodes} nodes below node {self.parent_id}"
 
     def to_dict(self):
         node_dict = super().to_dict()

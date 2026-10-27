@@ -46,6 +46,13 @@ def test_labels_are_strings(cls):
     assert isinstance(node.get_minimal_label(), str) and node.get_minimal_label()
 
 
+def test_labels_use_feature_names():
+    node = make_split(PlinNode)
+    names = ["a", "b", "c"]
+    assert "c" in node.get_label(names) and node.get_minimal_label(names) == "c"
+    assert node.get_description(names) == "c ≤ 1.5 goes left, left adds 1·c + 0, right adds -1·c + 4"
+
+
 @pytest.mark.parametrize("cls, wrong_model", [
     (SplitNode, ConstantNodeModel(1.0)),
     (SplitCNode, ConstantNodeModel(1.0)),

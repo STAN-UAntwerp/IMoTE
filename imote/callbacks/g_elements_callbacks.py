@@ -4,7 +4,7 @@ from dash import Input, Output, State, html, no_update, ctx
 from dash.exceptions import PreventUpdate
 
 from imote import ids, status
-from imote.config import DIR_LIVE_OUTPUT, NODE_PLOTS_FIG_SIZE, NODE_PLOTS_N_MAX
+from imote.config import DIR_LIVE_OUTPUT, NODE_PLOTS_FIG_SIZE, NODE_PLOTS_N_MAX, NODE_LABEL_STRUCTURE
 from imote.viz_tree.viz_tree import VizTree
 from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
 
@@ -12,7 +12,7 @@ def register_callbacks(app):
     @app.callback(
         Output(ids.SWITCH_COMBINE_LIN, "value"),
         Output(ids.SWITCH_NODE_PLOTS, "value"),
-        Output(ids.SWITCH_RSS, "value"),
+        Output(ids.NODE_LABEL_SELECT, "value"),
         Output(ids.SWITCH_MINIMAL, "value", allow_duplicate=True),
         Output(ids.SWITCH_COLOR_FEATURES, "value", allow_duplicate=True),
         Output(ids.SWITCH_DATA_EDGE_WIDTH, "value"),
@@ -21,21 +21,22 @@ def register_callbacks(app):
 
         Input(ids.SWITCH_COMBINE_LIN, "value"),
         Input(ids.SWITCH_NODE_PLOTS, "value"),
-        Input(ids.SWITCH_RSS, "value"),
+        Input(ids.NODE_LABEL_SELECT, "value"),
         Input(ids.SWITCH_MINIMAL, "value"),
         Input(ids.SWITCH_COLOR_FEATURES, "value"),
         Input(ids.SWITCH_DATA_EDGE_WIDTH, "value"),
         Input(ids.SWITCH_DATA_NODE_SIZE, "value"),
+        Input(ids.SWITCH_FEATURE_NAMES, "value"),
 
         prevent_initial_call=True,
     )
-    def sync_switches(combine, node_plots, rss, minimal, color, data_egde, data_node):
+    def sync_switches(combine, node_plots, node_label, minimal, color, data_egde, data_node, _feature_names):
         trig = ctx.triggered_id
         out = [no_update] * 7
 
         if trig == ids.SWITCH_NODE_PLOTS and node_plots:
             out[0] = 0  # combine_lin
-            out[2] = False  # rss
+            out[2] = NODE_LABEL_STRUCTURE  # node_label
             out[3] = 0  # minimal
             out[4] = True  # color_features
             out[5] = False # data_edge
@@ -44,17 +45,14 @@ def register_callbacks(app):
         elif trig == ids.SWITCH_COMBINE_LIN and combine:
             out[1] = False  # node_plots
 
-        elif trig == ids.SWITCH_RSS and rss:
+        elif trig == ids.NODE_LABEL_SELECT and node_label != NODE_LABEL_STRUCTURE:
             out[1] = False  # node_plots
-            out[3] = 0  # minimal
 
         elif trig == ids.SWITCH_MINIMAL and minimal > 0:
             out[1] = False  # node_plots
-            out[2] = False  # rss
 
         elif trig == ids.SWITCH_DATA_NODE_SIZE and data_node:
             out[1] = False # node_plots
-            out[2] = False  # rss
             out[3] = 1  # minimal
 
         out.append(time.time())
@@ -106,7 +104,8 @@ def register_callbacks(app):
         State(ids.SWITCH_NODE_PLOTS, "value"),
         State(ids.SWITCH_MINIMAL, "value"),
         State(ids.SWITCH_COLOR_FEATURES, "value"),
-        State(ids.SWITCH_RSS, "value"),
+        State(ids.NODE_LABEL_SELECT, "value"),
+        State(ids.SWITCH_FEATURE_NAMES, "value"),
         State(ids.STORE_VIZ_TREE, "data"),
         State(ids.STORE_HIGHLIGHT_X, "data"),
         State(ids.HIGHLIGHT_OPTIONS, "value"),
@@ -123,7 +122,8 @@ def register_callbacks(app):
             show_node_plots,
             use_minimal,
             use_color_features,
-            show_rss,
+            node_label,
+            use_feature_names,
             viz_tree_dict,
             highlight_x,
             highlight_options,
@@ -151,7 +151,8 @@ def register_callbacks(app):
                 str(DIR_LIVE_OUTPUT),
                 combine_lin=combine_lin,
                 use_color_features = use_color_features,
-                show_rss=show_rss,
+                label_metric=None if node_label == NODE_LABEL_STRUCTURE else node_label,
+                use_feature_names=use_feature_names,
                 show_node_plots=show_node_plots,
                 fig_size=NODE_PLOTS_FIG_SIZE,
                 predsplot_n_max=NODE_PLOTS_N_MAX,

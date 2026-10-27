@@ -17,7 +17,7 @@ class NoneNode(BaseNode):
         """
         return []
 
-    def get_label(self) -> str:
+    def get_label(self, names=None) -> str:
         """Returns the full display label for this node.
 
         Returns:
@@ -25,12 +25,15 @@ class NoneNode(BaseNode):
         """
         return "None"
 
-    def get_minimal_label(self) -> str:
+    def get_minimal_label(self, names=None) -> str:
         """Returns a short display label for this node.
 
         Returns:
             Empty string.
         """
+        return ""
+
+    def get_description(self, names=None) -> str:
         return ""
 
     def to_dict(self) -> dict:

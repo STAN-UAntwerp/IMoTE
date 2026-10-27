@@ -2,7 +2,8 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 from imote import ids
-from imote.config import DEFAULT_COLLAPSE_LEVEL
+from imote.config import DEFAULT_COLLAPSE_LEVEL, NODE_LABEL_STRUCTURE
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
 
 def make_edit_tree_card() -> dbc.Card:
     return dbc.Card(
@@ -48,6 +49,35 @@ def make_edit_tree_card() -> dbc.Card:
                             [
                                 html.Div("Display switches", className="fw-bold mb-2"),
                                 html.Div(
+                                    style={"display": "flex", "gap": "16px", "flexWrap": "wrap"},
+                                    children=[
+                                        dbc.Switch(
+                                            id=ids.SWITCH_COLOR_FEATURES,
+                                            label="Features colors",
+                                            value=False,
+                                        ),
+                                        dbc.Switch(
+                                            id=ids.SWITCH_FEATURE_NAMES,
+                                            label="Feature names",
+                                            value=True,
+                                            className="mb-0 ms-2",
+                                        ),
+                                    ],
+                                ),
+                                html.Div(
+                                    [
+                                        html.Span("Node label: "),
+                                        dbc.Select(
+                                            id=ids.NODE_LABEL_SELECT,
+                                            options=[NODE_LABEL_STRUCTURE, *NODE_METRICS_REGISTRY],
+                                            value=NODE_LABEL_STRUCTURE,
+                                            size="sm",
+                                            style={"width": "180px"},
+                                        ),
+                                    ],
+                                    className="d-flex align-items-center gap-2 mb-2",
+                                ),
+                                html.Div(
                                     [
                                         html.Span("Linear nodes: "),
                                         dbc.RadioItems(
@@ -85,16 +115,6 @@ def make_edit_tree_card() -> dbc.Card:
                                         dbc.Switch(
                                             id=ids.SWITCH_NODE_PLOTS,
                                             label="Show all node plots",
-                                            value=False,
-                                        ),
-                                        dbc.Switch(
-                                            id=ids.SWITCH_COLOR_FEATURES,
-                                            label="Features colors",
-                                            value=False,
-                                        ),
-                                        dbc.Switch(
-                                            id=ids.SWITCH_RSS,
-                                            label="Show RSS",
                                             value=False,
                                         ),
                                     ],

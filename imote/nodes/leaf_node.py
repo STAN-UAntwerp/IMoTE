@@ -33,15 +33,19 @@ class LeafNode(BaseNode):
         """
         return []
 
-    def get_label(self) -> str:
+    def get_label(self, names=None) -> str:
         """Returns the full display label for this node.
 
         Returns:
             Label of the form "Leaf\\n<node_model label>".
         """
-        return "Leaf\n" + self.node_model.get_label()
+        return "Leaf\n" + self.node_model.get_label(names)
 
-    def get_minimal_label(self) -> str:
+    def get_description(self, names=None) -> str:
+        """Returns the prediction made by this leaf."""
+        return f"Predicts {self.node_model.get_label(names)}"
+
+    def get_minimal_label(self, names=None) -> str:
         """Returns a short display label for this node.
 
         Returns:

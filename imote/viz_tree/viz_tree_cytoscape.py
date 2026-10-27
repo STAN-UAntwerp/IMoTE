@@ -16,15 +16,63 @@ from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
 from datetime import datetime
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
 from imote.config import (NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT,
-                          NODE_PLOTS_FIG_SIZE)
+                          NODE_PLOTS_FIG_SIZE, LABEL_NAME_LENGTH, MINIMAL_LABEL_NAME_LENGTH, NO_METRIC_COLOR)
+
+def _shorten(names: list[str] | None, max_length: int) -> list[str] | None:
+    if names is None:
+        return None
+    return [name if len(name) <= max_length else name[:max_length - 1] + "…" for name in names]
+
+
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float, np.integer, np.floating)) and not isinstance(value, (bool, np.bool_))
+
+
+def metric_text(value, compact: bool = False) -> str:
+    """Formats a metric value for a node label, compact for minimal labels."""
+    if not _is_number(value) or not np.isfinite(value):
+        return str(value)
+    if not compact:
+        return str(int(value)) if float(value).is_integer() else f"{value:.4g}"
+    for limit, suffix in ((1e9, "G"), (1e6, "M"), (1e3, "k")):
+        if abs(value) >= limit:
+            return f"{value / limit:.3g}{suffix}"
+    return f"{value:.3g}"
+
+
+def metric_colors(values: list, higher_is_better: bool | None) -> list[str]:
+    """Colors every value on a gradient by its rank among the values, better values are green.
+
+    Ranks are used instead of the values themselves, so one large value (e.g. the RSS of the root) doesn't make all
+    other nodes the same color. Metrics without a better side get a neutral gradient, values that aren't numbers get
+    NO_METRIC_COLOR.
+    """
+    unique_values = np.unique([float(v) for v in values if _is_number(v) and np.isfinite(v)])
+    if higher_is_better is None:
+        cmap, start, stop = plt.colormaps["YlGnBu"], 0.05, 0.55
+    else:
+        cmap, start, stop = plt.colormaps["RdYlGn"], 0.1, 0.9
+
+    colors = []
+    for value in values:
+        if not _is_number(value) or not np.isfinite(value):
+            colors.append(NO_METRIC_COLOR)
+            continue
+        x = 0.5 if len(unique_values) < 2 else np.searchsorted(unique_values, float(value)) / (len(unique_values) - 1)
+        if higher_is_better is False:
+            x = 1 - x
+        colors.append(to_hex(cmap(start + x * (stop - start))))
+    return colors
 
 # ── Convert a VizTree into Cytoscape elements (nodes + edges) ──────────────────
 def viz_tree_to_cytoscape_elements(
         viz_tree: "VizTree",
         dir_live: str,
         combine_lin: int = 0, # 0 - don't combine, 1 - combine to node, 2 - combine to edge
-        show_rss: bool = False,
+        label_metric: str | None = None,
+        use_feature_names: bool = True,
         use_color_features: bool = False,
         show_node_plots: bool = False,
         fig_size = NODE_PLOTS_FIG_SIZE,
@@ -130,37 +178,48 @@ def viz_tree_to_cytoscape_elements(
         depth = min(max(3, true_depth), 12)
         power = -0.7 / 9 * (depth - 3) + 1
 
-    for node in nodes:
-        if highlight_x is not None and only_show_highlight and node not in highlight_nodes:
-            continue
-        if isinstance(node, NoneNode):
-            continue
-        node_type = node.__class__.__name__
-        label = node.get_label()
-        if show_rss:
-            label += f"\nrss:{node.rss:.5g}"
-        n_samples = np.sum(node.indices)
+    nodes = [node for node in nodes if not isinstance(node, NoneNode)]
+    if highlight_x is not None and only_show_highlight:
+        nodes = [node for node in nodes if node in highlight_nodes]
 
-        if use_color_features:
-            if isinstance(node, InternalNode):
+    names = viz_tree.feature_names if use_feature_names else None
+    label_names = _shorten(names, LABEL_NAME_LENGTH)
+    minimal_names = _shorten(names, MINIMAL_LABEL_NAME_LENGTH)
+    if label_metric:
+        metric = NODE_METRICS_REGISTRY[label_metric]
+        values = [metric.compute(node, viz_tree.y_train) for node in nodes]
+        colors = metric_colors(values, metric.higher_is_better)
+
+    for i, node in enumerate(nodes):
+        node_type = node.__class__.__name__
+        n_samples = np.sum(node.indices)
+        classes = [node_type]
+
+        if label_metric:
+            label = metric_text(values[i])
+            label_minimal = metric_text(values[i], compact=True)
+            color = colors[i]
+            classes.append("metric")
+        else:
+            label = node.get_label(label_names)
+            label_minimal = node.get_minimal_label(minimal_names)
+            if use_color_features and isinstance(node, InternalNode):
                 color = feature_colors_hex[node.pivot_idx]
             else:
                 color = NODE_TYPE_COLORS[node_type]
-        else:
-            color = NODE_TYPE_COLORS[node_type]
 
         data: dict[str, Any] = {
             "id": f"node{node.id}",
             "node_type": node_type,
             "color": color,
             "label": label,
-            "label_minimal": node.get_minimal_label(),
+            "label_minimal": label_minimal,
+            "description": node.get_description(viz_tree.feature_names),
             "n_samples": n_samples,
             "rss": float(f"{node.rss:.5g}"),
             "rss_root_reduction": float(f"{(1 - node.rss/viz_tree.root_node.rss)*100:.3g}"),
             "highlight": node in highlight_nodes,
         }
-        classes  = [node_type]
         node_highlight_x = None
         if node in highlight_nodes:
             classes.append("highlight")
