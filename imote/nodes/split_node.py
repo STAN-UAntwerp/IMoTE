@@ -4,6 +4,7 @@ from imote.nodes.base_node import BaseNode
 from imote.nodes.node_model import (NodeModel, NoneNodeModel, ConstantNodeModel, SimpleLinearNodeModel,
                               node_model_from_dict)
 from imote.nodes.internal_node import InternalNode
+from imote.nodes.label_formatter import LabelFormatter
 
 
 @BaseNode.register
@@ -121,30 +122,36 @@ class SplitNode(InternalNode):
         self.left_child = children[0]
         self.right_child = children[1]
 
-    def get_label(self, names=None) -> str:
+    def _conditions(self, fmt: LabelFormatter) -> tuple:
+        """Returns the conditions of the left and right child, e.g. ("x ≤ 3", "> 3")."""
+        feature = fmt.feature(self.pivot_idx)
+        if self.categorical:
+            categories = "{" + ", ".join(fmt.number(value) for value in self.pivot_value) + "}"
+            return f"{feature} ∈ {categories}", f"∉ {categories}"
+        return f"{feature} ≤ {fmt.number(self.pivot_value)}", f"> {fmt.number(self.pivot_value)}"
+
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the full display label for this node.
 
         Returns:
             Label of the form "<NAME>\\n<feature> > <pivot_value>", or
-            "<NAME> <feature>\\nidx ∉ <categories>" for a categorical split.
+            "<NAME>\\n<feature> ∉ <categories>" for a categorical split.
         """
         name = type(self).__name__.removesuffix("Node").upper()
-        feature = self.feature_name(names, self.pivot_idx)
-        if self.categorical:
-            return f"{name} {feature}\nidx ∉ {self.pivot_value}"
-        return f"{name}\n{feature} > {self.pivot_value:.3g}"
+        _, right_condition = self._conditions(fmt)
+        return f"{name}\n{fmt.feature(self.pivot_idx)} {right_condition}"
 
-    def get_description(self, names=None) -> str:
-        """Returns the split rule and the models on both sides."""
-        feature = self.feature_name(names, self.pivot_idx)
-        if self.categorical:
-            description = f"{feature} in {self.pivot_value} goes left"
-        else:
-            description = f"{feature} ≤ {self.pivot_value:.3g} goes left"
-        left, right = self.left_model.get_label(names), self.right_model.get_label(names)
-        if left:
-            description += f", left adds {left}, right adds {right}"
-        return description
+    def get_description(self, fmt: LabelFormatter) -> str:
+        """Returns the split condition and, if the split has models, the model on each side.
+
+        Returns:
+            Description like "x ≤ 3: 1.2  |  > 3: -0.5", or only "x ≤ 3" for a split without models.
+        """
+        left_condition, right_condition = self._conditions(fmt)
+        left_model = self.left_model.get_label(fmt)
+        if not left_model:
+            return left_condition
+        return f"{left_condition}: {left_model}  |  {right_condition}: {self.right_model.get_label(fmt)}"
 
     def to_dict(self) -> dict:
         """Serializes the node to a dictionary.

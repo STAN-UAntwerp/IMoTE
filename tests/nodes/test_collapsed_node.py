@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.collapsed_node import CollapsedNode
 from imote.nodes.split_node import SplitNode
 
@@ -28,8 +29,8 @@ def test_collapse_leaf_raises(leaf):
 
 def test_labels_are_strings(tree):
     node = CollapsedNode(tree)
-    assert isinstance(node.get_label(), str) and node.get_label()
-    assert isinstance(node.get_minimal_label(), str) and node.get_minimal_label()
+    assert isinstance(node.get_label(LabelFormatter()), str) and node.get_label(LabelFormatter())
+    assert isinstance(node.get_minimal_label(LabelFormatter()), str) and node.get_minimal_label(LabelFormatter())
 
 
 def test_round_trip(tree):

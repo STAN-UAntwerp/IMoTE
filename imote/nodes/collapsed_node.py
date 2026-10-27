@@ -1,4 +1,5 @@
 from imote.nodes.base_node import BaseNode
+from imote.nodes.label_formatter import LabelFormatter
 
 @BaseNode.register
 class CollapsedNode(BaseNode):
@@ -19,14 +20,14 @@ class CollapsedNode(BaseNode):
     def get_children(self):
         return []
 
-    def get_label(self, names=None) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         return f"{self.n_nodes} collapsed\nnodes"
 
-    def get_minimal_label(self, names=None) -> str:
+    def get_minimal_label(self, fmt: LabelFormatter) -> str:
         return f"+{self.n_nodes}"
 
-    def get_description(self, names=None) -> str:
-        return f"Hides {self.n_nodes} nodes below node {self.parent_id}"
+    def get_description(self, fmt: LabelFormatter) -> str:
+        return f"{self.n_nodes} hidden nodes"
 
     def to_dict(self):
         node_dict = super().to_dict()

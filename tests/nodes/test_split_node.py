@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.internal_node import LinearNode
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.node_model import ConstantNodeModel, NoneNodeModel, SimpleLinearNodeModel
@@ -42,15 +43,15 @@ def test_children():
 @pytest.mark.parametrize("cls", CLASSES)
 def test_labels_are_strings(cls):
     node = make_split(cls)
-    assert isinstance(node.get_label(), str) and node.get_label()
-    assert isinstance(node.get_minimal_label(), str) and node.get_minimal_label()
+    assert isinstance(node.get_label(LabelFormatter()), str) and node.get_label(LabelFormatter())
+    assert isinstance(node.get_minimal_label(LabelFormatter()), str) and node.get_minimal_label(LabelFormatter())
 
 
 def test_labels_use_feature_names():
     node = make_split(PlinNode)
-    names = ["a", "b", "c"]
-    assert "c" in node.get_label(names) and node.get_minimal_label(names) == "c"
-    assert node.get_description(names) == "c ≤ 1.5 goes left, left adds 1·c + 0, right adds -1·c + 4"
+    fmt = LabelFormatter(["a", "b", "c"])
+    assert "c" in node.get_label(fmt) and node.get_minimal_label(fmt) == "c"
+    assert node.get_description(fmt) == "c ≤ 1.5: 1·c  |  > 1.5: -1·c + 4"
 
 
 @pytest.mark.parametrize("cls, wrong_model", [

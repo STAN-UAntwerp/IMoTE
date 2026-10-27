@@ -97,6 +97,8 @@ LABEL_NAME_LENGTH = 12
 MINIMAL_LABEL_NAME_LENGTH = 6
 NODE_LABEL_STRUCTURE = "Structure"
 NO_METRIC_COLOR = "#adb5bd"
+OUT_OF_RANGE_COLOR = "#5c0a1e"
+NEAR_ZERO = 1e-12
 
 # ── Stylesheet ────────────────────────────────────────────────────────────
 font_family = "Arial, sans-serif"
@@ -154,6 +156,12 @@ CYTOSCAPE_STYLESHEET = [
         "selector": "node.metric",
         "style": {
             "color": "#000000",
+        },
+    },
+    {
+        "selector": "node.out_of_range",
+        "style": {
+            "color": "#ffffff",
         },
     },
     # ── Show all node plots ───────────────────────────────────────────────

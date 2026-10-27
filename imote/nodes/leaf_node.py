@@ -1,6 +1,7 @@
 from typing import List
 import numpy as np
 from imote.nodes.base_node import BaseNode
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.node_model import node_model_from_dict, LinearNodeModel
 
 @BaseNode.register
@@ -33,19 +34,19 @@ class LeafNode(BaseNode):
         """
         return []
 
-    def get_label(self, names=None) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the full display label for this node.
 
         Returns:
             Label of the form "Leaf\\n<node_model label>".
         """
-        return "Leaf\n" + self.node_model.get_label(names)
+        return "Leaf\n" + self.node_model.get_label(fmt)
 
-    def get_description(self, names=None) -> str:
-        """Returns the prediction made by this leaf."""
-        return f"Predicts {self.node_model.get_label(names)}"
+    def get_description(self, fmt: LabelFormatter) -> str:
+        """Returns the model of this leaf."""
+        return self.node_model.get_label(fmt)
 
-    def get_minimal_label(self, names=None) -> str:
+    def get_minimal_label(self, fmt: LabelFormatter) -> str:
         """Returns a short display label for this node.
 
         Returns:

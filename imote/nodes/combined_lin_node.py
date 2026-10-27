@@ -10,6 +10,7 @@ Not used for initialising a tree structure.
 from typing import List
 
 from imote.nodes.base_node import BaseNode
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.internal_node import LinearNode
 
 class CombinedLinNode(BaseNode):
@@ -43,17 +44,14 @@ class CombinedLinNode(BaseNode):
     def get_children(self):
         return [self.child]
 
-    def get_label(self, names=None) -> str:
-        if names is None:
-            return "LIN\nidx=" + ", ".join(str(i) for i in self.pivot_indices)
-        return "LIN\n" + ", ".join(names[i] for i in self.pivot_indices)
+    def get_label(self, fmt: LabelFormatter) -> str:
+        return "LIN\n" + ", ".join(fmt.feature(i) for i in self.pivot_indices)
 
-    def get_minimal_label(self, names=None) -> str:
-        return f"{self.feature_name(names, self.pivot_indices[0])}.."
+    def get_minimal_label(self, fmt: LabelFormatter) -> str:
+        return f"{fmt.feature(self.pivot_indices[0])}+"
 
-    def get_description(self, names=None) -> str:
-        terms = [f"{self.lin_coefficients[i]:.3g}·{self.feature_name(names, i)}" for i in self.pivot_indices]
-        return f"Adds {' + '.join(terms)} + {self.intercept:.3g}"
+    def get_description(self, fmt: LabelFormatter) -> str:
+        return fmt.expression([(i, self.lin_coefficients[i]) for i in self.pivot_indices], self.intercept)
 
     # def to_dict(self):
     #     node_dict = super().to_dict()

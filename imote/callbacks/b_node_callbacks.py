@@ -133,6 +133,8 @@ def register_callbacks(app):
                          ):
         if not switch_on or not selected_node:
             return _plot_note("Select a node in the graph to see its plot."), None
+        if selected_node[0]["node_type"] == "CombinedLinNode":
+            return _plot_note("No plot available for combined linear nodes, show all linear nodes to see their plots."), None
 
         use_intercept = "intercept" in predsplot_options
         truncate_total_pred = "truncate" in predsplot_options

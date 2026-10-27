@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.combined_lin_node import CombinedLinNode
 from imote.nodes.internal_node import LinearNode
 from imote.nodes.node_model import SimpleLinearNodeModel
@@ -29,5 +30,5 @@ def test_init(chain, leaf):
 
 def test_labels_are_strings(chain):
     node = CombinedLinNode(chain)
-    assert isinstance(node.get_label(), str) and node.get_label()
-    assert isinstance(node.get_minimal_label(), str) and node.get_minimal_label()
+    assert isinstance(node.get_label(LabelFormatter()), str) and node.get_label(LabelFormatter())
+    assert isinstance(node.get_minimal_label(LabelFormatter()), str) and node.get_minimal_label(LabelFormatter())

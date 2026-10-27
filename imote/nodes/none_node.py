@@ -1,4 +1,5 @@
 from imote.nodes.base_node import BaseNode
+from imote.nodes.label_formatter import LabelFormatter
 from typing import List
 
 @BaseNode.register
@@ -17,7 +18,7 @@ class NoneNode(BaseNode):
         """
         return []
 
-    def get_label(self, names=None) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the full display label for this node.
 
         Returns:
@@ -25,7 +26,7 @@ class NoneNode(BaseNode):
         """
         return "None"
 
-    def get_minimal_label(self, names=None) -> str:
+    def get_minimal_label(self, fmt: LabelFormatter) -> str:
         """Returns a short display label for this node.
 
         Returns:
@@ -33,7 +34,7 @@ class NoneNode(BaseNode):
         """
         return ""
 
-    def get_description(self, names=None) -> str:
+    def get_description(self, fmt: LabelFormatter) -> str:
         return ""
 
     def to_dict(self) -> dict:

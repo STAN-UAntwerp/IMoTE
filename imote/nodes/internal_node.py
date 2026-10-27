@@ -3,6 +3,7 @@ import numpy as np
 from typing import List
 
 from imote.nodes.base_node import BaseNode
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.node_model import SimpleLinearNodeModel
 
 class InternalNode(BaseNode, ABC):
@@ -25,13 +26,13 @@ class InternalNode(BaseNode, ABC):
         super().__init__(indices, y_res, rss)
         self.pivot_idx = pivot_idx
 
-    def get_minimal_label(self, names=None) -> str:
+    def get_minimal_label(self, fmt: LabelFormatter) -> str:
         """Returns a short display label for this node.
 
         Returns:
             String of minimal label, used when space is limited.
         """
-        return self.feature_name(names, self.pivot_idx)
+        return fmt.feature(self.pivot_idx)
 
     @abstractmethod
     def set_children(self, children: List[BaseNode]):
@@ -86,17 +87,17 @@ class LinearNode(InternalNode):
         """
         self.child = children[0]
 
-    def get_label(self, names=None) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the full display label for this node.
 
         Returns:
             Label of the form "LIN\\n<feature>".
         """
-        return f"LIN\n{self.feature_name(names, self.pivot_idx)}"
+        return f"LIN\n{fmt.feature(self.pivot_idx)}"
 
-    def get_description(self, names=None) -> str:
-        """Returns the linear term added by this node."""
-        return f"Adds {self.linear_model.get_label(names)}"
+    def get_description(self, fmt: LabelFormatter) -> str:
+        """Returns the linear model of this node."""
+        return self.linear_model.get_label(fmt)
 
     def to_dict(self) -> dict:
         """Serializes the node to a dictionary.
