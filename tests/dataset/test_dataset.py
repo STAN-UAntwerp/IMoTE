@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from imote.dataset.dataset import Dataset
+from imote.dataset.dataset import Dataset, fetch_pmlb
 
 
 @pytest.fixture
@@ -62,11 +62,40 @@ def test_from_csv_non_numeric_raises(tmp_path):
         Dataset.from_csv(str(path), "target")
 
 
-def test_from_pmlb(monkeypatch):
-    df = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0], "c": [0.0, 1.0], "target": [5.0, 6.0]})
-    monkeypatch.setattr("pmlb.fetch_data", lambda name: df)
-    ds = Dataset.from_pmlb("1199_BNG_echoMonths")
+PMLB_DF = pd.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0], "c": [0.0, 1.0], "target": [5.0, 6.0]})
+
+
+@pytest.fixture
+def downloads(monkeypatch):
+    names = []
+
+    def fake_fetch_data(name):
+        names.append(name)
+        return PMLB_DF.copy()
+
+    monkeypatch.setattr("pmlb.fetch_data", fake_fetch_data)
+    return names
+
+
+def test_from_pmlb(downloads, tmp_path):
+    ds = Dataset.from_pmlb("1199_BNG_echoMonths", cache_dir=tmp_path)
     np.testing.assert_array_equal(ds.y, [5.0, 6.0])
     assert ds.feature_names == ["a", "b", "c"]
     assert ds.name == "1199_BNG_echoMonths"
     np.testing.assert_array_equal(ds.cat_ids, [0, 2, 8])  # from PMLB_DATASETS_CAT_IDS
+
+
+def test_fetch_pmlb_keeps_exact_values(monkeypatch, tmp_path):
+    df = pd.DataFrame({"a": [0.1 + 0.2, 1 / 3, 1e-300], "target": [2 / 7, -1e10 / 3, 5.0]})
+    monkeypatch.setattr("pmlb.fetch_data", lambda name: df)
+    fetch_pmlb("exact", tmp_path)
+    np.testing.assert_array_equal(fetch_pmlb("exact", tmp_path).to_numpy(), df.to_numpy())
+
+
+def test_fetch_pmlb_without_connection_saves_nothing(monkeypatch, tmp_path):
+    def offline(name):
+        raise OSError("no connection")
+
+    monkeypatch.setattr("pmlb.fetch_data", offline)
+    with pytest.raises(ConnectionError):
+        fetch_pmlb("547_no2", tmp_path)

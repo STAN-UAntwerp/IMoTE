@@ -1,12 +1,44 @@
 from __future__ import annotations
 
 import logging
+import os
+import tempfile
+import zlib
+from pathlib import Path
 from typing import Optional, List
 import numpy as np
 import pandas as pd
 
+from imote.benchmark_info import PMLB_DATASETS_CAT_IDS
+from imote.config import DIR_PMLB_CACHE
 
 logger = logging.getLogger(__name__)
+
+
+def fetch_pmlb(dataset_name: str, cache_dir: Path = DIR_PMLB_CACHE) -> pd.DataFrame:
+    """Returns a PMLB dataset, downloading it only if it isn't saved in cache_dir yet.
+
+    Raises:
+        ConnectionError: If the dataset isn't saved yet and can't be downloaded.
+    """
+    path = Path(cache_dir) / f"{dataset_name}.tsv.gz"
+    if path.exists():
+        try:
+            return pd.read_csv(path, sep="\t", float_precision="round_trip")
+        except (OSError, EOFError, ValueError, zlib.error):
+            logger.warning("Saved dataset %s can't be read, downloading it again", path)
+            path.unlink(missing_ok=True)
+
+    from pmlb import fetch_data
+    try:
+        df = fetch_data(dataset_name)
+    except OSError as e:
+        raise ConnectionError(f"Could not download PMLB dataset {dataset_name}: ({e})") from e
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(path, sep="\t", index=False, compression="gzip")
+    logger.info(f"Saved PMLB dataset {dataset_name} to {path}")
+    return df
 
 
 class Dataset:
@@ -92,16 +124,15 @@ class Dataset:
         dataset_name: str,
         cat_ids: Optional[np.ndarray] = None,
         cat_unique_threshold: int = 8,
+        cache_dir: Path = DIR_PMLB_CACHE,
     ) -> "Dataset":
-        #Load a dataset from PMLB.
-        from pmlb import fetch_data
-        from imote.benchmark_info import PMLB_DATASETS_CAT_IDS
+        # Load a dataset from PMLB, downloading it only if it isn't saved in cache_dir yet.
 
-        df = fetch_data(dataset_name)
+        df = fetch_pmlb(dataset_name, cache_dir)
         y = df["target"].to_numpy()
         X_df = df.drop(columns=["target"])
         X = X_df.to_numpy()
-        feature_names = list(X_df.columns)
+        feature_names = [str(column) for column in X_df.columns]
 
         if cat_ids is None:
             cat_ids = PMLB_DATASETS_CAT_IDS.get(dataset_name)
@@ -138,12 +169,10 @@ class Dataset:
         if isinstance(target_col, str):
             if target_col not in df.columns:
                 raise ValueError(f"target_col {target_col!r} not found in columns {list(df.columns)}")
-            target_name = target_col
             target_col_name = target_col
         elif isinstance(target_col, int):
             if not (-df.shape[1] <= target_col < df.shape[1]):
                 raise ValueError(f"target_col index {target_col} out of range for {df.shape[1]} columns")
-            target_name = None
             target_col_name = df.columns[target_col]
         else:
             raise TypeError(f"target_col must be str or int, got {type(target_col)}")
@@ -157,7 +186,7 @@ class Dataset:
         X = X.astype(float)
         y = y.astype(float)
 
-        feature_names = list(X_df.columns)
+        feature_names = [str(column) for column in X_df.columns]
 
         return cls(
             X=X,
@@ -165,6 +194,6 @@ class Dataset:
             feature_names=feature_names,
             cat_ids=cat_ids,
             name=name or path,
-            target_name=target_name,
+            target_name=str(target_col_name),
             cat_unique_threshold=cat_unique_threshold,
         )

@@ -17,15 +17,19 @@ from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
 from imote.plots.classplot import make_classification_plot
 from datetime import datetime
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, metrics_for_task
+from imote.nodes.label_formatter import LabelFormatter
+from imote.node_metrics.node_labels import display_names, metric_colors, metric_text
 from imote.config import (NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT,
-                          NODE_PLOTS_FIG_SIZE)
+                          NODE_PLOTS_FIG_SIZE, LABEL_NAME_LENGTH, MINIMAL_LABEL_NAME_LENGTH)
 
 # ── Convert a VizTree into Cytoscape elements (nodes + edges) ──────────────────
 def viz_tree_to_cytoscape_elements(
         viz_tree: "VizTree",
         dir_live: str,
         combine_lin: int = 0, # 0 - don't combine, 1 - combine to node, 2 - combine to edge
-        show_rss: bool = False,
+        label_metric: str | None = None,
+        use_feature_names: bool = True,
         use_color_features: bool = False,
         show_node_plots: bool = False,
         fig_size = NODE_PLOTS_FIG_SIZE,
@@ -127,41 +131,54 @@ def viz_tree_to_cytoscape_elements(
     if use_edge_width or use_node_size:
         node_sizes = [np.sum(node.indices) for node in nodes]
         max_n_samples_node, min_n_samples_node = max(node_sizes), min(node_sizes)
-        true_depth = viz_tree.get_depth()
-        depth = min(max(3, true_depth), 12)
+        depth = min(max(3, viz_tree.get_depth()), 12)
         power = -0.7 / 9 * (depth - 3) + 1
 
-    for node in nodes:
-        if highlight_x is not None and only_show_highlight and node not in highlight_nodes:
-            continue
-        if isinstance(node, NoneNode):
-            continue
-        node_type = node.__class__.__name__
-        label = node.get_label()
-        if show_rss:
-            label += f"\nrss:{node.rss:.5g}"
-        n_samples = np.sum(node.indices)
+    nodes = [node for node in nodes if not isinstance(node, NoneNode)]
+    if highlight_x is not None and only_show_highlight:
+        nodes = [node for node in nodes if node in highlight_nodes]
 
-        if use_color_features:
-            if isinstance(node, InternalNode):
+    n_features = viz_tree.X_train.shape[1]
+    shown_names = viz_tree.feature_names if use_feature_names else None
+    if label_metric not in metrics_for_task(viz_tree.task):
+        label_metric = None  # e.g. a classification metric still selected while a regression tree loads
+    if label_metric:
+        metric = NODE_METRICS_REGISTRY[label_metric]
+        values = [metric.compute(node, viz_tree.y_train) for node in nodes]
+        colors = metric_colors(values, metric)
+
+    for i, node in enumerate(nodes):
+        node_type = node.__class__.__name__
+        n_samples = np.sum(node.indices)
+        classes = [node_type]
+
+        if label_metric:
+            label = metric_text(values[i])
+            label_minimal = metric_text(values[i], compact=True)
+            color = colors[i]
+            classes.append("metric")
+        else:
+            label_fmt = LabelFormatter(display_names(shown_names, n_features, LABEL_NAME_LENGTH))
+            minimal_fmt = LabelFormatter(display_names(shown_names, n_features, MINIMAL_LABEL_NAME_LENGTH))
+            label = node.get_label(label_fmt)
+            label_minimal = node.get_minimal_label(minimal_fmt)
+            if use_color_features and isinstance(node, InternalNode):
                 color = feature_colors_hex[node.pivot_idx]
             else:
                 color = NODE_TYPE_COLORS[node_type]
-        else:
-            color = NODE_TYPE_COLORS[node_type]
 
         data: dict[str, Any] = {
             "id": f"node{node.id}",
             "node_type": node_type,
             "color": color,
             "label": label,
-            "label_minimal": node.get_minimal_label(),
+            "label_minimal": label_minimal,
+            "description": node.get_description(LabelFormatter(viz_tree.feature_names)),
             "n_samples": n_samples,
             "rss": float(f"{node.rss:.5g}"),
             "rss_root_reduction": float(f"{(1 - node.rss/viz_tree.root_node.rss)*100:.3g}"),
             "highlight": node in highlight_nodes,
         }
-        classes  = [node_type]
         node_highlight_x = None
         if node in highlight_nodes:
             classes.append("highlight")
@@ -171,7 +188,7 @@ def viz_tree_to_cytoscape_elements(
             plot_file = f"{dir_live}/regplots/regplot_node{node.id}_{elements_id}.svg"
             if viz_tree.task == "classification":
                 make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, plot_file, fig_size,
-                                         feature_colors, None, node_highlight_x)
+                                         feature_colors, viz_tree.feature_names, node_highlight_x)
             else:
                 make_regression_plot(
                     node,
@@ -179,8 +196,9 @@ def viz_tree_to_cytoscape_elements(
                     plot_file,
                     fig_size,
                     feature_colors,
-                    None,
-                    node_highlight_x
+                    viz_tree.feature_names,
+                    node_highlight_x,
+                    viz_tree.target_name,
                 )
             data["dir_regplot"] = f"/internal_regplots/regplot_node{node.id}_{elements_id}.svg"
             classes.append("regplot")
@@ -198,7 +216,7 @@ def viz_tree_to_cytoscape_elements(
                            file_directory=f"{dir_live}/predsplots/predsplot2_node{node.id}_{elements_id}.svg",
                            highlight_x=node_highlight_x,
                            staircase=predsplot_staircase,
-                           feature_names=None,
+                           feature_names=viz_tree.feature_names,
                            all_feature_colors=feature_colors,
                            short_labels=True,
                            )
@@ -217,7 +235,7 @@ def viz_tree_to_cytoscape_elements(
                               n_max=predsplot_n_max,
                               intercept=intercept,
                               fig_size=fig_size,
-                              feature_names=None,
+                              feature_names=viz_tree.feature_names,
                               all_feature_colors=feature_colors,
                               display_type=predsplot_display_type,
                               truncate_total_pred=predsplot_truncate_total_pred,

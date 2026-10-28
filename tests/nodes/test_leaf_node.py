@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.node_model import ConstantNodeModel, LinearNodeModel
 
@@ -10,8 +11,8 @@ def test_has_no_children(leaf):
 
 
 def test_labels_are_strings(leaf):
-    assert isinstance(leaf.get_label(), str) and leaf.get_label()
-    assert isinstance(leaf.get_minimal_label(), str) and leaf.get_minimal_label()
+    assert isinstance(leaf.get_label(LabelFormatter()), str) and leaf.get_label(LabelFormatter())
+    assert isinstance(leaf.get_minimal_label(LabelFormatter()), str) and leaf.get_minimal_label(LabelFormatter())
 
 
 @pytest.mark.parametrize("model", [ConstantNodeModel(4.0), LinearNodeModel(np.array([1.0, 3.0]), 0.5)])

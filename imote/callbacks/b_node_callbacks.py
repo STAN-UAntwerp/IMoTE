@@ -24,7 +24,7 @@ from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, metrics_for_ta
 
 logger = logging.getLogger(__name__)
 
-NO_NODE_SELECTED_LABEL = "Click a node in the graph to see its details."
+NO_NODE_SELECTED_DESCRIPTION = "Click a node in the graph to see its details."
 
 def _plot_note(text: str, level: str = "muted", icon: str = "bi-info-circle"):
     return html.Small([html.I(className=f"bi {icon} me-1"), text], className=f"text-{level} d-block")
@@ -33,7 +33,7 @@ def register_callbacks(app):
     @app.callback(
         Output(ids.NODE_INFO_TYPE, "children"),
         Output(ids.NODE_INFO_TYPE, "style"),
-        Output(ids.NODE_INFO_LABEL, "children"),
+        Output(ids.NODE_INFO_DESCRIPTION, "children"),
         Output(ids.NODE_INFO_METRICS, "children"),
 
         Input(ids.CYTOSCAPE_GRAPH, "selectedNodeData"),
@@ -49,7 +49,7 @@ def register_callbacks(app):
         badge_color = NODE_TYPE_COLORS.get(node_type, "#6c757d")
         badge_style = {"backgroundColor": badge_color, "color": "#ffffff"}
 
-        label = node.get("label", NO_NODE_SELECTED_LABEL)
+        description = node.get("description", NO_NODE_SELECTED_DESCRIPTION)
 
         if not node:
             metrics_components = "Select a node to see its metrics."
@@ -61,7 +61,7 @@ def register_callbacks(app):
             viz_tree_node = find_node_by_cytoscape_id(viz_tree, node["id"])
             for metric_name in metric_names:
                 metric_cls = NODE_METRICS_REGISTRY[metric_name]
-                metric_value = metric_cls.run(viz_tree_node, viz_tree.X_train, viz_tree.y_train, viz_tree.y_hat)
+                metric_value = metric_cls.run(viz_tree_node, viz_tree.y_train)
                 metric_cols.append(
                     dbc.Col([
                         html.Small(metric_name, className="text-muted d-block fw-bold"),
@@ -70,7 +70,7 @@ def register_callbacks(app):
                 )
             metrics_components = dbc.Row(metric_cols, className="gy-2")
 
-        return badge_label, badge_style, label, metrics_components
+        return badge_label, badge_style, description, metrics_components
 
     @app.callback(
         Output(ids.NODE_INFO_METRICS_DROPDOWN, "options"),
@@ -96,6 +96,14 @@ def register_callbacks(app):
     )
     def toggle_node_plot(switch_on):
         return bool(switch_on)
+
+    @app.callback(
+        Output(ids.PREDSPLOT_SETTINGS, "disabled"),
+        Input(ids.CYTOSCAPE_GRAPH, "selectedNodeData"),
+        prevent_initial_call=True,
+    )
+    def toggle_predsplot_settings(selected_node):
+        return bool(selected_node) and selected_node[0]["node_type"] != "LeafNode"
 
     @app.callback(
         Output(ids.DOWNLOAD_PLOT, "data"),
@@ -142,6 +150,8 @@ def register_callbacks(app):
                          ):
         if not switch_on or not selected_node:
             return _plot_note("Select a node in the graph to see its plot."), None
+        if selected_node[0]["node_type"] == "CombinedLinNode":
+            return _plot_note("No plot available for combined linear nodes, show all linear nodes to see their plots."), None
 
         use_intercept = "intercept" in predsplot_options
         truncate_total_pred = "truncate" in predsplot_options
@@ -174,7 +184,7 @@ def register_callbacks(app):
                                file_directory=str(file_dir),
                                highlight_x=highlight_x_arr,
                                staircase=staircase,
-                               feature_names=None,
+                               feature_names=viz_tree.feature_names,
                                all_feature_colors=feature_colors,
                                )
                 else:
@@ -194,7 +204,7 @@ def register_callbacks(app):
                               n_max=nmax,
                               intercept=intercept,
                               fig_size=(figw, figh),
-                              feature_names=None,
+                              feature_names=viz_tree.feature_names,
                               all_feature_colors=feature_colors,
                               display_type=display_type,
                               truncate_total_pred=truncate_total_pred,
@@ -210,8 +220,9 @@ def register_callbacks(app):
                     str(file_dir),
                     (figw, figh),
                     feature_colors,
-                    None,
-                    highlight_x_arr
+                    viz_tree.feature_names,
+                    highlight_x_arr,
+                    viz_tree.target_name,
                 )
                 if viz_tree.task == "classification":
                     class_file_dir = DIR_LIVE_OUTPUT / "regplots" / f"classplot_node{node.id}_{viz_tree.tree_id}.svg"

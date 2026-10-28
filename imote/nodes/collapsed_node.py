@@ -1,4 +1,5 @@
 from imote.nodes.base_node import BaseNode
+from imote.nodes.label_formatter import LabelFormatter
 
 @BaseNode.register
 class CollapsedNode(BaseNode):
@@ -7,6 +8,7 @@ class CollapsedNode(BaseNode):
 
     def __init__(self, parent_node: BaseNode):
         super().__init__(parent_node.indices, parent_node.y_res, parent_node.rss)
+        self.log_odds = parent_node.log_odds
         copy_parent = parent_node.__class__.from_dict(parent_node.to_dict())
         self.parent_id = parent_node.id
         self.parent = copy_parent
@@ -19,11 +21,14 @@ class CollapsedNode(BaseNode):
     def get_children(self):
         return []
 
-    def get_label(self) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         return f"{self.n_nodes} collapsed\nnodes"
 
-    def get_minimal_label(self) -> str:
+    def get_minimal_label(self, fmt: LabelFormatter) -> str:
         return f"+{self.n_nodes}"
+
+    def get_description(self, fmt: LabelFormatter) -> str:
+        return f"{self.n_nodes} hidden nodes"
 
     def to_dict(self):
         node_dict = super().to_dict()

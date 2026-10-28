@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.node_model import (
     ConstantNodeModel,
     LinearNodeModel,
@@ -34,7 +35,7 @@ def test_predict(model, x, expected):
 
 @pytest.mark.parametrize("model", MODELS)
 def test_label_is_string(model):
-    assert isinstance(model.get_label(), str)
+    assert isinstance(model.get_label(LabelFormatter()), str)
 
 
 @pytest.mark.parametrize("model", MODELS)

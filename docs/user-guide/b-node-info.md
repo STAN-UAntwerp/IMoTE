@@ -33,8 +33,7 @@ Each node contains a badge indicating the type of node. The available node types
 
 Below the node type badge, the following fields are displayed:
 
-* **Label** – A description of the node. For split nodes, this provides information about the split condition. For leaf
-  nodes, it describes the fitted linear model.
+* **Description** – One line under the badge that describes the nodes model with the full feature names.
 * **Metrics** – A dropdown list form which you select the metrics you are interested in.
   * **Node ID** – The unique identifier of the node in the tree.
   * **Samples** – The number of data points that reach this node.

@@ -59,8 +59,8 @@ imote
 Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). The app starts with an example
 PILOT tree. Click a node to inspect it, or open the **New Tree** card on the right to fit a tree on another dataset.
 
-IMoTE stores saved trees, uploaded datasets and generated plots in `~/.imote`. Set the `IMOTE_HOME` environment
-variable to use another folder.
+IMoTE stores saved trees, uploaded datasets, downloaded PMLB datasets and generated plots in `~/.imote`. Set the 
+`IMOTE_HOME` environment variable to use another folder.
 
 ## Documentation
 

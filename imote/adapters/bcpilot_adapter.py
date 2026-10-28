@@ -26,7 +26,8 @@ class BcPilotAdapter(BaseAdapter):
     """Adapter for the binary classification PILOT in imote.bcpilot.
 
     All node models are on the log-odds scale: a leaf predicts log(p / (1 - p)).
-    The y_res of a node is the working response the node is fit on.
+    The y_res of a node is the working response the node is fit on, and its log_odds are the log-odds
+    of its samples before the node, the node level prediction the classification metrics use.
     """
 
     task = "classification"
@@ -75,12 +76,14 @@ class BcPilotAdapter(BaseAdapter):
         node_type = tree.node
 
         if node_type == "END":
-            return LeafNode(
+            node = LeafNode(
                 indices=current_indices,
                 y_res=y_res,
                 rss=rss,
                 node_model=LinearNodeModel(accumulated_coefficients, accumulated_intercept),
             )
+            node.log_odds = f
+            return node
 
         if node_type == "con":
             # a bcPilot con node can continue in the tree, fold its constant into the nodes below
@@ -104,7 +107,7 @@ class BcPilotAdapter(BaseAdapter):
                 model, tree.left, X_train, y_train, current_indices, new_f,
                 new_coefficients, accumulated_intercept + intercept,
             )
-            return LinearNode(
+            node = LinearNode(
                 indices=current_indices,
                 y_res=y_res,
                 rss=rss,
@@ -112,6 +115,8 @@ class BcPilotAdapter(BaseAdapter):
                 linear_model=SimpleLinearNodeModel(pivot_idx, coef, intercept),
                 child=child,
             )
+            node.log_odds = f
+            return node
 
         if node_type not in ("pcon", "pconc", "blin", "plin"):
             raise ValueError(f"Unknown node type: {node_type}")
@@ -148,7 +153,7 @@ class BcPilotAdapter(BaseAdapter):
             node_cls = PlinNode if node_type == "plin" else BlinNode
             left_model = SimpleLinearNodeModel(pivot_idx, coef_left, intercept_left)
             right_model = SimpleLinearNodeModel(pivot_idx, coef_right, intercept_right)
-        return node_cls(
+        node = node_cls(
             indices=current_indices,
             y_res=y_res,
             rss=rss,
@@ -159,6 +164,8 @@ class BcPilotAdapter(BaseAdapter):
             left_model=left_model,
             right_model=right_model,
         )
+        node.log_odds = f
+        return node
 
     @staticmethod
     def load_model(model_path):

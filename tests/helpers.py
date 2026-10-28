@@ -60,3 +60,21 @@ def make_split_tree() -> VizTree:
 
 def make_single_leaf_tree() -> VizTree:
     return VizTree(leaf(range(8), [0, 0, 1], 0.0), X, y, None)
+
+
+y_cls = np.array([0, 1, 1, 1, 0, 0, 0, 1], dtype=float)
+
+
+def make_classification_tree() -> VizTree:
+    """bcPilot-style tree, log_odds are the log-odds of the node's samples before the node:
+        node0 PconNode(x0 <= 3.5: left +1 / right -1)   log_odds 0 for all rows
+        ├── node1 Leaf   rows 0-3, y = [0, 1, 1, 1], log_odds [-1, 1, 2, 0.5]
+        └── node2 Leaf   rows 4-7, y = [0, 0, 0, 1], log_odds [-2, 1, -1, 0.5]
+    """
+    left = LeafNode(mask(range(4)), y_cls[:4], 0.1, LinearNodeModel(np.zeros(3), 1.0))
+    left.log_odds = np.array([-1.0, 1.0, 2.0, 0.5])
+    right = LeafNode(mask(range(4, 8)), y_cls[4:], 0.1, LinearNodeModel(np.zeros(3), -1.0))
+    right.log_odds = np.array([-2.0, 1.0, -1.0, 0.5])
+    root = PconNode(mask(range(8)), y_cls, 1.0, 0, 3.5, left, right, ConstantNodeModel(1.0), ConstantNodeModel(-1.0))
+    root.log_odds = np.zeros(8)
+    return VizTree(root, X, y_cls, None, tree_id="classification", task="classification")

@@ -16,6 +16,8 @@ from imote.config import (
 )
 from imote.dataset.dataset_registry import build_dropdown_options
 
+NUMBER_INPUT_STYLE = {"width": "120px"}
+
 def make_new_tree_card() -> dbc.Card:
     return dbc.Card(
         [
@@ -37,54 +39,58 @@ def make_new_tree_card() -> dbc.Card:
                                     html.Div(
                                         [
                                             html.Div("Dataset", style={"marginBottom": "4px"}),
-                                            dcc.Dropdown(
+                                            dbc.Select(
                                                 id=ids.INPUT_DATASET,
                                                 options=build_dropdown_options(),
                                                 value=DEFAULT_DATASET_NAME,
-                                                clearable=False,
-                                                style={"width": "220px"},
+                                                style={"width": "250px"},
+                                                size="sm",
                                             ),
                                         ]
                                     ),
                                     html.Div(
                                         [
                                             html.Div("Method", style={"marginBottom": "4px"}),
-                                            dcc.Dropdown(
+                                            dbc.Select(
                                                 id=ids.INPUT_METHOD,
                                                 options=METHOD_OPTIONS,
                                                 value=DEFAULT_METHOD_NAME,
-                                                clearable=False,
-                                                style={"width": "220px"},
+                                                style={"width": "150px"},
+                                                size="sm",
                                             ),
                                         ]
                                     ),
                                     html.Div(
                                         [
                                             html.Div("Max depth", style={"marginBottom": "4px"}),
-                                            dcc.Input(id=ids.INPUT_MAX_DEPTH, type="number", value=DEFAULT_MAX_DEPTH),
+                                            dbc.Input(id=ids.INPUT_MAX_DEPTH, type="number", value=DEFAULT_MAX_DEPTH, size="sm",
+                                                      style=NUMBER_INPUT_STYLE),
                                         ]
                                     ),
                                     html.Div(
                                         [
                                             html.Div("Max model depth", style={"marginBottom": "4px"}),
-                                            dcc.Input(
-                                                id=ids.INPUT_MAX_MODEL_DEPTH, type="number", value=DEFAULT_MAX_MODEL_DEPTH
+                                            dbc.Input(
+                                                id=ids.INPUT_MAX_MODEL_DEPTH, type="number", value=DEFAULT_MAX_MODEL_DEPTH, size="sm",
+                                                style=NUMBER_INPUT_STYLE,
                                             ),
                                         ]
                                     ),
                                     html.Div(
                                         [
                                             html.Div("Min sample split", style={"marginBottom": "4px"}),
-                                            dcc.Input(
-                                                id=ids.INPUT_MIN_SAMPLE_SPLIT, type="number", value=DEFAULT_MIN_SAMPLE_SPLIT
+                                            dbc.Input(
+                                                id=ids.INPUT_MIN_SAMPLE_SPLIT, type="number", value=DEFAULT_MIN_SAMPLE_SPLIT, size="sm",
+                                                style=NUMBER_INPUT_STYLE,
                                             ),
                                         ]
                                     ),
                                     html.Div(
                                         [
                                             html.Div("Min sample leaf", style={"marginBottom": "4px"}),
-                                            dcc.Input(
-                                                id=ids.INPUT_MIN_SAMPLE_LEAF, type="number", value=DEFAULT_MIN_SAMPLE_LEAF
+                                            dbc.Input(
+                                                id=ids.INPUT_MIN_SAMPLE_LEAF, type="number", value=DEFAULT_MIN_SAMPLE_LEAF, size="sm",
+                                                style=NUMBER_INPUT_STYLE,
                                             ),
                                         ]
                                     ),
@@ -100,14 +106,15 @@ def make_new_tree_card() -> dbc.Card:
                                 ],
                             ),
                             html.Div(
-                                style={"display": "flex", "gap": "8px"},
+                                style={"display": "flex", "gap": "8px", "alignItems": "center"},
                                 children=[
                                     dbc.Input(
                                         id=ids.INPUT_LOAD_TREE,
                                         type="text",
                                         placeholder="path to a saved tree (.pkl), empty = most recent",
+                                        size="sm",
                                     ),
-                                    dbc.Button("Load saved viz_tree", id=ids.BTN_LOAD_TREE, size="sm"),
+                                    dbc.Button("Load saved viz_tree", id=ids.BTN_LOAD_TREE, size="sm", class_name="text-nowrap"),
                                 ],
                             ),
                             html.Hr(style={"margin": "12px 0"}),
@@ -127,12 +134,12 @@ def make_new_tree_card() -> dbc.Card:
                                                 html.Div(
                                                     [
                                                         html.Div("Adapter", style={"marginBottom": "4px"}),
-                                                        dcc.Dropdown(
+                                                        dbc.Select(
                                                             id=ids.INPUT_ADAPTER,
                                                             options=ADAPTER_OPTIONS,
                                                             value=DEFAULT_ADAPTER_NAME,
-                                                            clearable=False,
                                                             style={"width": "220px"},
+                                                            size="sm",
                                                         ),
                                                     ],
                                                     style={"flex": "1"},
@@ -141,9 +148,9 @@ def make_new_tree_card() -> dbc.Card:
                                                     [
                                                         html.Div("Dataset for Adapter", style={"marginBottom": "4px"}),
                                                         html.Div(
-                                                            "The Training dataset selected above is also the one used when loading via the "
-                                                            "adapter. (It can be a subset from the total dataset used for training.)",
-                                                            style={"marginBottom": "8px", "fontSize": "12px", "color": "#666"},
+                                                            "Uses the dataset selected above (this can be a subset of "
+                                                            "the training data)." ,
+                                                            style={"marginBottom": "0px", "fontSize": "12px", "color": "#666"},
                                                         ),
                                                     ],
                                                     style={"flex": "1"},
@@ -152,14 +159,15 @@ def make_new_tree_card() -> dbc.Card:
                                         ),
                                         html.Div("Adapter model", style={"marginBottom": "4px"}),
                                         html.Div(
-                                            style={"display": "flex", "gap": "8px"},
+                                            style={"display": "flex", "gap": "8px", "alignItems": "center"},
                                             children=[
                                                 dbc.Input(
                                                     id=ids.INPUT_LOAD_TREE_ADAPTER,
                                                     type="text",
                                                     placeholder="path to the exported model, e.g. ~/models/tree.json",
+                                                    size="sm",
                                                 ),
-                                                dbc.Button("Load with Adapter", id=ids.BTN_LOAD_TREE_ADAPTER, size="sm"),
+                                                dbc.Button("Load with Adapter", id=ids.BTN_LOAD_TREE_ADAPTER, size="sm", class_name="text-nowrap"),
                                             ],
                                         ),
                                     ]

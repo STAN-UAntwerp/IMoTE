@@ -8,12 +8,17 @@ full linear model).
 from abc import ABC, abstractmethod
 import numpy as np
 
+from imote.nodes.label_formatter import LabelFormatter
+
 class NodeModel(ABC):
     """Abstract base class for all node prediction models."""
 
     @abstractmethod
-    def get_label(self) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns a short display label describing the model.
+
+        Args:
+            fmt: Formats the feature names, numbers and expressions in the label.
 
         Returns:
             String of label
@@ -75,7 +80,7 @@ def node_model_from_dict(dic: dict) -> NodeModel:
 class NoneNodeModel(NodeModel):
     """Identity model used as a placeholder when no model is applied."""
 
-    def get_label(self) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns an empty label, since no model is applied.
 
         Returns:
@@ -125,13 +130,13 @@ class ConstantNodeModel(NodeModel):
         """
         self.value = value
 
-    def get_label(self) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the constant value as a display label.
 
         Returns:
-            The value formatted to 3 significant digits.
+            The formatted value.
         """
-        return f"{self.value:.3g}"
+        return fmt.number(self.value)
 
     def to_dict(self) -> dict:
         """Serializes the model to a dictionary.
@@ -196,13 +201,13 @@ class SimpleLinearNodeModel(NodeModel):
         self.coefficient = coefficient
         self.intercept = intercept
 
-    def get_label(self) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the linear term as a display label.
 
         Returns:
             Label of the linear model.
         """
-        return f"{self.coefficient:.3g}·X{self.idx} + {self.intercept:.3g}"
+        return fmt.expression([(self.idx, self.coefficient)], self.intercept)
 
     def to_dict(self) -> dict:
         """Serializes the model to a dictionary.
@@ -263,7 +268,7 @@ class LinearNodeModel(NodeModel):
         self.coefficients = coefficients
         self.intercept = intercept
 
-    def get_label(self) -> str:
+    def get_label(self, fmt: LabelFormatter) -> str:
         """Returns the linear model as a display label.
 
         Only features with a non-zero coefficient are included.
@@ -271,12 +276,7 @@ class LinearNodeModel(NodeModel):
         Returns:
             String of the linear model.
         """
-        parts = []
-        for i, coef in enumerate(self.coefficients):
-            if coef != 0:
-                parts.append(f"{coef:.3g}·X{i}")
-        parts.append(f"{self.intercept:.3g}")
-        return " + ".join(parts)
+        return fmt.expression(enumerate(self.coefficients), self.intercept)
 
     def to_dict(self) -> dict:
         """Serializes the model to a dictionary.

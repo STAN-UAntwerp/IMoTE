@@ -2,9 +2,11 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 from imote import ids
-from imote.config import DEFAULT_COLLAPSE_LEVEL
+from imote.config import DEFAULT_COLLAPSE_LEVEL, NODE_LABEL_STRUCTURE, get_initial_graph_info
+from imote.node_metrics.node_metric import metrics_for_task
 
 def make_edit_tree_card() -> dbc.Card:
+    task = get_initial_graph_info()[1].get("task", "regression")
     return dbc.Card(
         [
             dbc.CardHeader(
@@ -38,12 +40,6 @@ def make_edit_tree_card() -> dbc.Card:
                                             id=ids.INPUT_COLLAPSE_LEVEL, type="number", value=DEFAULT_COLLAPSE_LEVEL,
                                             style={"width": "80px"}
                                         ),
-                                        dcc.Checklist(
-                                            id=ids.COLLAPSE_LEVEL_OPTIONS,
-                                            options=[{"label": "include linear nodes", "value": "include_lin"}],
-                                            value=["include_lin"],
-                                            inline=True,
-                                        ),
                                     ],
                                 ),
                             ],
@@ -53,6 +49,35 @@ def make_edit_tree_card() -> dbc.Card:
                         html.Div(
                             [
                                 html.Div("Display switches", className="fw-bold mb-2"),
+                                html.Div(
+                                    style={"display": "flex", "gap": "16px", "flexWrap": "wrap"},
+                                    children=[
+                                        dbc.Switch(
+                                            id=ids.SWITCH_COLOR_FEATURES,
+                                            label="Features colors",
+                                            value=False,
+                                        ),
+                                        dbc.Switch(
+                                            id=ids.SWITCH_FEATURE_NAMES,
+                                            label="Feature names",
+                                            value=True,
+                                            className="mb-0 ms-2",
+                                        ),
+                                    ],
+                                ),
+                                html.Div(
+                                    [
+                                        html.Span("Node label: "),
+                                        dbc.Select(
+                                            id=ids.NODE_LABEL_SELECT,
+                                            options=[NODE_LABEL_STRUCTURE, *metrics_for_task(task)],
+                                            value=NODE_LABEL_STRUCTURE,
+                                            size="sm",
+                                            style={"width": "180px"},
+                                        ),
+                                    ],
+                                    className="d-flex align-items-center gap-2 mb-2",
+                                ),
                                 html.Div(
                                     [
                                         html.Span("Linear nodes: "),
@@ -91,16 +116,6 @@ def make_edit_tree_card() -> dbc.Card:
                                         dbc.Switch(
                                             id=ids.SWITCH_NODE_PLOTS,
                                             label="Show all node plots",
-                                            value=False,
-                                        ),
-                                        dbc.Switch(
-                                            id=ids.SWITCH_COLOR_FEATURES,
-                                            label="Features colors",
-                                            value=False,
-                                        ),
-                                        dbc.Switch(
-                                            id=ids.SWITCH_RSS,
-                                            label="Show RSS",
                                             value=False,
                                         ),
                                     ],

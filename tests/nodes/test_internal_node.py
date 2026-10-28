@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from imote.nodes.label_formatter import LabelFormatter
 from imote.nodes.internal_node import LinearNode
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.node_model import SimpleLinearNodeModel
@@ -23,8 +24,8 @@ def test_children(lin, leaf):
 
 
 def test_labels_are_strings(lin):
-    assert isinstance(lin.get_label(), str) and lin.get_label()
-    assert isinstance(lin.get_minimal_label(), str) and lin.get_minimal_label()
+    assert isinstance(lin.get_label(LabelFormatter()), str) and lin.get_label(LabelFormatter())
+    assert isinstance(lin.get_minimal_label(LabelFormatter()), str) and lin.get_minimal_label(LabelFormatter())
 
 
 def test_round_trip(lin):

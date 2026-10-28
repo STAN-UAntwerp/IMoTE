@@ -4,7 +4,7 @@ import pytest
 from imote.nodes.collapsed_node import CollapsedNode
 from imote.nodes.node_model import LinearNodeModel
 from imote.nodes.none_node import NoneNode
-from tests.helpers import X, leaf, make_pilot_tree, make_single_leaf_tree, make_split_tree, y
+from tests.helpers import X, leaf, make_classification_tree, make_pilot_tree, make_single_leaf_tree, make_split_tree, y
 from imote.viz_tree.viz_tree import VizTree
 
 TREES = [make_pilot_tree, make_split_tree]
@@ -159,6 +159,33 @@ def test_round_trip_with_collapsed_node(pilot_tree):
     assert_same_tree(restored, pilot_tree)
     restored.expand_all_nodes()
     assert types(restored) == original_types
+
+
+def test_round_trip_keeps_task_and_log_odds():
+    tree = make_classification_tree()
+    restored = VizTree.from_dict(tree.to_dict())
+    assert restored.task == "classification"
+    for node, restored_node in zip(tree.nodes, restored.nodes):
+        np.testing.assert_array_equal(restored_node.log_odds, node.log_odds)
+
+
+def test_regression_nodes_have_no_log_odds(pilot_tree):
+    assert all(node.log_odds is None for node in pilot_tree.nodes)
+    assert all("log_odds" not in node.to_dict() for node in pilot_tree.nodes)
+    restored = VizTree.from_dict(pilot_tree.to_dict())
+    assert all(node.log_odds is None for node in restored.nodes)
+
+
+def test_collapse_keeps_log_odds():
+    tree = make_classification_tree()
+    tree.collapse(tree.nodes[0])
+    np.testing.assert_array_equal(tree.root_node.log_odds, np.zeros(8))
+
+
+def test_prune_keeps_log_odds(pilot_tree):
+    pilot_tree.nodes[2].log_odds = np.array([0.1, 0.2, 0.3, 0.4])
+    pilot_tree.prune(pilot_tree.nodes[2])
+    np.testing.assert_array_equal(pilot_tree.nodes[1].left_child.log_odds, [0.1, 0.2, 0.3, 0.4])
 
 
 # --- Decision path of a single point ---

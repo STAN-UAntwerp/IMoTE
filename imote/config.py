@@ -13,6 +13,7 @@ DIR_USER_DATA = Path(os.environ.get("IMOTE_HOME", Path.home() / ".imote")).expan
 DIR_LIVE_OUTPUT = DIR_USER_DATA / "live"
 DIR_SAVED_VIZ_TREES = DIR_USER_DATA / "saved_trees"
 DIR_DATASET_UPLOAD = DIR_USER_DATA / "uploaded_datasets"
+DIR_PMLB_CACHE = DIR_USER_DATA / "pmlb_datasets"
 
 # --- New Tree card defaults / options -----------------------------------
 
@@ -106,6 +107,12 @@ def get_initial_graph_info():
         input_dict = pickle.load(f)
     return input_dict["viz_tree_dict"], input_dict["tree_params"]
 
+LABEL_NAME_LENGTH = 12
+MINIMAL_LABEL_NAME_LENGTH = 6
+NODE_LABEL_STRUCTURE = "Structure"
+NO_METRIC_COLOR = "#adb5bd"
+NEAR_ZERO = 1e-12
+
 # ── Stylesheet ────────────────────────────────────────────────────────────
 font_family = "Arial, sans-serif"
 font_size = 12
@@ -156,6 +163,12 @@ CYTOSCAPE_STYLESHEET = [
         "selector": "node.CollapsedNode",
         "style": {
             "shape": "rectangle",
+        },
+    },
+    {
+        "selector": "node.metric",
+        "style": {
+            "color": "#000000",
         },
     },
     # ── Show all node plots ───────────────────────────────────────────────

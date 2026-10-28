@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from imote.nodes.internal_node import InternalNode, LinearNode
 from imote.nodes.split_node import SplitNode
+from imote.plots.plot_labels import feature_label as make_feature_label
 
 MAX_DISCRETE_VALUES = 20
 """Features with at most this many unique values in the node get one bar per value."""
@@ -64,10 +65,7 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
     fig = plt.figure(figsize=fig_size, layout="constrained")
     fig.patch.set_linewidth(2)
     fig.patch.set_edgecolor(feature_colors[feature_idx])
-    if feature_names is None:
-        feature_label = "$X_{" + f"{feature_idx}" + "}$"
-    else:
-        feature_label = feature_names[feature_idx]
+    feature_label = make_feature_label(feature_names, feature_idx, max_length=40)
 
     edges, discrete = _bin_edges(x, node)
     plt.hist([x[y == c] for c in classes], bins=edges, stacked=True,
