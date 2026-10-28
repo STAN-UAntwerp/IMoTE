@@ -8,8 +8,9 @@ from imote.nodes.internal_node import InternalNode, LinearNode
 from imote.nodes.collapsed_node import CollapsedNode
 from imote.nodes.none_node import NoneNode
 from imote.nodes.node_model import LinearNodeModel, ConstantNodeModel
-from imote.nodes.split_node import PconNode, PconcNode, SplitNode, BlinNode, PlinNode
+from imote.nodes.split_node import SplitNode
 from imote.adapters.base_adapter import BaseAdapter
+from imote.viz_tree.contributions import calculate_contributions
 
 class VizTree:
     """VizTree is used to store the tree and visualise it in the application.
@@ -83,7 +84,7 @@ class VizTree:
             self.y_hat = self._calculate_y_hat()
         else:
             self.y_hat = y_hat
-        self.split_contributions, self.linear_contributions = self._calculate_contributions()
+        self.split_contributions, self.linear_contributions = self.get_contributions(self.X_train)
 
     @staticmethod
     def _check_feature_names(feature_names: Optional[List[str]], n_features: int) -> Optional[List[str]]:
@@ -211,88 +212,17 @@ class VizTree:
         """
         return self.predict(self.X_train)
 
-    def _calculate_split_and_lin_contributions(self):
-        X = self.X_train
-        split_contributions = np.zeros_like(X, dtype=float)
-        lin_contributions = np.zeros_like(X, dtype=float)
-        for node in self.nodes:
-            if isinstance(node, CollapsedNode):
-                # raise ValueError("CollapsedNode cannot be used when calculating contributions")
-                continue
-            elif isinstance(node, InternalNode):
-                pivot = node.pivot_idx
-                if isinstance(node, LinearNode):
-                    linear_predictions = node.linear_model.predict(X[node.child.indices, pivot])
-                    lin_contributions[node.child.indices, pivot] += linear_predictions - np.mean(linear_predictions)
-                    continue
-                if isinstance(node, (PconcNode, PconNode)):
-                    avg_pred_left = node.left_model.predict(np.array([0]))[0]
-                    avg_pred_right = node.right_model.predict(np.array([0]))[0]
-                elif isinstance(node, (BlinNode, PlinNode)):
-                    linear_predictions_left = node.left_model.predict(X[node.left_child.indices, pivot])
-                    linear_predictions_right = node.right_model.predict(X[node.right_child.indices, pivot])
-                    avg_pred_left = np.mean(linear_predictions_left)
-                    avg_pred_right = np.mean(linear_predictions_right)
-                    lin_contributions[node.left_child.indices, pivot] += linear_predictions_left - avg_pred_left
-                    lin_contributions[node.right_child.indices, pivot] += linear_predictions_right - avg_pred_right
-                elif isinstance(node, SplitNode):
-                    split_contributions, lin_contributions, _ = self._calculate_split_and_lin_contributions2_recursive(self.root_node)
-                    return split_contributions, lin_contributions
-                else:
-                    raise NotImplementedError(
-                        f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
+    def get_contributions(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Computes the split and linear contributions of the tree for every row of X.
 
-                avg_pred = (avg_pred_left * np.sum(node.left_child.indices) + avg_pred_right * np.sum(
-                    node.right_child.indices)) / np.sum(node.indices)
-                split_contributions[node.left_child.indices, pivot] += avg_pred_left - avg_pred
-                split_contributions[node.right_child.indices, pivot] += avg_pred_right - avg_pred
-            elif isinstance(node, LeafNode):
-                pass
-            else:
-                raise NotImplementedError(
-                    f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
-
-        return split_contributions, lin_contributions
-
-    # For non-pilot trees
-    def _calculate_split_and_lin_contributions2_recursive(self, node):
-        if isinstance(node, LeafNode):
-            node_model = node.node_model
-            X_node = self.X_train[node.indices, :]
-            avg_pred = np.mean(node_model.predict(X_node))
-
-            split_contributions = np.zeros_like(self.X_train, dtype=float)
-            lin_contributions = np.zeros_like(self.X_train, dtype=float)
-            if isinstance(node_model, LinearNodeModel):
-                lin_contributions[node.indices, :] += node_model.coefficients * (X_node - np.mean(X_node, axis=0))
-            return split_contributions, lin_contributions, avg_pred
-        elif isinstance(node, SplitNode):
-            split_contributions_left, lin_contributions_left, avg_pred_left = (
-                self._calculate_split_and_lin_contributions2_recursive(node.left_child))
-            split_contributions_right, lin_contributions_right, avg_pred_right = (
-                self._calculate_split_and_lin_contributions2_recursive(node.right_child))
-
-            split_contributions = split_contributions_left + split_contributions_right
-            lin_contributions = lin_contributions_left + lin_contributions_right
-
-            avg_pred = (avg_pred_left * np.sum(node.left_child.indices) +
-                        avg_pred_right * np.sum(node.right_child.indices)) / np.sum(node.indices)
-            split_contributions[node.left_child.indices, node.pivot_idx] += avg_pred_left - avg_pred
-            split_contributions[node.right_child.indices, node.pivot_idx] += avg_pred_right - avg_pred
-
-            return split_contributions, lin_contributions, avg_pred
-        else:
-            raise NotImplementedError(
-                f"Node of class {node.__class__.__name__} is not implemented to calculate contributions")
-
-    def _calculate_contributions(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Computes contributions of the tree on X_train.
+        Args:
+            X: Feature matrix to compute the contributions for, one row per sample.
 
         Returns:
             Tuple of split and linear contributions.
-            Both matrices with the same shape as X_train.
+            Both matrices with the same shape as X.
         """
-        return self._calculate_split_and_lin_contributions()
+        return calculate_contributions(self.root_node, self.X_train, X)
 
     def get_depth(self, node=None) -> int:
         """Computes the depth of the tree, or of a given subtree, recursively.
@@ -440,7 +370,7 @@ class VizTree:
         self.nodes = self.collect_nodes()
         self.edges = self.collect_edges()
         self.y_hat = self._calculate_y_hat()
-        self.split_contributions, self.linear_contributions = self._calculate_contributions()
+        self.split_contributions, self.linear_contributions = self.get_contributions(self.X_train)
 
     def to_dict(self) -> dict:
         """Serializes the tree to a dictionary.
