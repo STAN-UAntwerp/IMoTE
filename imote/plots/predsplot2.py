@@ -5,7 +5,6 @@ import warnings
 from matplotlib.patches import ConnectionPatch
 from matplotlib.transforms import blended_transform_factory
 
-from imote.viz_tree.contributions import get_split_and_lin_contributions_test
 from imote.nodes.leaf_node import LeafNode
 from imote.viz_tree.viz_tree import VizTree
 from imote.plots.plot_labels import feature_labels
@@ -85,8 +84,8 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
     centered_predictions = y_hat[indices] - center_predictions
     all_contributions = np.c_[lin_contributions, split_contributions]
     if highlight:
-        highlight_x_split_contributions, highlight_x_lin_contributions = get_split_and_lin_contributions_test(viz_tree, highlight_x)
-        highlight_x_all_contributions = np.r_[highlight_x_lin_contributions, highlight_x_split_contributions]
+        highlight_x_split_contributions, highlight_x_lin_contributions = viz_tree.get_contributions(np.atleast_2d(highlight_x))
+        highlight_x_all_contributions = np.r_[highlight_x_lin_contributions[0], highlight_x_split_contributions[0]]
         highlight_x_sum_contributions = np.sum(highlight_x_all_contributions)
 
     # Rank features by variance in their contributions
