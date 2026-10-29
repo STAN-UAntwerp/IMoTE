@@ -14,7 +14,7 @@ def make_regression_plot(node: InternalNode, viz_tree_X, directory_regplot_file,
     w = np.ones(len(node.y_res))
     feature_idx = node.pivot_idx
     fig.patch.set_linewidth(2)
-    fig.patch.set_edgecolor(feature_colors[feature_idx])
+    #fig.patch.set_edgecolor(feature_colors[feature_idx])
     x_label = feature_label(feature_names, feature_idx, max_length=40)
     min_x = X[:, feature_idx].min()
     max_x = X[:, feature_idx].max()

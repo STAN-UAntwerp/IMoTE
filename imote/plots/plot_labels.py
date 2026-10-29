@@ -1,4 +1,4 @@
-MAX_FEATURE_LABEL_LENGTH = 10
+MAX_FEATURE_LABEL_LENGTH = 8
 
 
 def plot_math_string(text: str) -> str:
