@@ -3,7 +3,7 @@ from dash import html, dcc
 from imote.components.cards.bb_node_plot_settings_card import make_settings_card
 from imote import ids
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
-from imote.config import DEFAULT_NODE_METRICS, DEFAULT_GRAPH_PLOT_SIZE
+from imote.config import DEFAULT_NODE_METRICS
 
 def make_node_info_card() -> dbc.Card:
     return dbc.Card(
@@ -51,22 +51,6 @@ def make_node_info_card() -> dbc.Card:
                         )
                     ], width=12),
                 ], className="mb-3"),
-
-                # Pin the node plot on top of the graph, uses the plot settings below
-                html.Small("Plot on graph", className="text-muted d-block fw-bold"),
-                dbc.InputGroup(
-                    [
-                        dbc.InputGroupText("Width"),
-                        dbc.Input(id=ids.INPUT_GRAPH_PLOT_SIZE, type="number", value=DEFAULT_GRAPH_PLOT_SIZE,
-                                  min=50, step=50),
-                        dbc.Button([html.I(className="bi bi-pin-angle me-1"), "Add to graph"],
-                                   id=ids.BTN_ADD_GRAPH_PLOT, color="primary", className="fw-bold"),
-                        dbc.Button(html.I(className="bi bi-trash"), id=ids.BTN_CLEAR_GRAPH_PLOTS,
-                                   color="secondary", title="Remove all plots from the graph"),
-                    ],
-                    size="sm",
-                    className="mb-3",
-                ),
                 dbc.Switch(
                     id=ids.NODE_INFO_PLOT_SWITCH,
                     label="Show node plot",

@@ -32,6 +32,7 @@ PMLB_OPTIONS = [
     {"label": "PMLB: 210_cloud", "value": "210_cloud.pmlb"},
     {"label": "PMLB: 1028_SWD", "value": "1028_SWD.pmlb"},
     {"label": "PMLB: 197_cpu_act", "value": "197_cpu_act.pmlb"},
+    {"label": "PMLB: 564_fried", "value": "564_fried.pmlb"},
 ]
 
 METHOD_OPTIONS = [

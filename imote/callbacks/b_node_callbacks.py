@@ -218,7 +218,7 @@ def register_callbacks(app):
                          highlight_x,
                          predsplot_type,
                          ):
-        if not switch_on or not selected_node:
+        if not selected_node:
             return _plot_note("Select a node in the graph to see its plot."), None
         if selected_node[0]["node_type"] == "CombinedLinNode":
             return _plot_note("No plot available for combined linear nodes, show all linear nodes to see their plots."), None
@@ -255,17 +255,18 @@ def register_callbacks(app):
     )
     def update_graph_plots(_n_add, _n_clear, _new_tree, selected_node, graph_plots, viz_tree_dict, plot_width,
                            display_type, nmax, figw, figh, predsplot_options, highlight_x, predsplot_type):
-        # A new tree reuses the node ids, so plots of the old tree would end up on the wrong nodes
+        if _n_add is None and _n_clear is None:
+            raise PreventUpdate
         if ctx.triggered_id == ids.NEW_TREE_TRIGGER:
             return [], no_update
         if ctx.triggered_id == ids.BTN_CLEAR_GRAPH_PLOTS:
-            return [], status.info("Removed all plots from the graph.")
+            return [], status.warning("Removed all plots from the graph.")
 
         if not selected_node:
-            return no_update, status.warning("Select a node in the graph to add its plot to the graph.")
+            return no_update, status.warning("There is no node plot to add, select a node that has a plot first.")
         node_data = selected_node[0]
         if node_data["node_type"] == "CombinedLinNode":
-            return no_update, status.warning("No plot available for combined linear nodes.")
+            return no_update, status.warning("No plot available for combined linear nodes, show all linear nodes to see their plots.")
         if not plot_width or plot_width <= 0:
             return no_update, status.warning("Give a plot width larger than 0.")
 

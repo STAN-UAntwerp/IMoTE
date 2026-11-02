@@ -259,5 +259,64 @@
         svg.appendChild(shape);
     }
 
-    window.imoteGraphPlots = {render};
+    // The plot as a nested <svg> element instead of an <image> with a data url: it stays vector, and converters
+    // (svg to pdf for LaTeX, Inkscape, ...) don't all read svg images from data urls
+    function inlinePlotSvg(src) {
+        const text = decodeURIComponent(src.slice(src.indexOf(",") + 1));
+        const plotSvg = new DOMParser().parseFromString(text, "image/svg+xml").documentElement;
+        if (!plotSvg.getAttribute("viewBox")) {
+            const width = parseFloat(plotSvg.getAttribute("width")), height = parseFloat(plotSvg.getAttribute("height"));
+            plotSvg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        }
+        return document.importNode(plotSvg, true);
+    }
+
+    // Downloads the shown part of the graph as svg, with the pinned plots and their brackets on top
+    function downloadSvg(graphId, filename) {
+        const graphCy = findCy(graphId);
+        if (!graphCy) return;
+        const graphSvg = new DOMParser().parseFromString(graphCy.svg(), "image/svg+xml").documentElement;
+        // so the svg scales when it is shown at another size, e.g. in a browser or a document
+        graphSvg.setAttribute("viewBox", `0 0 ${graphSvg.getAttribute("width")} ${graphSvg.getAttribute("height")}`);
+
+        if (graphCy === cy && root && root.isConnected) {
+            draw();  // make sure the overlay matches the graph right now
+            // cytoscape draws the svg at the screen's pixel ratio, the overlay is in css pixels
+            const scale = Number(graphSvg.getAttribute("width")) / cy.width();
+            const overlay = document.createElementNS(SVG_NS, "g");
+            overlay.setAttribute("transform", `scale(${scale})`);
+            for (const shape of svg.children) overlay.appendChild(shape.cloneNode(true));
+
+            for (const plot of plots) {
+                const {div, img} = plotElements[plot.id];
+                if (div.style.display === "none") continue;
+                const box = {
+                    x: parseFloat(div.style.left), y: parseFloat(div.style.top),
+                    width: parseFloat(div.style.width), height: parseFloat(div.style.height),
+                };
+                const background = document.createElementNS(SVG_NS, "rect");
+                const image = inlinePlotSvg(img.src);
+                for (const [name, value] of Object.entries({...box, rx: 4, fill: "#ffffff"})) {
+                    background.setAttribute(name, value);
+                }
+                for (const [name, value] of Object.entries(box)) image.setAttribute(name, value);
+                image.setAttribute("preserveAspectRatio", "xMidYMid meet");
+                const border = background.cloneNode();
+                border.setAttribute("fill", "none");
+                border.setAttribute("stroke", div.style.borderColor);
+                border.setAttribute("stroke-width", 2);
+                overlay.append(background, image, border);
+            }
+            graphSvg.appendChild(overlay);
+        }
+
+        const blob = new Blob([new XMLSerializer().serializeToString(graphSvg)], {type: "image/svg+xml;charset=utf-8"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    window.imoteGraphPlots = {render, downloadSvg};
 })();

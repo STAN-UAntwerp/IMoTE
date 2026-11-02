@@ -79,7 +79,7 @@ def predsplot2(viz_tree:VizTree, leaf_node:LeafNode, y_hat, n_max=5, fig_size=(1
     lin_contributions = all_lin_contributions[indices,:]
     center_predictions = np.mean(y_hat)
     n_features = X.shape[1]
-    center_label = "mean prediction"
+    center_label = "mean"
 
     centered_predictions = y_hat[indices] - center_predictions
     all_contributions = np.c_[lin_contributions, split_contributions]

@@ -430,8 +430,9 @@ def register_callbacks(app):
         return status.success(f"Tree saved to {output_path}")
 
     # --- DOWNLOAD SVG ---
+    # assets/graph_plots.js makes the svg, so the plots pinned on the graph are in it too
     @app.callback(
-        Output(ids.CYTOSCAPE_GRAPH, "generateImage"),
+        Output(ids.STORE_TREE_DOWNLOAD, "data"),
         Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_SAVE_TREE_SVG, "n_clicks"),
@@ -444,4 +445,13 @@ def register_callbacks(app):
             raise PreventUpdate
         file_name = _tree_file_name(viz_tree_dict, tree_params)
         message = status.info(f"Downloading the shown tree as {file_name}.svg.")
-        return {"type": "svg", "action": "download", "filename": file_name}, message
+        return {"filename": f"{file_name}.svg", "time": time.time()}, message
+
+    app.clientside_callback(
+        """
+        function(download) {
+            if (download) window.imoteGraphPlots.downloadSvg(%r, download.filename);
+        }
+        """ % ids.CYTOSCAPE_GRAPH,
+        Input(ids.STORE_TREE_DOWNLOAD, "data"),
+    )

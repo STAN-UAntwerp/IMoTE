@@ -19,5 +19,6 @@ def make_global_stores() -> html.Div:
             dcc.Store(id=ids.STORE_STATUS, data=status.WELCOME),
             dcc.Store(id=ids.STORE_STATUS_HISTORY, data=[]),
             dcc.Store(id=ids.STORE_GRAPH_PLOTS, data=[]),
+            dcc.Store(id=ids.STORE_TREE_DOWNLOAD),
         ]
     )
