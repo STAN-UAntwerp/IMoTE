@@ -386,13 +386,16 @@ def register_callbacks(app):
 
         Input(ids.NEW_TREE_TRIGGER, "data"),
         State(ids.SWITCH_MINIMAL, "value"),
+        State(ids.SWITCH_DATA_NODE_SIZE, "value"),
         State(ids.STORE_TREE_PARAMS, "data"),
         State(ids.STORE_STATUS, "data"),
         prevent_initial_call=True,
     )
-    def new_tree_trigger(_, minimal, tree_params, message):
+    def new_tree_trigger(_, minimal, data_node, tree_params, message):
         n_leafs = tree_params["n_leafs"]
-        if n_leafs >= 18:
+        if data_node:
+            new_minimal = minimal
+        elif n_leafs >= 18:
             new_minimal = 2
         elif n_leafs > 8:
             new_minimal = 1

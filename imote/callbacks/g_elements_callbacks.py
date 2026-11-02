@@ -4,7 +4,8 @@ from dash import Input, Output, State, html, no_update, ctx
 from dash.exceptions import PreventUpdate
 
 from imote import ids, status
-from imote.config import DIR_LIVE_OUTPUT, NODE_PLOTS_FIG_SIZE, NODE_PLOTS_N_MAX, NODE_LABEL_STRUCTURE
+from imote.config import (DIR_LIVE_OUTPUT, NODE_PLOTS_FIG_SIZE, NODE_PLOTS_N_MAX, NODE_LABEL_STRUCTURE,
+                          VIEW_EDGE_WIDTH_SCALES)
 from imote.viz_tree.viz_tree import VizTree
 from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
 
@@ -60,6 +61,15 @@ def register_callbacks(app):
 
         out.append(time.time())
         return out
+
+    @app.callback(
+        Output(ids.SWITCH_MINIMAL, "options"),
+        Input(ids.SWITCH_DATA_NODE_SIZE, "value"),
+        State(ids.SWITCH_MINIMAL, "options"),
+        prevent_initial_call=True,
+    )
+    def lock_node_size(data_node, options):
+        return [{**option, "disabled": bool(data_node)} for option in options]
 
     @app.callback(
         Output(ids.MODAL_NODE_PLOTS, "is_open"),
@@ -177,10 +187,12 @@ def register_callbacks(app):
                 class_name = "minimal"
             else: #use_minimal == 2:
                 class_name = "tiny"
+            # Edges get the class as well, so their width and arrows fit the smaller nodes
             for el in elements:
-                if "data" in el and "id" in el["data"]:  # node, not edge
-                    classes = el.get("classes", "").split()
-                    classes.append(class_name)
-                    el["classes"] = " ".join(classes)
+                classes = el.get("classes", "").split()
+                classes.append(class_name)
+                el["classes"] = " ".join(classes)
+                if "source" in el["data"] and "width" in el["data"]:  # edge with a data flow width
+                    el["data"]["width"] *= VIEW_EDGE_WIDTH_SCALES[class_name]
 
         return elements, no_update

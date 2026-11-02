@@ -23,6 +23,7 @@ def make_cytoscape_graph() -> cyto.Cytoscape:
             "rankDir": "TB",
             "rankSep": DEFAULT_RANK_SEP,
             "nodeSep": DEFAULT_NODE_SEP,
+            "edgeSep": 0,
             "animate": True,
             "fit": True,
         },

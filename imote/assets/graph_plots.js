@@ -18,10 +18,10 @@
     const BRACKET_PAD = 5;   // between the node and its bracket
     const BRACKET_ARM = 6;   // length of the bracket ends
     const STROKE_WIDTH = 1.5;
-    // Size of the plots in each view compared to the normal view, about the size of the tree compared to the normal
-    // view, a bit larger for minimal and tiny where the nodes are large compared to the tree. The node classes are set
-    // in g_elements_callbacks.py.
-    const VIEW_SCALES = {tiny: 0.2, minimal: 0.4, plots_on: 2.2};
+    // Size of the plots in each view compared to the normal view, about the width of the tree in that view compared to
+    // the normal view with the default gaps (tiny 0.034, minimal 0.29). The node classes are set in
+    // g_elements_callbacks.py.
+    const VIEW_SCALES = {tiny: 0.035, minimal: 0.3, plots_on: 2.2};
     const DRAG_THRESHOLD = 3;  // screen px, a shorter drag is a click that selects the node
     const MAX_RETRIES = 50;
     // Resize handle on each corner: which way the corner moves when the plot grows, the opposite corner stays put
