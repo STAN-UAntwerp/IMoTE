@@ -43,8 +43,8 @@
 
 .imote-graph-plot-close {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 10px;
+    right: 10px;
     width: 22px;
     height: 22px;
     padding: 0;
@@ -62,3 +62,25 @@
 .imote-graph-plot:hover .imote-graph-plot-close {
     opacity: 0.85;
 }
+
+/* Corner handles to resize a plot, shown while hovering it */
+.imote-graph-plot-resize {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ffffff;
+    border: 2px solid #2c3e50;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.imote-graph-plot:hover .imote-graph-plot-resize,
+.imote-graph-plot-resize:active {
+    opacity: 1;
+}
+
+.imote-graph-plot-resize.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.imote-graph-plot-resize.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.imote-graph-plot-resize.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.imote-graph-plot-resize.se { bottom: -6px; right: -6px; cursor: nwse-resize; }

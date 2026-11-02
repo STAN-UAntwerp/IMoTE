@@ -45,7 +45,6 @@ PREDSPLOT_SETTINGS = "predsplot-settings"
 BTN_REFIT_PLOTS = "btn_refit-plots"
 
 # Plots pinned on top of the graph
-INPUT_GRAPH_PLOT_SIZE = "input-graph-plot-size"
 BTN_ADD_GRAPH_PLOT = "btn-add-graph-plot"
 BTN_CLEAR_GRAPH_PLOTS = "btn-clear-graph-plots"
 

@@ -107,7 +107,6 @@ font_size = 12
 NODE_PLOTS_FIG_SIZE = (4.4, 2.6)
 NODE_PLOTS_N_MAX = 6
 NODE_PLOTS_EXTRA_SEP = 40
-DEFAULT_GRAPH_PLOT_SIZE = 300  # width of a plot pinned on the graph, in graph units
 plots_on_font_size = 28
 selected_color = "#000000"
 CYTOSCAPE_STYLESHEET = [

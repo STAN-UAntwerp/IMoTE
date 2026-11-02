@@ -242,7 +242,6 @@ def register_callbacks(app):
         State(ids.CYTOSCAPE_GRAPH, "selectedNodeData"),
         State(ids.STORE_GRAPH_PLOTS, "data"),
         State(ids.STORE_VIZ_TREE, "data"),
-        State(ids.INPUT_GRAPH_PLOT_SIZE, "value"),
 
         State(ids.INPUT_DISPLAY_TYPE, "value"),
         State(ids.INPUT_NMAX, "value"),
@@ -253,39 +252,37 @@ def register_callbacks(app):
         State(ids.PREDSPLOT_TYPE, "value"),
         prevent_initial_call=True,
     )
-    def update_graph_plots(_n_add, _n_clear, _new_tree, selected_node, graph_plots, viz_tree_dict, plot_width,
+    def update_graph_plots(_n_add, _n_clear, _new_tree, selected_node, graph_plots, viz_tree_dict,
                            display_type, nmax, figw, figh, predsplot_options, highlight_x, predsplot_type):
         if _n_add is None and _n_clear is None:
             raise PreventUpdate
         if ctx.triggered_id == ids.NEW_TREE_TRIGGER:
             return [], no_update
         if ctx.triggered_id == ids.BTN_CLEAR_GRAPH_PLOTS:
-            return [], status.warning("Removed all plots from the graph.")
+            return [], status.info("Unpinned all plots from the graph.")
 
         if not selected_node:
-            return no_update, status.warning("There is no node plot to add, select a node that has a plot first.")
+            return no_update, status.warning("Select a node in the graph to pin its plot.")
         node_data = selected_node[0]
         if node_data["node_type"] == "CombinedLinNode":
             return no_update, status.warning("No plot available for combined linear nodes, show all linear nodes to see their plots.")
-        if not plot_width or plot_width <= 0:
-            return no_update, status.warning("Give a plot width larger than 0.")
 
         viz_tree = VizTree.from_dict(viz_tree_dict)
         node = find_node_by_cytoscape_id(viz_tree, node_data["id"])
         file_dir, note = make_node_plot(viz_tree, node, node_data["highlight"], display_type, nmax, figw, figh,
                                         predsplot_options, highlight_x, predsplot_type)
         if file_dir is None:
-            return no_update, status.warning(f"No plot added: {note.children[-1]}")
+            return no_update, status.warning(f"No plot pinned: {note.children[-1]}")
 
-        # Adding a plot to a node that already has one replaces it, the overlay keeps its position
+        # Adding a plot to a node that already has one replaces it, the overlay keeps its position and size.
+        # assets/graph_plots.js picks the size of a new plot, based on the view (normal, minimal or tiny).
+        graph_plot = {"id": node_data["id"], "src": svg_data_url(file_dir), "aspect": figw / figh}
+        for old_plot in graph_plots or []:
+            if old_plot["id"] == node_data["id"] and "width" in old_plot:
+                graph_plot["width"] = old_plot["width"]
         graph_plots = [plot for plot in graph_plots or [] if plot["id"] != node_data["id"]]
-        graph_plots.append({
-            "id": node_data["id"],
-            "src": svg_data_url(file_dir),
-            "width": plot_width,
-            "aspect": figw / figh,
-        })
-        return graph_plots, status.success(f"Added the plot of node {node.id} to the graph, drag it to move it.")
+        graph_plots.append(graph_plot)
+        return graph_plots, status.success(f"Pinned the plot of node {node.id} to the graph, drag it to move it or its corners to resize it.")
 
     # The plots are drawn by assets/graph_plots.js as an overlay on the graph, so they don't change the tree layout.
     # The store lives outside the page and the graph inside it, so a second callback redraws the plots when the

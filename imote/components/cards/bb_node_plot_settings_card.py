@@ -2,7 +2,7 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc
 
 from imote import ids
-from imote.config import DEFAULT_DISPLAY_TYPE, DEFAULT_FIG_H, DEFAULT_FIG_W, DEFAULT_NMAX, DEFAULT_GRAPH_PLOT_SIZE
+from imote.config import DEFAULT_DISPLAY_TYPE, DEFAULT_FIG_H, DEFAULT_FIG_W, DEFAULT_NMAX
 
 LABEL_CLASS = "small fw-bold text-muted mb-1"
 
@@ -109,20 +109,35 @@ def make_settings_card() -> dbc.Card:
                         className="d-flex justify-content-end",
                     ),
 
-                    # Pin the node plot on top of the graph, uses the plot settings below
-                    html.Small("Plot on graph", className="text-muted d-block fw-bold"),
-                    dbc.InputGroup(
-                        [
-                            dbc.InputGroupText("Width"),
-                            dbc.Input(id=ids.INPUT_GRAPH_PLOT_SIZE, type="number", value=DEFAULT_GRAPH_PLOT_SIZE,
-                                      min=50, step=50),
-                            dbc.Button([html.I(className="bi bi-pin-angle me-1"), "Add to graph"],
-                                       id=ids.BTN_ADD_GRAPH_PLOT, color="primary", className="fw-bold"),
-                            dbc.Button(html.I(className="bi bi-trash"), id=ids.BTN_CLEAR_GRAPH_PLOTS,
-                                       color="secondary", title="Remove all plots from the graph"),
+                    # Pin the node plot on top of the graph, made with the settings above
+                    html.Div(
+                        className="border-top pt-2 mt-3",
+                        children=[
+                            html.Div("Plots on the graph", className=LABEL_CLASS),
+                            html.Small(
+                                "Pin this plot next to its node in the graph, you can move and resize it.",
+                                className="text-muted d-block mb-2",
+                            ),
+                            dbc.Stack([
+                                dbc.Button(
+                                    [html.I(className="bi bi-pin-angle me-1"), "Pin plot"],
+                                    id=ids.BTN_ADD_GRAPH_PLOT,
+                                    color="primary",
+                                    size="sm",
+                                    className="fw-bold flex-fill text-nowrap",
+                                    title="Pin the plot of the selected node on the graph",
+                                ),
+                                dbc.Button(
+                                    [html.I(className="bi bi-x-circle me-1"), "Unpin all"],
+                                    id=ids.BTN_CLEAR_GRAPH_PLOTS,
+                                    color="danger",
+                                    outline=True,
+                                    size="sm",
+                                    className="fw-bold flex-fill text-nowrap",
+                                    title="Remove all pinned plots from the graph",
+                                ),
+                            ], direction="horizontal", gap=2),
                         ],
-                        size="sm",
-                        className="mb-3",
                     ),
                 ]
             ),
