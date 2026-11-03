@@ -167,6 +167,31 @@ def screenshot_node_info(browser: Browser, url: str):
     page.close()
 
 
+def screenshot_pinned_plots(browser: Browser, url: str):
+    """The whole app with the plots of an internal node and a leaf pinned on the graph."""
+    page = open_app(browser, url, OVERVIEW_SCALE)
+    click_node(page, INTERNAL_NODE)
+    page.locator(f"#{ids.NODE_INFO_PLOT_SWITCH}").check()
+    page.wait_for_selector(f"#{ids.NODE_INFO_PLOT_CONTAINER} img")
+    wait_until_idle(page)
+    for node_id in [INTERNAL_NODE, deepest_leaf(page)]:
+        click_node(page, node_id)
+        page.click(f"#{ids.BTN_ADD_GRAPH_PLOT}")
+        wait_until_idle(page)
+    page.wait_for_function("document.querySelectorAll('.imote-graph-plot img').length === 2")
+    # The leaf plot is placed over other nodes, drag it to the empty space under the tree like a user would
+    leaf_plot = page.locator(".imote-graph-plot").nth(1).bounding_box()
+    graph = page.locator(f"#{ids.CYTOSCAPE_GRAPH}").bounding_box()
+    page.mouse.move(leaf_plot["x"] + leaf_plot["width"] / 2, leaf_plot["y"] + leaf_plot["height"] / 2)
+    page.mouse.down()
+    page.mouse.move(graph["x"] + 0.45 * graph["width"], graph["y"] + 0.85 * graph["height"], steps=10)
+    page.mouse.up()
+    page.mouse.move(0, 0)  # no hover, so the close buttons and resize handles of the plots are hidden
+    wait_until_idle(page)
+    page.screenshot(path=OUTPUT_DIR / "gallery-pinned-plots.png")
+    page.close()
+
+
 def screenshot_new_tree(browser: Browser, url: str):
     page = open_app(browser, url)
     open_card(page, ids.NEW_TREE_TOGGLE_BUTTON, ids.NEW_TREE_COLLAPSE)
@@ -213,6 +238,7 @@ SCREENSHOTS = [
     screenshot_overview,
     screenshot_tree_info,
     screenshot_node_info,
+    screenshot_pinned_plots,
     screenshot_new_tree,
     screenshot_edit_tree,
     screenshot_layout,

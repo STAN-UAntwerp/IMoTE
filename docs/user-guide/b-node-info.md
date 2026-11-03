@@ -167,6 +167,19 @@ The following settings are only available for prediction plots:
 
 After changing any settings, click **"Refit Plot"** to regenerate the visualization using the updated configuration.
 
+## Plots on the graph
+
+The plot of a node can also be pinned on the graph, next to its node. This is useful to compare the plots of a few
+nodes, or to show them together with the tree.
+
+* **Pin plot** – Pins the plot of the selected node on the graph, made with the current plot settings. Pinning the plot 
+  of a node again replaces it.
+* **Unpin all** – Removes all pinned plots from the graph. To remove a single plot, hover over it and click the **×**
+  in its top right corner.
+
+The pinned plots don't change the layout of the tree. Drag a plot to move it, or drag one of its corners to resize it. 
+Clicking a plot selects its node. The pinned plots are removed when a new tree is shown.
+
 !!! note "Showing all node plots"
     The [Edit Tree](d-edit-tree.md) card also contains a **"Show all node plots"** switch. When enabled, the application
     generates a node plot for every node in the tree and replaces the usual node labels with these plots. This can be 

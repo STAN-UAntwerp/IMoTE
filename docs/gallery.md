@@ -18,6 +18,14 @@ The initially loaded PILOT tree showing all node plots.
 
 ---
 
+## Plots pinned on the graph
+
+![pinned plots](assets/screenshots/gallery-pinned-plots.png)
+
+The initially loaded PILOT tree with the plots of an internal node and a leaf pinned on the graph.
+
+---
+
 ## A large tree
 
 
