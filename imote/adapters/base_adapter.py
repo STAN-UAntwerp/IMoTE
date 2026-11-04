@@ -30,6 +30,10 @@ class BaseAdapter(ABC):
     task: str = "regression"
     """Kind of model the adapter builds trees for, "regression" or "classification"."""
 
+    needs_feature_names: bool = False
+    """If True, build_root_node() and predict() also get the dataset's feature names as keyword argument
+    feature_names, for models that refer to features by name instead of by column position."""
+
     @staticmethod
     @abstractmethod
     def build_root_node(X_train: np.ndarray, y_train: np.ndarray, model) -> BaseNode:

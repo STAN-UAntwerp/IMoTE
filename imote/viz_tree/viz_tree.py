@@ -116,8 +116,9 @@ class VizTree:
         Returns:
             A new VizTree instance wrapping the model's tree.
         """
-        root_node = adapter.build_root_node(X_train, y_train, model)
-        y_hat = adapter.predict(X_train, model)
+        kwargs = {"feature_names": feature_names} if adapter.needs_feature_names else {}
+        root_node = adapter.build_root_node(X_train, y_train, model, **kwargs)
+        y_hat = adapter.predict(X_train, model, **kwargs)
         return cls(root_node, X_train, y_train, y_hat, task=adapter.task,
                    feature_names=feature_names, target_name=target_name)
 

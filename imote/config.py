@@ -52,6 +52,7 @@ ADAPTER_OPTIONS = [
     {"label": "Partykit", "value": "Partykit"},
     {"label": "Pilot", "value": "Pilot"},
     {"label": "M5", "value": "M5"},
+    {"label": "BoostingMachine (Amadea)", "value": "BoostingMachine"},
 ]
 DEFAULT_ADAPTER_NAME = "Partykit"
 
