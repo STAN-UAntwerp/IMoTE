@@ -46,6 +46,8 @@ METHOD_OPTIONS = [
     {"label": "Pilot", "value": "Pilot"},
     {"label": "M5", "value": "M5"},
     {"label": "Pilot (classification)", "value": "BcPilot"},
+    {"label": "Decision tree", "value": "DecisionTreeRegressor"},
+    {"label": "Decision tree (classification)", "value": "DecisionTreeClassifier"},
 ]
 
 ADAPTER_OPTIONS = [

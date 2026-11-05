@@ -1,4 +1,5 @@
 from m5py import M5Prime
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 import logging
 import os
 import pickle
@@ -87,6 +88,12 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
     X, y, cat_ids = dataset.X, dataset.y, dataset.cat_ids
 
     adapter = ADAPTERS_REGISTRY[method_name]
+    if adapter.task == "classification":
+        classes = np.unique(y)
+        if len(classes) != 2:
+            raise ValueError(f"{method_name} needs a binary target, this dataset has {len(classes)} classes.")
+        y = (y == classes[1]).astype(float)
+
     if method_name == "Pilot":
         from pilot import PILOT
         start_time = time.perf_counter()
@@ -114,10 +121,6 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
         elapsed_time = time.perf_counter() - start_time
     elif method_name == "BcPilot":
         from imote.bcpilot.bcPilot import Pilot as BcPilot
-        classes = np.unique(y)
-        if len(classes) != 2:
-            raise ValueError(f"PILOT (classification) needs a binary target, this dataset has {len(classes)} classes.")
-        y = (y == classes[1]).astype(float)
         start_time = time.perf_counter()
         model = BcPilot(max_depth=max_depth,
                         max_model_depth=max_model_depth,
@@ -126,6 +129,16 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
                         )
         bc_cat_ids = None if np.array_equal(cat_ids, np.array([-1])) else list(cat_ids)
         model.fit(X.astype(float), y, cat_ids=bc_cat_ids)
+        elapsed_time = time.perf_counter() - start_time
+    elif method_name in ("DecisionTreeRegressor", "DecisionTreeClassifier"):
+        model_cls = DecisionTreeRegressor if method_name == "DecisionTreeRegressor" else DecisionTreeClassifier
+        start_time = time.perf_counter()
+        model = model_cls(max_depth=max_depth,
+                          min_samples_split=min_sample_split,
+                          min_samples_leaf=min_sample_leaf,
+                          random_state=42,
+                          )
+        model.fit(X, y)
         elapsed_time = time.perf_counter() - start_time
     else:
         raise ValueError(f'Method name {method_name} not recognized.')
@@ -408,10 +421,10 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def new_tree_trigger(_, minimal, tree_params, message):
-        n_leafs = tree_params["n_leafs"]
-        if n_leafs >= 18:
+        n_nodes = tree_params["n_leafs"] + tree_params["n_internal_nodes"]
+        if n_nodes >= 40:
             new_minimal = 2
-        elif n_leafs > 8:
+        elif n_nodes > 11:
             new_minimal = 1
         else:
             new_minimal = 0
@@ -420,7 +433,7 @@ def register_callbacks(app):
             return no_update, time.time(), None, no_update
         else:
             size_name = {0: "Normal", 1: "Minimal", 2: "Tiny"}[new_minimal]
-            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_leafs} leafs.")
+            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_nodes} nodes.")
             return new_minimal, no_update, None, note
 
     # --- SAVE TREE ---
