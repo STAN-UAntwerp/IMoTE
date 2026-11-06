@@ -196,8 +196,8 @@ def _entropy(y: np.ndarray) -> float:
     p = np.mean(y) if len(y) else 0.0
     return float((entr(p) + entr(1 - p)) / np.log(2))
 
-@register_metric("Class count 0")
-class ClassCount1Metric(BaseNodeMetric):
+@register_metric("Class 0 count")
+class Class0CountMetric(BaseNodeMetric):
     """Number of samples of class 0 at this node."""
     tasks = ("classification",)
 
@@ -206,9 +206,18 @@ class ClassCount1Metric(BaseNodeMetric):
         y_true = y_train[node.indices]
         return int(np.sum(y_true == 0))
 
+@register_metric("Class 0 fraction")
+class Class0FractionMetric(BaseNodeMetric):
+    """Fraction of the samples at this node that are of class 0."""
+    tasks = ("classification",)
+    value_range = (0.0, 1.0)
 
-@register_metric("Class count 1")
-class ClassCount1Metric(BaseNodeMetric):
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean(1-y_train[node.indices]))
+
+@register_metric("Class 1 count")
+class Class1CountMetric(BaseNodeMetric):
     """Number of samples of class 1 at this node."""
     tasks = ("classification",)
 
@@ -336,6 +345,7 @@ class LogLossMetric(BaseNodeMetric):
     """Mean binary cross-entropy at this node."""
     tasks = ("classification",)
     higher_is_better = False
+    value_range = (0.0, np.inf)
 
     @staticmethod
     def compute(node, y_train):
@@ -347,7 +357,7 @@ class BrierScoreMetric(BaseNodeMetric):
     """Mean squared error of the predicted probability of class 1 at this node."""
     tasks = ("classification",)
     higher_is_better = False
-    value_range = (0.0, 1.0)
+    value_range = (0.0, 0.5)
 
     @staticmethod
     def compute(node, y_train):
@@ -376,8 +386,8 @@ def _impurity_decrease(node: SplitNode, y_train: np.ndarray, impurity) -> float:
     y_node, y_left, y_right = (y_train[n.indices] for n in (node, node.left_child, node.right_child))
     return impurity(y_node) - (len(y_left) * impurity(y_left) + len(y_right) * impurity(y_right)) / len(y_node)
 
-@register_metric("Split gini gain")
-class GiniGainMetric(BaseNodeMetric):
+@register_metric("Split gini decrease")
+class GiniDecreaseMetric(BaseNodeMetric):
     """Decrease in Gini impurity from the split at this node."""
     tasks = ("classification",)
     higher_is_better = True

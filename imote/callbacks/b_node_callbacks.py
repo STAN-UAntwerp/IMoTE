@@ -18,7 +18,7 @@ from imote.nodes.node_model import LinearNodeModel
 from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
-from imote.plots.classplot import make_classification_plot
+from imote.plots.classplot import make_class_pie_plot, make_classification_plot
 from imote.viz_tree.viz_tree import VizTree
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, metrics_for_task
 
@@ -165,8 +165,14 @@ def register_callbacks(app):
         cmap = plt.colormaps['tab20'].resampled(n_features)
         feature_colors = [cmap(i) for i in range(n_features)]
 
+        file_dir = None
         class_file_dir = None
+        class_file_dir2 = None
+        note = None
         try:
+            if viz_tree.task == "classification" and node.indices.any():
+                class_file_dir = DIR_LIVE_OUTPUT / "regplots" / f"classpie_node{node.id}_{viz_tree.tree_id}.svg"
+                make_class_pie_plot(node, viz_tree.y_train, str(class_file_dir), (figw, figh))
             if isinstance(node, LeafNode):
                 if not isinstance(node.node_model, LinearNodeModel):
                     message = "No plot available for this type of leaf node."
@@ -187,11 +193,10 @@ def register_callbacks(app):
                                feature_names=viz_tree.feature_names,
                                all_feature_colors=feature_colors,
                                )
+                elif not np.any(np.array(node.node_model.coefficients) != 0):
+                    note = _plot_note("This leaf predicts a constant, so there is no prediction plot. "
+                                      "Turn on Global predsplot in the plot settings to see how the tree gets to this value.")
                 else:
-                    if not np.any(np.array(node.node_model.coefficients) != 0):
-                        message =  ("This leaf predicts a constant, so there is no prediction plot. "
-                                "Turn on Global predsplot in the plot settings to see how the tree gets to this value.")
-                        return _plot_note(message), None
                     file_dir = DIR_LIVE_OUTPUT / "predsplots" / f"predsplot_node{node.id}_{viz_tree.tree_id}.svg"
                     node_X = viz_tree.X_train[node.indices, :]
                     if use_intercept:
@@ -225,8 +230,8 @@ def register_callbacks(app):
                     viz_tree.target_name,
                 )
                 if viz_tree.task == "classification":
-                    class_file_dir = DIR_LIVE_OUTPUT / "regplots" / f"classplot_node{node.id}_{viz_tree.tree_id}.svg"
-                    make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, str(class_file_dir),
+                    class_file_dir2 = DIR_LIVE_OUTPUT / "regplots" / f"classplot_node{node.id}_{viz_tree.tree_id}.svg"
+                    make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, str(class_file_dir2),
                                              (figw, figh), feature_colors, None, highlight_x_arr)
             else:
                 message =  f"No plot available for a {node.__class__.__name__}."
@@ -235,8 +240,8 @@ def register_callbacks(app):
             logger.exception("Could not make the plot of node %s", node.id)
             return _plot_note(f"Could not make the plot: {e}", "danger", "bi-x-circle-fill"), None
 
-        images = []
-        for plot_file in (file_dir, class_file_dir):
+        images = [] if note is None else [note]
+        for plot_file in (file_dir, class_file_dir, class_file_dir2):
             if plot_file is not None:
                 encoded_svg = quote(plot_file.read_text(encoding="utf-8"))
                 src_url = f"data:image/svg+xml;utf8,{encoded_svg}"

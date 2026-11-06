@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
+from imote.nodes.base_node import BaseNode
 from imote.nodes.internal_node import InternalNode, LinearNode
 from imote.nodes.split_node import SplitNode
 from imote.plots.plot_labels import feature_label as make_feature_label
@@ -16,6 +17,11 @@ def _class_label(c) -> str:
     if isinstance(c, (float, np.floating)) and float(c).is_integer():
         c = int(c)
     return f"Class {c}"
+
+
+def _class_colors(classes: np.ndarray) -> dict:
+    cmap = plt.colormaps["tab10"] if len(classes) <= 10 else plt.colormaps["tab20"].resampled(len(classes))
+    return {class_: cmap(i % cmap.N) for i, class_ in enumerate(classes)}
 
 
 def _bin_edges(x: np.ndarray, node: InternalNode) -> tuple[np.ndarray, bool]:
@@ -59,8 +65,7 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
     feature_idx = node.pivot_idx
     x = X[:, feature_idx]
     classes = np.unique(viz_tree_y)
-    cmap = plt.colormaps["tab10"] if len(classes) <= 10 else plt.colormaps["tab20"].resampled(len(classes))
-    class_colors = {class_: cmap(i % cmap.N) for i, class_ in enumerate(classes)}
+    class_colors = _class_colors(classes)
 
     fig = plt.figure(figsize=fig_size, layout="constrained")
     fig.patch.set_linewidth(2)
@@ -104,5 +109,20 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
     if left_legend_handle is not None:
         ax.add_artist(class_legend)
         ax.legend(handles=[left_legend_handle], fontsize="small", loc="upper left")
+    fig.savefig(directory_plot_file)
+    plt.close(fig)
+
+
+def make_class_pie_plot(node: BaseNode, viz_tree_y, directory_plot_file, fig_size):
+    """Pie chart of the classes of the node's samples, with the same class colors as the classification plot."""
+    y = viz_tree_y[node.indices]
+    class_colors = _class_colors(np.unique(viz_tree_y))
+    classes = [c for c in class_colors if np.any(y == c)]
+    counts = [int(np.sum(y == c)) for c in classes]
+
+    fig, ax = plt.subplots(figsize=fig_size, layout="constrained")
+    ax.pie(counts, colors=[class_colors[c] for c in classes], startangle=90, counterclock=False,
+           labels=[f"{_class_label(c)}: {n} ({n / len(y):.1%})" for c, n in zip(classes, counts)],
+           wedgeprops={"edgecolor": "white"})
     fig.savefig(directory_plot_file)
     plt.close(fig)
