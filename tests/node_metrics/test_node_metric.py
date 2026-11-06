@@ -1,7 +1,11 @@
 import numpy as np
 import pytest
 
+from sklearn.tree import DecisionTreeClassifier
+
+from imote.adapters.decision_tree_adapter import DecisionTreeClassifierAdapter
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, BaseNodeMetric, metrics_for_task
+from imote.viz_tree.viz_tree import VizTree
 from tests.helpers import X, make_classification_tree, make_pilot_tree, y, y_cls
 
 
@@ -68,10 +72,43 @@ def test_metric_values(name, node_id, expected):
     ("AUROC", 0, "0.5"),
     ("AUROC", 1, "1"),
     ("AUROC", 2, "0.666667"),
+    ("Class 1 fraction", 0, "0.5"),
+    ("Class 1 fraction", 1, "0.75"),
+    ("Gini", 0, "0.5"),
+    ("Gini", 1, "0.375"),
+    ("Entropy", 0, "1"),
+    ("Entropy", 1, "0.811278"),
+    ("Brier score", 0, "0.25"),
+    ("Precision", 0, "0"),
+    ("Precision", 2, "0.5"),
+    ("Recall", 1, "1"),
+    ("Recall", 2, "1"),
+    ("F1", 0, "0"),
+    ("F1", 2, "0.666667"),
+    ("Gini gain", 0, "0.125"),
+    ("Gini gain", 1, "-"),
+    ("Information gain", 0, "0.188722"),
+    ("Information gain", 2, "-"),
 ])
 def test_classification_metric_values(name, node_id, expected):
     tree = make_classification_tree()
     assert NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], y_cls) == expected
+
+
+@pytest.mark.parametrize("criterion, metric, gain", [("gini", "Gini", "Gini gain"), ("entropy", "Entropy", "Information gain")])
+def test_impurity_metrics_match_sklearn(criterion, metric, gain):
+    rng = np.random.default_rng(0)
+    X_tree = rng.normal(size=(200, 3))
+    y_tree = (X_tree[:, 0] + rng.normal(size=200) > 0).astype(float)
+    model = DecisionTreeClassifier(criterion=criterion, max_depth=3, random_state=0).fit(X_tree, y_tree)
+    tree = VizTree.from_model(DecisionTreeClassifierAdapter, X_tree, y_tree, model)
+
+    node_ids = [0, model.tree_.children_left[0], model.tree_.children_right[0]]
+    impurity, n = model.tree_.impurity[node_ids], model.tree_.n_node_samples[node_ids]
+    root = tree.root_node
+    assert NODE_METRICS_REGISTRY[metric].compute(root, y_tree) == pytest.approx(impurity[0])
+    assert NODE_METRICS_REGISTRY[gain].compute(root, y_tree) == pytest.approx(
+        impurity[0] - (n[1] * impurity[1] + n[2] * impurity[2]) / n[0])
 
 
 @pytest.mark.parametrize("value, expected", [

@@ -38,6 +38,7 @@ dependencies = [
 
     "numpy>=1.21",
     "pandas>=1.3",
+    "scipy>=1.5",
     "matplotlib>=3.6",                  # Colormap.resampled() needs 3.6
     "seaborn>=0.13",
     "pmlb>=1.0",                        # datasets
