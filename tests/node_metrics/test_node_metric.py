@@ -1,9 +1,12 @@
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
 from sklearn.tree import DecisionTreeClassifier
 
 from imote.adapters.decision_tree_adapter import DecisionTreeClassifierAdapter
+from imote.config import DEFAULT_NODE_METRICS
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, BaseNodeMetric, metrics_for_task
 from imote.viz_tree.viz_tree import VizTree
 from tests.helpers import X, make_classification_tree, make_pilot_tree, y, y_cls
@@ -61,8 +64,11 @@ def test_metric_values(name, node_id, expected):
 # node2: log_odds [-2, 1, -1, 0.5], y = [0, 0, 0, 1]: row 5 wrong, the positive beats 2 of 3 negatives
 #   log-loss = mean(log(1 + e^f) - y * f)
 @pytest.mark.parametrize("name, node_id, expected", [
-    ("Class counts", 0, "4 / 4"),
-    ("Class counts", 1, "1 / 3"),
+    ("Class 0 count", 0, "4"),
+    ("Class 1 count", 0, "4"),
+    ("Class 0 count", 1, "1"),
+    ("Class 1 count", 1, "3"),
+    ("Class 0 fraction", 1, "0.25"),
     ("Mean Probability", 0, "0.5"),
     ("Accuracy", 0, "0.5"),
     ("Accuracy", 1, "1"),
@@ -79,23 +85,23 @@ def test_metric_values(name, node_id, expected):
     ("Entropy", 0, "1"),
     ("Entropy", 1, "0.811278"),
     ("Brier score", 0, "0.25"),
-    ("Precision", 0, "0"),
+    ("Precision", 0, "nan"),
     ("Precision", 2, "0.5"),
     ("Recall", 1, "1"),
     ("Recall", 2, "1"),
     ("F1", 0, "0"),
     ("F1", 2, "0.666667"),
-    ("Gini gain", 0, "0.125"),
-    ("Gini gain", 1, "-"),
-    ("Information gain", 0, "0.188722"),
-    ("Information gain", 2, "-"),
+    ("Split gini decrease", 0, "0.125"),
+    ("Split gini decrease", 1, "-"),
+    ("Split information gain", 0, "0.188722"),
+    ("Split information gain", 2, "-"),
 ])
 def test_classification_metric_values(name, node_id, expected):
     tree = make_classification_tree()
     assert NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], y_cls) == expected
 
 
-@pytest.mark.parametrize("criterion, metric, gain", [("gini", "Gini", "Gini gain"), ("entropy", "Entropy", "Information gain")])
+@pytest.mark.parametrize("criterion, metric, gain", [("gini", "Gini", "Split gini decrease"), ("entropy", "Entropy", "Split information gain")])
 def test_impurity_metrics_match_sklearn(criterion, metric, gain):
     rng = np.random.default_rng(0)
     X_tree = rng.normal(size=(200, 3))
@@ -109,6 +115,30 @@ def test_impurity_metrics_match_sklearn(criterion, metric, gain):
     assert NODE_METRICS_REGISTRY[metric].compute(root, y_tree) == pytest.approx(impurity[0])
     assert NODE_METRICS_REGISTRY[gain].compute(root, y_tree) == pytest.approx(
         impurity[0] - (n[1] * impurity[1] + n[2] * impurity[2]) / n[0])
+
+
+@pytest.mark.parametrize("task", ["regression", "classification"])
+def test_default_metrics_are_registered(task):
+    assert set(DEFAULT_NODE_METRICS[task]) <= set(metrics_for_task(task))
+
+
+@pytest.mark.parametrize("name", ["Precision", "Recall", "F1"])
+def test_label_metrics_are_nan_without_samples(name):
+    node = SimpleNamespace(indices=np.zeros(4, dtype=bool), log_odds=np.array([]))
+    assert np.isnan(NODE_METRICS_REGISTRY[name].compute(node, np.array([0, 1, 0, 1])))
+
+
+@pytest.mark.parametrize("name", ["Precision", "Recall", "F1"])
+def test_label_metrics_are_nan_for_all_correct_class_0_node(name):
+    node = SimpleNamespace(indices=np.ones(3, dtype=bool), log_odds=np.full(3, -2.0))
+    assert np.isnan(NODE_METRICS_REGISTRY[name].compute(node, np.zeros(3)))
+
+
+@pytest.mark.parametrize("name, expected", [("Mean Probability", 0.0), ("Brier score", 0.0)])
+def test_probability_metrics_do_not_overflow(name, expected):
+    node = SimpleNamespace(indices=np.ones(2, dtype=bool), log_odds=np.full(2, -1000.0))
+    with np.errstate(over="raise"):
+        assert NODE_METRICS_REGISTRY[name].compute(node, np.zeros(2)) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize("value, expected", [

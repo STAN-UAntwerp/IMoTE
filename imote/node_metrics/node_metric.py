@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
-from scipy.special import entr
+from scipy.special import entr, expit
 from sklearn.metrics import roc_auc_score, average_precision_score, precision_score, recall_score, f1_score
 
 from imote.nodes.base_node import BaseNode
@@ -196,6 +196,13 @@ def _entropy(y: np.ndarray) -> float:
     p = np.mean(y) if len(y) else 0.0
     return float((entr(p) + entr(1 - p)) / np.log(2))
 
+def _label_score(score, node: BaseNode, y_train: np.ndarray) -> float:
+    """Precision, recall or F1 of the class predictions at a node, nan if there are no samples or it is undefined."""
+    y_true = y_train[node.indices]
+    if len(y_true) == 0:
+        return float("nan")
+    return float(score(y_true, node.log_odds > 0, zero_division=np.nan))
+
 @register_metric("Class 0 count")
 class Class0CountMetric(BaseNodeMetric):
     """Number of samples of class 0 at this node."""
@@ -244,7 +251,7 @@ class MeanProbabilityMetric(BaseNodeMetric):
 
     @staticmethod
     def compute(node, y_train):
-        return float(np.mean(1 / (1 + np.exp(-node.log_odds))))
+        return float(np.mean(expit(node.log_odds)))
 
 @register_metric("Accuracy")
 class AccuracyMetric(BaseNodeMetric):
@@ -259,36 +266,36 @@ class AccuracyMetric(BaseNodeMetric):
 
 @register_metric("Precision")
 class PrecisionMetric(BaseNodeMetric):
-    """Fraction of the samples predicted as class 1 at this node that are of class 1, 0 if there are none."""
+    """Fraction of the samples predicted as class 1 at this node that are of class 1, nan if there are none."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):
-        return float(precision_score(y_train[node.indices], node.log_odds > 0, zero_division=0))
+        return _label_score(precision_score, node, y_train)
 
 @register_metric("Recall")
 class RecallMetric(BaseNodeMetric):
-    """Fraction of the class 1 samples at this node that are predicted as class 1, 0 if there are none."""
+    """Fraction of the class 1 samples at this node that are predicted as class 1, nan if there are none."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):
-        return float(recall_score(y_train[node.indices], node.log_odds > 0, zero_division=0))
+        return _label_score(recall_score, node, y_train)
 
 @register_metric("F1")
 class F1Metric(BaseNodeMetric):
-    """Harmonic mean of the precision and recall at this node."""
+    """Harmonic mean of the precision and recall at this node, nan if there are no class 1 samples and no class 1 predictions."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):
-        return float(f1_score(y_train[node.indices], node.log_odds > 0, zero_division=0))
+        return _label_score(f1_score, node, y_train)
 
 @register_metric("Gini")
 class GiniMetric(BaseNodeMetric):
@@ -361,7 +368,7 @@ class BrierScoreMetric(BaseNodeMetric):
 
     @staticmethod
     def compute(node, y_train):
-        return float(np.mean((1 / (1 + np.exp(-node.log_odds)) - y_train[node.indices]) ** 2))
+        return float(np.mean((expit(node.log_odds) - y_train[node.indices]) ** 2))
 
 # ---------------------------------------------------------------------------
 # Split node specific metrics

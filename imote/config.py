@@ -99,7 +99,7 @@ SPINNER_COLOR = "primary"
 
 DEFAULT_NODE_METRICS = {
     "regression": ["ID", "# Samples", "RSS", "MAE"],
-    "classification": ["ID", "# Samples", "Class counts", "Gini"],
+    "classification": ["ID", "# Samples", "Class 0 count", "Class 1 count", "Gini"],
 }
 
 TASK_COLORS = {"regression": NODE_TYPE_COLORS["LinearNode"], "classification": NODE_TYPE_COLORS["PconcNode"]}
