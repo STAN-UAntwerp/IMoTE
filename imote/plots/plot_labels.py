@@ -1,4 +1,7 @@
-MAX_FEATURE_LABEL_LENGTH = 10
+from imote.config import MINIMAL_LABEL_NAME_LENGTH
+from imote.node_metrics.node_labels import display_names
+
+MAX_FEATURE_LABEL_LENGTH = 8
 
 
 def plot_math_string(text: str) -> str:
@@ -17,4 +20,8 @@ def feature_label(feature_names, idx: int, max_length: int = MAX_FEATURE_LABEL_L
 
 
 def feature_labels(feature_names, n_features: int) -> list[str]:
-    return [feature_label(feature_names, i) for i in range(n_features)]
+    """Returns the plot labels of all features, shortened the same way as the node labels in minimal view."""
+    if feature_names is None:
+        return [feature_label(None, i) for i in range(n_features)]
+    short_names = display_names([str(name) for name in feature_names], n_features, MINIMAL_LABEL_NAME_LENGTH)
+    return [plot_math_string(name) for name in short_names]

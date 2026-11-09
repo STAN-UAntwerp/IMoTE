@@ -13,6 +13,8 @@ STORE_MODAL_DONT_ASK = "store-modal-dont-ask"
 STORE_LAST_PLOT_PATH = "store-last-plot-path"
 STORE_STATUS = "store-status"
 STORE_STATUS_HISTORY = "store-status-history"
+STORE_GRAPH_PLOTS = "store-graph-plots"
+STORE_TREE_DOWNLOAD = "store-tree-download"
 
 # --- Status bar (above the graph) -------------------------------------------
 STATUS_MESSAGE = "status-message"
@@ -41,6 +43,10 @@ PREDSPLOT_OPTIONS = "predsplot-options"
 PREDSPLOT_TYPE = "predsplot-type"
 PREDSPLOT_SETTINGS = "predsplot-settings"
 BTN_REFIT_PLOTS = "btn_refit-plots"
+
+# Plots pinned on top of the graph
+BTN_ADD_GRAPH_PLOT = "btn-add-graph-plot"
+BTN_CLEAR_GRAPH_PLOTS = "btn-clear-graph-plots"
 
 # --- C New Tree card -----------------------------------------------------
 NEW_TREE_COLLAPSE = "new-tree-collapse"

@@ -26,4 +26,5 @@ PMLB_DATASETS_CAT_IDS = {
     '503_wind': np.array([-1]),
     '4544_GeographicalOriginalofMusic': np.array([-1]),
     '537_houses': np.array([-1]),
+    '564_fried': np.array([-1]),
 }

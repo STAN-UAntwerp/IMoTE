@@ -39,7 +39,7 @@ makes them easy to explore, explain and present.
 - Click a node to see its type, split and metrics (number of samples, RSS, MAE, ...).
 - See the plot of any node: the data and the fit of a split, or the prediction plot of a leaf that shows how each
   feature contributes to its predictions.
-- Turn on **Show all node plots** to replace every node of the graph by its plot. 
+- Turn on **Show all node plots** to replace every node of the graph by its plot or only pin next to their node.
 - Highlight the path of a data point through the tree, with its prediction.
 
 

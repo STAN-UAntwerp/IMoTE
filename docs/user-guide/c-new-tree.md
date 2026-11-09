@@ -28,7 +28,8 @@ The following actions are also available:
 
 * **Save shown tree** – Saves the currently displayed tree as a pickled Python object in
   `~/.imote/saved_trees`. The saved tree can later be reloaded in the application.
-* **Download shown tree** – Downloads the currently displayed tree as an SVG image.
+* **Download shown tree** – Downloads the currently displayed tree as an SVG image, including the plots pinned on the
+  graph.
 * **Reload tree** – Restores the original fitted tree. This is useful after exploring subtrees or making temporary
   modifications to the visualization. The tree is restored to the state it had immediately after being fitted or loaded.
 * **Load tree** – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text

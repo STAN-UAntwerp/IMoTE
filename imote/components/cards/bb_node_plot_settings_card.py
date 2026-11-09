@@ -34,7 +34,7 @@ def make_settings_card() -> dbc.Card:
                         id=ids.PREDSPLOT_SETTINGS,
                         className="border-top pt-2 mb-3",
                         children=[
-                            html.Div("Predsplot (leaf nodes)", className=LABEL_CLASS),
+                            html.Div("Prediction plot (leaf nodes)", className=LABEL_CLASS),
                             dbc.Row(
                                 [
                                     dbc.Col(
@@ -107,6 +107,37 @@ def make_settings_card() -> dbc.Card:
                             ),
                         ], direction="horizontal", gap=2)],
                         className="d-flex",
+                    ),
+
+                    # Pin the node plot on top of the graph, made with the settings above
+                    html.Div(
+                        className="border-top pt-2 mt-3",
+                        children=[
+                            html.Div("Plots on the graph", className=LABEL_CLASS),
+                            html.Small(
+                                "Pin this plot next to its node in the graph, you can move and resize it.",
+                                className="text-muted d-block mb-2",
+                            ),
+                            dbc.Stack([
+                                dbc.Button(
+                                    [html.I(className="bi bi-pin-angle me-1"), "Pin plot"],
+                                    id=ids.BTN_ADD_GRAPH_PLOT,
+                                    color="primary",
+                                    size="sm",
+                                    className="fw-bold flex-fill text-nowrap",
+                                    title="Pin the plot of the selected node on the graph",
+                                ),
+                                dbc.Button(
+                                    [html.I(className="bi bi-x-circle me-1"), "Unpin all"],
+                                    id=ids.BTN_CLEAR_GRAPH_PLOTS,
+                                    color="danger",
+                                    outline=True,
+                                    size="sm",
+                                    className="fw-bold flex-fill text-nowrap",
+                                    title="Remove all pinned plots from the graph",
+                                ),
+                            ], direction="horizontal", gap=2),
+                        ],
                     ),
                 ]
             ),

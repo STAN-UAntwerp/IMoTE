@@ -416,15 +416,18 @@ def register_callbacks(app):
 
         Input(ids.NEW_TREE_TRIGGER, "data"),
         State(ids.SWITCH_MINIMAL, "value"),
+        State(ids.SWITCH_DATA_NODE_SIZE, "value"),
         State(ids.STORE_TREE_PARAMS, "data"),
         State(ids.STORE_STATUS, "data"),
         prevent_initial_call=True,
     )
-    def new_tree_trigger(_, minimal, tree_params, message):
-        n_nodes = tree_params["n_leafs"] + tree_params["n_internal_nodes"]
-        if n_nodes >= 40:
+    def new_tree_trigger(_, minimal, data_node, tree_params, message):
+        n_leafs = tree_params["n_leafs"]
+        if data_node:
+            new_minimal = minimal
+        elif n_leafs >= 18:
             new_minimal = 2
-        elif n_nodes > 11:
+        elif n_leafs > 8:
             new_minimal = 1
         else:
             new_minimal = 0
@@ -433,7 +436,7 @@ def register_callbacks(app):
             return no_update, time.time(), None, no_update
         else:
             size_name = {0: "Normal", 1: "Minimal", 2: "Tiny"}[new_minimal]
-            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_nodes} nodes.")
+            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_leafs} leafs.")
             return new_minimal, no_update, None, note
 
     # --- SAVE TREE ---
@@ -460,8 +463,9 @@ def register_callbacks(app):
         return status.success(f"Tree saved to {output_path}")
 
     # --- DOWNLOAD SVG ---
+    # assets/graph_plots.js makes the svg, so the plots pinned on the graph are in it too
     @app.callback(
-        Output(ids.CYTOSCAPE_GRAPH, "generateImage"),
+        Output(ids.STORE_TREE_DOWNLOAD, "data"),
         Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.BTN_SAVE_TREE_SVG, "n_clicks"),
@@ -474,4 +478,13 @@ def register_callbacks(app):
             raise PreventUpdate
         file_name = _tree_file_name(viz_tree_dict, tree_params)
         message = status.info(f"Downloading the shown tree as {file_name}.svg.")
-        return {"type": "svg", "action": "download", "filename": file_name}, message
+        return {"filename": f"{file_name}.svg", "time": time.time()}, message
+
+    app.clientside_callback(
+        """
+        function(download) {
+            if (download) window.imoteGraphPlots.downloadSvg(%r, download.filename);
+        }
+        """ % ids.CYTOSCAPE_GRAPH,
+        Input(ids.STORE_TREE_DOWNLOAD, "data"),
+    )

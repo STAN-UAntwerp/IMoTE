@@ -2,7 +2,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 from imote import ids
-from imote.config import DEFAULT_NODE_SEP, DEFAULT_RANK_SEP
+from imote.config import DEFAULT_NODE_SEP, DEFAULT_RANK_SEP, SEP_SLIDER_MAX, SEP_SLIDER_STEP
 
 def make_layout_card() -> dbc.Card:
     return dbc.Card(
@@ -52,14 +52,16 @@ def make_layout_card() -> dbc.Card:
                         html.Div(
                             [
                                 "Nodes vertical gap",
-                                dcc.Slider(id=ids.RANK_SEP, min=0, max=150, step=1, value=DEFAULT_RANK_SEP, marks=None),
+                                dcc.Slider(id=ids.RANK_SEP, min=0, max=SEP_SLIDER_MAX, step=SEP_SLIDER_STEP,
+                                           value=DEFAULT_RANK_SEP, marks=None),
                             ],
                             className="mb-2",
                         ),
                         html.Div(
                             [
                                 "Nodes horizontal gap",
-                                dcc.Slider(id=ids.NODE_SEP, min=0, max=150, step=1, value=DEFAULT_NODE_SEP, marks=None),
+                                dcc.Slider(id=ids.NODE_SEP, min=0, max=SEP_SLIDER_MAX, step=SEP_SLIDER_STEP,
+                                           value=DEFAULT_NODE_SEP, marks=None),
                             ]
                         ),
                     ]

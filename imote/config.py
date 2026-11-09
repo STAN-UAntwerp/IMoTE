@@ -32,6 +32,7 @@ PMLB_OPTIONS = [
     {"label": "PMLB: 210_cloud", "value": "210_cloud.pmlb"},
     {"label": "PMLB: 1028_SWD", "value": "1028_SWD.pmlb"},
     {"label": "PMLB: 197_cpu_act", "value": "197_cpu_act.pmlb"},
+    {"label": "PMLB: 564_fried", "value": "564_fried.pmlb"},
     {"label": "PMLB (class.): titanic", "value": "titanic.pmlb"},
     {"label": "PMLB (class.): banana", "value": "banana.pmlb"},
     {"label": "PMLB (class.): churn", "value": "churn.pmlb"},
@@ -79,8 +80,11 @@ DEFAULT_MIN_SAMPLE_SPLIT = 100
 DEFAULT_MIN_SAMPLE_LEAF = 25
 
 # --- Layout card defaults ------------------------------------------------
-DEFAULT_RANK_SEP = 10
-DEFAULT_NODE_SEP = 10
+# Vertical and horizontal gap between the nodes for each node size (0 normal, 1 minimal, 2 tiny):
+# (gap set when the node size changes, slider maximum, slider step)
+LAYOUT_SEP_BY_NODE_SIZE = {0: (10, 150, 1), 1: (8, 75, 0.5), 2: (1, 15, 0.1)}
+DEFAULT_RANK_SEP, SEP_SLIDER_MAX, SEP_SLIDER_STEP = LAYOUT_SEP_BY_NODE_SIZE[0]
+DEFAULT_NODE_SEP = DEFAULT_RANK_SEP
 
 # --- Settings node plot defaults -----------------------------------------
 DEFAULT_COLLAPSE_LEVEL = 5
@@ -91,6 +95,8 @@ DEFAULT_FIG_H = 3.4
 
 MIN_EDGE_WIDTH = 0.8
 MAX_EDGE_WIDTH = 8
+# Edges in the minimal and tiny views are thinner, so they fit the smaller nodes (also used for the data flow widths)
+VIEW_EDGE_WIDTH_SCALES = {"minimal": 0.8, "tiny": 0.3}
 
 MIN_NODE_HEIGHT = 0.1
 MAX_NODE_HEIGHT = 50
@@ -124,6 +130,7 @@ NODE_PLOTS_FIG_SIZE = (4.4, 2.6)
 NODE_PLOTS_N_MAX = 6
 NODE_PLOTS_EXTRA_SEP = 40
 plots_on_font_size = 28
+EDGE_WIDTH = 1.5
 selected_color = "#000000"
 CYTOSCAPE_STYLESHEET = [
     # ── Default node ──────────────────────────────────────────────────────
@@ -228,8 +235,11 @@ CYTOSCAPE_STYLESHEET = [
         "selector": "node.tiny",
         "style": {
             "label": "",
-            "width": "0.2px",
-            "height": "0.1px",
+            "shape": "ellipse",
+            "width": "4px",
+            "height": "4px",
+            "padding": "0px",
+            "border-width": "0.5px",
         },
     },
     {
@@ -249,7 +259,7 @@ CYTOSCAPE_STYLESHEET = [
             "target-arrow-shape": "triangle",
             "target-arrow-color": "#000000",
             "line-color": "#000000",
-            "width": 1.5,
+            "width": EDGE_WIDTH,
             "label": "data(label)",
             "font-family": font_family,
             "font-size": f"{font_size}px",
@@ -281,6 +291,38 @@ CYTOSCAPE_STYLESHEET = [
             "arrow-scale": 2,
             "font-size": f"{plots_on_font_size}px",
             "text-background-padding": "8px",
+        },
+    },
+    # ── Minimal and tiny edges ────────────────────────────────────────────
+    # cytoscape draws arrows at least 29px wide whatever the edge width, arrow-scale makes them fit the nodes
+    {
+        "selector": "edge.minimal",
+        "style": {
+            "width": EDGE_WIDTH * VIEW_EDGE_WIDTH_SCALES["minimal"],
+            "arrow-scale": 0.7,
+        },
+    },
+    {
+        "selector": "edge.label.minimal",
+        "style": {
+            "font-size": "13px",
+            "text-background-padding": "3px",
+        },
+    },
+    {
+        # Just lines, an arrow is as large as a tiny node. arrow-scale keeps the combined linear nodes markers small.
+        "selector": "edge.tiny",
+        "style": {
+            "width": EDGE_WIDTH * VIEW_EDGE_WIDTH_SCALES["tiny"],
+            "target-arrow-shape": "none",
+            "arrow-scale": 0.25,
+        },
+    },
+    {
+        "selector": "edge.label.tiny",
+        "style": {
+            "font-size": "2.5px",
+            "text-background-padding": "0.5px",
         },
     },
     {
@@ -319,6 +361,39 @@ CYTOSCAPE_STYLESHEET = [
         "selector": "edge.highlight.plots_on",
         "style": {
             "width": 10,
+        },
+    },
+    # ── highlighted in the minimal and tiny views ───────────
+    {
+        "selector": "edge.highlight.minimal",
+        "style": {
+            "width": 4 * VIEW_EDGE_WIDTH_SCALES["minimal"],
+        },
+    },
+    {
+        "selector": "edge.highlight.tiny",
+        "style": {
+            "width": 4 * VIEW_EDGE_WIDTH_SCALES["tiny"],
+        },
+    },
+    {
+        "selector": "node.tiny.highlight",
+        "style": {
+            "border-width": "0.7px",
+        },
+    },
+    # ── Selected node ────────────────────────────────────────────────
+    {
+        "selector": "node:selected",
+        "style": {
+            "border-width": "3px",
+            "border-color": "#f0e442",
+        },
+    },
+    {
+        "selector": "node.tiny:selected",
+        "style": {
+            "border-width": "1px",
         },
     },
 ]
