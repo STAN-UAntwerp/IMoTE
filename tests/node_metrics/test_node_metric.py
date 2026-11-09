@@ -3,10 +3,13 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.tree import DecisionTreeClassifier
 
 from imote.adapters.decision_tree_adapter import DecisionTreeClassifierAdapter
 from imote.config import DEFAULT_NODE_METRICS
+from imote.nodes.leaf_node import LeafNode
+from imote.nodes.node_model import LinearNodeModel
 from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, BaseNodeMetric, metrics_for_task
 from imote.viz_tree.viz_tree import VizTree
 from tests.helpers import X, make_classification_tree, make_pilot_tree, y, y_cls
@@ -31,7 +34,7 @@ def test_every_classification_metric_runs_on_every_node(name, node_id):
 def test_metrics_for_task():
     regression, classification = metrics_for_task("regression"), metrics_for_task("classification")
     assert "R2" in regression and "R2" not in classification
-    assert "AUROC" in classification and "AUROC" not in regression
+    assert "AUROC (of subtree)" in classification and "AUROC (of subtree)" not in regression
     assert "# Samples" in regression and "# Samples" in classification
 
 
@@ -75,9 +78,6 @@ def test_metric_values(name, node_id, expected):
     ("Accuracy", 2, "0.75"),
     ("Log-loss", 0, f"{np.log(2):.6g}"),
     ("Log-loss", 2, f"{np.mean(np.logaddexp(0, [-2, 1, -1, 0.5]) - [0, 0, 0, 0.5]):.6g}"),
-    ("AUROC", 0, "0.5"),
-    ("AUROC", 1, "1"),
-    ("AUROC", 2, "0.666667"),
     ("Class 1 fraction", 0, "0.5"),
     ("Class 1 fraction", 1, "0.75"),
     ("Gini", 0, "0.5"),
@@ -85,12 +85,6 @@ def test_metric_values(name, node_id, expected):
     ("Entropy", 0, "1"),
     ("Entropy", 1, "0.811278"),
     ("Brier score", 0, "0.25"),
-    ("Precision", 0, "nan"),
-    ("Precision", 2, "0.5"),
-    ("Recall", 1, "1"),
-    ("Recall", 2, "1"),
-    ("F1", 0, "0"),
-    ("F1", 2, "0.666667"),
     ("Split gini decrease", 0, "0.125"),
     ("Split gini decrease", 1, "-"),
     ("Split information gain", 0, "0.188722"),
@@ -99,6 +93,60 @@ def test_metric_values(name, node_id, expected):
 def test_classification_metric_values(name, node_id, expected):
     tree = make_classification_tree()
     assert NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], y_cls) == expected
+
+
+# Subtree metrics use the leaves below the node.
+# node0: log_odds [-1, 1, 2, 0.5, -2, 1, -1, 0.5], y = [0, 1, 1, 1, 0, 0, 0, 1]: only row 5 wrong, 5 predicted class 1
+#   the positives beat 13.5 of the 16 positive-negative pairs, one tie
+# node1, node2: leaves, same as their own log_odds, majority fractions 0.75 and 0.75
+@pytest.mark.parametrize("name, node_id, expected", [
+    ("Accuracy (of subtree)", 0, "0.875"),
+    ("Accuracy (of subtree)", 1, "1"),
+    ("Accuracy (of subtree)", 2, "0.75"),
+    ("Accuracy gain (of subtree)", 0, "0.375"),
+    ("Accuracy gain (of subtree)", 1, "0.25"),
+    ("Accuracy gain (of subtree)", 2, "0"),
+    ("Precision (of subtree)", 0, "0.8"),
+    ("Precision (of subtree)", 2, "0.5"),
+    ("Recall (of subtree)", 0, "1"),
+    ("Recall (of subtree)", 2, "1"),
+    ("F1 (of subtree)", 0, "0.888889"),
+    ("F1 (of subtree)", 2, "0.666667"),
+    ("AUROC (of subtree)", 0, "0.84375"),
+    ("AUROC (of subtree)", 1, "1"),
+    ("AUROC (of subtree)", 2, "0.666667"),
+])
+def test_subtree_metric_values(name, node_id, expected):
+    tree = make_classification_tree()
+    assert NODE_METRICS_REGISTRY[name].run(tree.nodes[node_id], y_cls) == expected
+
+
+def test_subtree_metrics_still_see_the_leaves_of_a_collapsed_subtree():
+    tree = make_classification_tree()
+    tree.collapse(tree.root_node)
+    assert NODE_METRICS_REGISTRY["Accuracy (of subtree)"].run(tree.root_node, y_cls) == "0.875"
+
+
+def test_subtree_metrics_of_the_root_are_those_of_the_decision_tree():
+    rng = np.random.default_rng(0)
+    X_tree = rng.normal(size=(200, 3))
+    y_tree = (X_tree[:, 0] + rng.normal(size=200) > 0).astype(float)
+    model = DecisionTreeClassifier(max_depth=3, random_state=0).fit(X_tree, y_tree)
+    tree = VizTree.from_model(DecisionTreeClassifierAdapter, X_tree, y_tree, model)
+    proba = model.predict_proba(X_tree)[:, 1]
+
+    root = tree.root_node
+    assert NODE_METRICS_REGISTRY["Accuracy (of subtree)"].compute(root, y_tree) == pytest.approx(model.score(X_tree, y_tree))
+    assert NODE_METRICS_REGISTRY["AUROC (of subtree)"].compute(root, y_tree) == pytest.approx(roc_auc_score(y_tree, proba))
+    assert NODE_METRICS_REGISTRY["AUPRC (of subtree)"].compute(root, y_tree) == pytest.approx(
+        average_precision_score(y_tree, proba))
+
+
+@pytest.mark.parametrize("name", ["AUROC (of subtree)", "AUPRC (of subtree)"])
+def test_ranking_metrics_of_a_leaf_with_one_score(name):
+    node = LeafNode(np.ones(4, dtype=bool), np.zeros(4), 0.0, LinearNodeModel(np.zeros(3), 1.0))
+    node.log_odds = np.full(4, 1.0)
+    assert NODE_METRICS_REGISTRY[name].compute(node, np.array([0, 1, 0, 1])) == "-"
 
 
 @pytest.mark.parametrize("criterion, metric, gain", [("gini", "Gini", "Split gini decrease"), ("entropy", "Entropy", "Split information gain")])
@@ -122,15 +170,17 @@ def test_default_metrics_are_registered(task):
     assert set(DEFAULT_NODE_METRICS[task]) <= set(metrics_for_task(task))
 
 
-@pytest.mark.parametrize("name", ["Precision", "Recall", "F1"])
+@pytest.mark.parametrize("name", ["Precision (of subtree)", "Recall (of subtree)", "F1 (of subtree)"])
 def test_label_metrics_are_nan_without_samples(name):
-    node = SimpleNamespace(indices=np.zeros(4, dtype=bool), log_odds=np.array([]))
+    node = LeafNode(np.zeros(4, dtype=bool), np.array([]), 0.0, LinearNodeModel(np.zeros(3), 1.0))
+    node.log_odds = np.array([])
     assert np.isnan(NODE_METRICS_REGISTRY[name].compute(node, np.array([0, 1, 0, 1])))
 
 
-@pytest.mark.parametrize("name", ["Precision", "Recall", "F1"])
+@pytest.mark.parametrize("name", ["Precision (of subtree)", "Recall (of subtree)", "F1 (of subtree)"])
 def test_label_metrics_are_nan_for_all_correct_class_0_node(name):
-    node = SimpleNamespace(indices=np.ones(3, dtype=bool), log_odds=np.full(3, -2.0))
+    node = LeafNode(np.ones(3, dtype=bool), np.zeros(3), 0.0, LinearNodeModel(np.zeros(3), 1.0))
+    node.log_odds = np.full(3, -2.0)
     assert np.isnan(NODE_METRICS_REGISTRY[name].compute(node, np.zeros(3)))
 
 

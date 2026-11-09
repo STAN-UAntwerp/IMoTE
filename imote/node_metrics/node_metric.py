@@ -5,6 +5,8 @@ from scipy.special import entr, expit
 from sklearn.metrics import roc_auc_score, average_precision_score, precision_score, recall_score, f1_score
 
 from imote.nodes.base_node import BaseNode
+from imote.nodes.collapsed_node import CollapsedNode
+from imote.nodes.none_node import NoneNode
 from imote.nodes.split_node import SplitNode
 
 NODE_METRICS_REGISTRY: dict[str, "type[BaseNodeMetric]"] = {}
@@ -196,12 +198,35 @@ def _entropy(y: np.ndarray) -> float:
     p = np.mean(y) if len(y) else 0.0
     return float((entr(p) + entr(1 - p)) / np.log(2))
 
+def _leaves(node: BaseNode) -> list[BaseNode]:
+    """Leaves of the subtree starting at a node, a collapsed part of the tree counts with its hidden leaves."""
+    if isinstance(node, CollapsedNode):
+        return _leaves(node.parent)
+    if isinstance(node, NoneNode):
+        return []
+    children = node.get_children()
+    return [leaf for child in children for leaf in _leaves(child)] if children else [node]
+
+def _subtree_log_odds(node: BaseNode) -> np.ndarray:
+    """Log-odds of the node's samples from the leaves of the subtree starting at the node."""
+    log_odds = np.full(len(node.indices), np.nan)
+    for leaf in _leaves(node):
+        log_odds[leaf.indices] = leaf.log_odds
+    return log_odds[node.indices]
+
 def _label_score(score, node: BaseNode, y_train: np.ndarray) -> float:
-    """Precision, recall or F1 of the class predictions at a node, nan if there are no samples or it is undefined."""
+    """Precision, recall or F1 of the subtree at a node, nan if there are no samples or it is undefined."""
     y_true = y_train[node.indices]
     if len(y_true) == 0:
         return float("nan")
-    return float(score(y_true, node.log_odds > 0, zero_division=np.nan))
+    return float(score(y_true, _subtree_log_odds(node) > 0, zero_division=np.nan))
+
+def _ranking_score(score, node: BaseNode, y_train: np.ndarray) -> float | str:
+    """AUROC or AUPRC of the subtree at a node, "-" if it has one class or its leaves give a single score."""
+    y_true, log_odds = y_train[node.indices], _subtree_log_odds(node)
+    if len(np.unique(y_true)) < 2 or len(np.unique(log_odds)) < 2:
+        return "-"
+    return float(score(y_true, log_odds))
 
 @register_metric("Class 0 count")
 class Class0CountMetric(BaseNodeMetric):
@@ -264,9 +289,20 @@ class AccuracyMetric(BaseNodeMetric):
     def compute(node, y_train):
         return float(np.mean((node.log_odds > 0) == y_train[node.indices]))
 
-@register_metric("Precision")
-class PrecisionMetric(BaseNodeMetric):
-    """Fraction of the samples predicted as class 1 at this node that are of class 1, nan if there are none."""
+@register_metric("Accuracy (of subtree)")
+class SubtreeAccuracyMetric(BaseNodeMetric):
+    """Fraction of samples at this node that the subtree starting at this node classifies correctly."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean((_subtree_log_odds(node) > 0) == y_train[node.indices]))
+
+@register_metric("Precision (of subtree)")
+class SubtreePrecisionMetric(BaseNodeMetric):
+    """Fraction of the samples predicted as class 1 by the subtree starting at this node that are of class 1."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
@@ -275,9 +311,9 @@ class PrecisionMetric(BaseNodeMetric):
     def compute(node, y_train):
         return _label_score(precision_score, node, y_train)
 
-@register_metric("Recall")
-class RecallMetric(BaseNodeMetric):
-    """Fraction of the class 1 samples at this node that are predicted as class 1, nan if there are none."""
+@register_metric("Recall (of subtree)")
+class SubtreeRecallMetric(BaseNodeMetric):
+    """Fraction of the class 1 samples at this node predicted as class 1 by the subtree starting at this node."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
@@ -286,9 +322,9 @@ class RecallMetric(BaseNodeMetric):
     def compute(node, y_train):
         return _label_score(recall_score, node, y_train)
 
-@register_metric("F1")
-class F1Metric(BaseNodeMetric):
-    """Harmonic mean of the precision and recall at this node, nan if there are no class 1 samples and no class 1 predictions."""
+@register_metric("F1 (of subtree)")
+class SubtreeF1Metric(BaseNodeMetric):
+    """Harmonic mean of the precision and recall of the subtree starting at this node."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
@@ -319,33 +355,27 @@ class EntropyMetric(BaseNodeMetric):
     def compute(node, y_train):
         return _entropy(y_train[node.indices])
 
-@register_metric("AUROC")
-class AUROCMetric(BaseNodeMetric):
-    """Area under the ROC curve at this node."""
+@register_metric("AUROC (of subtree)")
+class SubtreeAUROCMetric(BaseNodeMetric):
+    """Area under the ROC curve of the subtree starting at this node."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):
-        y_true = y_train[node.indices]
-        if len(np.unique(y_true)) < 2:
-            return float("nan")
-        return float(roc_auc_score(y_true, node.log_odds))
+        return _ranking_score(roc_auc_score, node, y_train)
 
-@register_metric("AUPRC")
-class AUPRCMetric(BaseNodeMetric):
-    """Area under the precision recall curve at this node."""
+@register_metric("AUPRC (of subtree)")
+class SubtreeAUPRCMetric(BaseNodeMetric):
+    """Area under the precision recall curve of the subtree starting at this node."""
     tasks = ("classification",)
     higher_is_better = True
     value_range = (0.0, 1.0)
 
     @staticmethod
     def compute(node, y_train):
-        y_true = y_train[node.indices]
-        if len(np.unique(y_true)) < 2:
-            return float("nan")
-        return float(average_precision_score(y_true, node.log_odds))
+        return _ranking_score(average_precision_score, node, y_train)
 
 @register_metric("Log-loss")
 class LogLossMetric(BaseNodeMetric):

@@ -133,7 +133,7 @@ def test_classification_metric_labels(tmp_path):
 
 
 def test_metric_of_other_task_falls_back_to_structure(pilot_tree, tmp_path):
-    for el in nodes_of(elements(pilot_tree, tmp_path, label_metric="AUROC")).values():
+    for el in nodes_of(elements(pilot_tree, tmp_path, label_metric="AUROC (of subtree)")).values():
         assert "metric" not in el["classes"]
 
 
