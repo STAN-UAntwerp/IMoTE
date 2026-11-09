@@ -332,14 +332,6 @@ CYTOSCAPE_STYLESHEET = [
         },
     },
 
-    # ── Selected highlight ────────────────────────────────────────────────
-    {
-        "selector": "node:selected",
-        "style": {
-            "border-width": "3px",
-            "border-color": "#f0e442",
-        },
-    },
     # ── Highlighted path  ────────────────────────────────────────────────
     {
         "selector": "node.highlight",

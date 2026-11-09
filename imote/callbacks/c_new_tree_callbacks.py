@@ -422,12 +422,12 @@ def register_callbacks(app):
         prevent_initial_call=True,
     )
     def new_tree_trigger(_, minimal, data_node, tree_params, message):
-        n_leafs = tree_params["n_leafs"]
+        n_nodes = tree_params["n_leafs"] + tree_params["n_internal_nodes"]
         if data_node:
             new_minimal = minimal
-        elif n_leafs >= 18:
+        elif n_nodes >= 40:
             new_minimal = 2
-        elif n_leafs > 8:
+        elif n_nodes > 11:
             new_minimal = 1
         else:
             new_minimal = 0
@@ -436,7 +436,7 @@ def register_callbacks(app):
             return no_update, time.time(), None, no_update
         else:
             size_name = {0: "Normal", 1: "Minimal", 2: "Tiny"}[new_minimal]
-            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_leafs} leafs.")
+            note = status.with_note(message, f"Node size set to {size_name} to fit tree with {n_nodes} nodes.")
             return new_minimal, no_update, None, note
 
     # --- SAVE TREE ---

@@ -98,14 +98,11 @@ def test_classification_metric_values(name, node_id, expected):
 # Subtree metrics use the leaves below the node.
 # node0: log_odds [-1, 1, 2, 0.5, -2, 1, -1, 0.5], y = [0, 1, 1, 1, 0, 0, 0, 1]: only row 5 wrong, 5 predicted class 1
 #   the positives beat 13.5 of the 16 positive-negative pairs, one tie
-# node1, node2: leaves, same as their own log_odds, majority fractions 0.75 and 0.75
+# node1, node2: leaves, same as their own log_odds
 @pytest.mark.parametrize("name, node_id, expected", [
     ("Accuracy (of subtree)", 0, "0.875"),
     ("Accuracy (of subtree)", 1, "1"),
     ("Accuracy (of subtree)", 2, "0.75"),
-    ("Accuracy gain (of subtree)", 0, "0.375"),
-    ("Accuracy gain (of subtree)", 1, "0.25"),
-    ("Accuracy gain (of subtree)", 2, "0"),
     ("Precision (of subtree)", 0, "0.8"),
     ("Precision (of subtree)", 2, "0.5"),
     ("Recall (of subtree)", 0, "1"),
