@@ -8,7 +8,7 @@ from werkzeug.serving import make_server
 
 from imote import ids
 from imote.app import app
-from imote.config import NEW_CSV_OPTION, get_initial_graph_info
+from imote.config import get_initial_graph_info
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "docs" / "assets" / "screenshots"
 VIEWPORT = {"width": 1600, "height": 1000}
@@ -197,13 +197,14 @@ def screenshot_new_tree(browser: Browser, url: str):
     open_card(page, ids.NEW_TREE_TOGGLE_BUTTON, ids.NEW_TREE_COLLAPSE)
     card(page, ids.NEW_TREE_TOGGLE_BUTTON).screenshot(path=OUTPUT_DIR / "c-new-tree.png")
 
-    # Choosing "+ New dataset (CSV)" in the dataset dropdown opens the upload dialog
-    page.select_option(f"#{ids.INPUT_DATASET}", NEW_CSV_OPTION)
-    page.wait_for_selector(f"#{ids.MODAL_CSV} .modal-content")
+    # The Add button next to the dataset dropdown opens the dialog to add a dataset
+    page.click(f"#{ids.BTN_DATASET_ADD}")
+    page.wait_for_selector(f"#{ids.DS_MODAL} .modal-content")
+    page.fill(f"#{ids.DS_PMLB_SEARCH}", "fri_c3")
     wait_until_idle(page)
     # The dialog has rounded corners, hide the app behind it so they show white instead of the page
     page.add_style_tag(content="#react-entry-point { visibility: hidden; } .modal-backdrop { display: none; }")
-    page.locator(f"#{ids.MODAL_CSV} .modal-content").screenshot(path=OUTPUT_DIR / "csv_upload.png")
+    page.locator(f"#{ids.DS_MODAL} .modal-content").screenshot(path=OUTPUT_DIR / "dataset-add.png")
     page.close()
 
 

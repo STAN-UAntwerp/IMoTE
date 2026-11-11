@@ -1,20 +1,20 @@
 import dash_bootstrap_components as dbc
-from dash import dcc, html
+from dash import html
 
 from imote import ids
 from imote.config import (
+    METHODS,
     DEFAULT_DATASET_NAME,
-    METHOD_OPTIONS,
     DEFAULT_METHOD_NAME,
     DEFAULT_MAX_DEPTH,
     DEFAULT_MAX_MODEL_DEPTH,
     DEFAULT_MIN_SAMPLE_LEAF,
     DEFAULT_MIN_SAMPLE_SPLIT,
-    NO_FILE_SELECTED_PLACEHOLDER,
     ADAPTER_OPTIONS,
     DEFAULT_ADAPTER_NAME,
 )
-from imote.dataset.dataset_registry import build_dropdown_options
+from imote.components.dataset_modal import make_dataset_modal
+from imote.dataset.dataset_registry import dropdown_options
 
 NUMBER_INPUT_STYLE = {"width": "120px"}
 
@@ -39,25 +39,46 @@ def make_new_tree_card() -> dbc.Card:
                                     html.Div(
                                         [
                                             html.Div("Dataset", style={"marginBottom": "4px"}),
-                                            dbc.Select(
-                                                id=ids.INPUT_DATASET,
-                                                options=build_dropdown_options(),
-                                                value=DEFAULT_DATASET_NAME,
-                                                style={"width": "250px"},
+                                            dbc.InputGroup(
+                                                [
+                                                    dbc.Select(
+                                                        id=ids.INPUT_DATASET,
+                                                        options=dropdown_options(),
+                                                        value=DEFAULT_DATASET_NAME,
+                                                    ),
+                                                    dbc.Button(
+                                                        html.I(className="bi bi-pencil"),
+                                                        id=ids.BTN_DATASET_EDIT,
+                                                        color="secondary",
+                                                        outline=True,
+                                                        title="Adjust the settings of this dataset",
+                                                    ),
+                                                    dbc.Button(
+                                                        [html.I(className="bi bi-plus-lg me-1"), "Add"],
+                                                        id=ids.BTN_DATASET_ADD,
+                                                        color="secondary",
+                                                        outline=True,
+                                                        title="Add a new dataset from PMLB, the UCI repository or a file",
+                                                    ),
+                                                ],
                                                 size="sm",
+                                                style={"width": "100%", "maxWidth": "460px", "flexWrap": "nowrap"},
                                             ),
-                                        ]
+                                        ],
+                                        style={"flexBasis": "100%"},
                                     ),
                                     html.Div(
                                         [
                                             html.Div("Method", style={"marginBottom": "4px"}),
                                             dbc.Select(
                                                 id=ids.INPUT_METHOD,
-                                                options=METHOD_OPTIONS,
+                                                options=[{"label": m["label"], "value": value} for value, m in METHODS.items()],
                                                 value=DEFAULT_METHOD_NAME,
-                                                style={"width": "150px"},
+                                                style={"width": "220px"},
                                                 size="sm",
                                             ),
+                                            html.Small(id=ids.METHOD_NOTE, className="text-muted d-block",
+                                                       style={"maxWidth": "220px"}),
                                         ]
                                     ),
                                     html.Div(
@@ -176,77 +197,6 @@ def make_new_tree_card() -> dbc.Card:
                                 is_open=False,
                             ),
                             html.Div(id=ids.TRIGGER_FOR_SPINNER, style={"display": "none"}),
-                            dbc.Modal(
-                                [
-                                    dbc.ModalHeader("Upload new dataset as CSV file"),
-                                    dbc.ModalBody(
-                                        [
-                                            dcc.Upload(
-                                                id=ids.MODAL_CSV_UPLOAD,
-                                                children=html.Div("Drag and drop or click to select a CSV file"),
-                                                style={
-                                                    "width": "100%",
-                                                    "padding": "10px",
-                                                    "border": "1px dashed gray",
-                                                    "textAlign": "center",
-                                                },
-                                                multiple=False,
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Label(
-                                                        "File uploaded:",
-                                                        style={"margin": 0, "marginRight": "8px",
-                                                               "whiteSpace": "nowrap"},
-                                                    ),
-                                                    html.Span(
-                                                        id=ids.MODAL_CSV_FILE_NAME,
-                                                        children=NO_FILE_SELECTED_PLACEHOLDER,
-                                                        style={"color": "#6c757d", "overflowWrap": "anywhere"},
-                                                    ),
-                                                ],
-                                                style={
-                                                    "display": "flex",
-                                                    "alignItems": "center",
-                                                    "marginTop": "12px",
-                                                    "marginBottom": "4px",
-                                                },
-                                            ),
-                                            html.Div(
-                                                [
-                                                    html.Label("Target column name",
-                                                               style={"marginTop": "12px", "marginBottom": "4px"}),
-                                                    dbc.Input(
-                                                        id=ids.MODAL_CSV_INPUT_TARGET_COL,
-                                                        placeholder="e.g. price, count, time, 0, 7, -1, ...",
-                                                    ),
-                                                ],
-                                            ),
-                                            html.Div(
-                                                id=ids.MODAL_CSV_FEEDBACK,
-                                                style={"marginTop": "8px", "color": "red"},
-                                            ),
-                                        ]
-                                    ),
-                                    dbc.ModalFooter(
-                                        [
-                                            dbc.Button(
-                                                "Cancel",
-                                                id=ids.MODAL_CSV_BTN_CANCEL,
-                                                color="secondary",
-                                            ),
-                                            dbc.Button(
-                                                "Confirm",
-                                                id=ids.MODAL_CSV_BTN_CONFIRM,
-                                                color="primary",
-                                            ),
-                                        ]
-                                    ),
-                                ],
-                                id=ids.MODAL_CSV,
-                                is_open=False,
-                                backdrop=False,
-                            ),
                         ],
                     ),
                     delay_show=300,
@@ -254,6 +204,7 @@ def make_new_tree_card() -> dbc.Card:
                 id=ids.NEW_TREE_COLLAPSE,
                 is_open=False,
             ),
+            make_dataset_modal(),
         ],
         class_name="mb-3",
     )

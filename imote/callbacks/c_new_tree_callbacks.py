@@ -4,35 +4,21 @@ import logging
 import os
 import pickle
 import time
-from dash import Input, Output, State, no_update
+from dash import Input, Output, State, no_update, set_props
 from dash.exceptions import PreventUpdate
-import base64
 from pathlib import Path
 import numpy as np
 
 from imote import ids, status
-from imote.config import DIR_SAVED_VIZ_TREES, NO_FILE_SELECTED_PLACEHOLDER, DEFAULT_DATASET_NAME
+from imote.config import DIR_SAVED_VIZ_TREES, METHODS
 from imote.viz_tree.viz_tree import VizTree
 from imote.adapters.base_adapter import ADAPTERS_REGISTRY
 
-from imote.dataset.dataset_registry import (
-    NEW_CSV_OPTION,
-    DIR_DATASET_UPLOAD,
-    build_dropdown_options,
-    get_target_col,
-)
-from imote.dataset.dataset import Dataset
+from imote.dataset.dataset_registry import display_name, dropdown_options, load_dataset
+from imote.dataset.metadata import task_kind
 
 logger = logging.getLogger(__name__)
 
-
-def load_dataset(input_dataset) -> Dataset:
-    if input_dataset.endswith(".csv"):
-        csv_path = Path(input_dataset)
-        return Dataset.from_csv(input_dataset, target_col=get_target_col(csv_path), name=csv_path.stem)
-    if input_dataset.endswith(".pmlb"):
-        return Dataset.from_pmlb(input_dataset[:-5])
-    raise ValueError("Unknown dataset type")
 
 def _resolve_saved_tree_path(load_path) -> tuple[str | None, str | None]:
     if not load_path or not load_path.strip():
@@ -75,7 +61,7 @@ def _make_tree_params(viz_tree: VizTree, dataset_name, method_name, max_depth=-1
     }
 
 def _dataset_label(input_dataset: str) -> str:
-    return Path(input_dataset).stem
+    return display_name(input_dataset or "")
 
 def _tree_file_name(viz_tree_dict, tree_params) -> str:
     dataset_name = Path(tree_params['dataset_name']).name
@@ -88,11 +74,13 @@ def fit_new_tree(input_dataset, method_name, max_depth, max_model_depth, min_sam
     X, y, cat_ids = dataset.X, dataset.y, dataset.cat_ids
 
     adapter = ADAPTERS_REGISTRY[method_name]
-    if adapter.task == "classification":
-        classes = np.unique(y)
-        if len(classes) != 2:
-            raise ValueError(f"{method_name} needs a binary target, this dataset has {len(classes)} classes.")
-        y = (y == classes[1]).astype(float)
+    kind = task_kind(dataset.task, dataset.classes or list(np.unique(y)))
+    method = METHODS[method_name]
+    if kind not in method["tasks"]:
+        raise ValueError(f"{method['label']} doesn't work on {kind} datasets, only on "
+                         f"{' or '.join(sorted(method['tasks']))}. Change the task in the dataset settings if needed.")
+    if kind == "binary":
+        y = (y == np.unique(y)[-1]).astype(float)
 
     if method_name == "Pilot":
         from pilot import PILOT
@@ -170,107 +158,6 @@ def register_callbacks(app):
     def toggle_adapter(_, is_open):
         return not is_open
 
-    # --- OPEN CSV MODAL ---
-    @app.callback(
-        Output(ids.MODAL_CSV, "is_open"),
-        Input(ids.INPUT_DATASET, "value"),
-        prevent_initial_call=True,
-    )
-    def maybe_open_csv_modal(value):
-        if value == NEW_CSV_OPTION:
-            return True
-        raise PreventUpdate
-
-    # --- CANCEL CSV MODAL ---
-    @app.callback(
-        Output(ids.MODAL_CSV_FEEDBACK, "children", allow_duplicate=True),
-        Output(ids.MODAL_CSV, "is_open", allow_duplicate=True),
-        Output(ids.INPUT_DATASET, "value", allow_duplicate=True),
-        Output(ids.MODAL_CSV_FILE_NAME, "children", allow_duplicate=True),
-        Output(ids.MODAL_CSV_INPUT_TARGET_COL, "value", allow_duplicate=True),
-
-        Input(ids.MODAL_CSV_BTN_CANCEL, "n_clicks"),
-        State(ids.MODAL_CSV_FILE_NAME, "children"),
-        prevent_initial_call=True,
-    )
-    def cancel_csv_modal(n_clicks, file_name):
-        if n_clicks is None:
-            raise PreventUpdate
-        file_path = str(DIR_DATASET_UPLOAD / file_name)
-        if file_name != NO_FILE_SELECTED_PLACEHOLDER:
-            path = Path(file_path)
-            if path.exists():
-                path.unlink()
-        return None, False, DEFAULT_DATASET_NAME, NO_FILE_SELECTED_PLACEHOLDER, None
-
-    # --- CONFIRM CSV MODAL ---
-    @app.callback(
-        Output(ids.MODAL_CSV_FEEDBACK, "children", allow_duplicate=True),
-        Output(ids.MODAL_CSV, "is_open", allow_duplicate=True),
-        Output(ids.INPUT_DATASET, "options", allow_duplicate=True),
-        Output(ids.INPUT_DATASET, "value", allow_duplicate=True),
-        Output(ids.MODAL_CSV_FILE_NAME, "children", allow_duplicate=True),
-        Output(ids.MODAL_CSV_INPUT_TARGET_COL, "value", allow_duplicate=True),
-        Output(ids.STORE_STATUS, "data", allow_duplicate=True),
-
-        Input(ids.MODAL_CSV_BTN_CONFIRM, "n_clicks"),
-        State(ids.MODAL_CSV_FILE_NAME, "children"),
-        State(ids.MODAL_CSV_INPUT_TARGET_COL, "value"),
-        prevent_initial_call=True,
-    )
-    def confirm_csv_modal(n_clicks, file_name, target_col):
-        if n_clicks is None:
-            raise PreventUpdate
-        file_path = str(DIR_DATASET_UPLOAD / file_name)
-        if file_name == NO_FILE_SELECTED_PLACEHOLDER:
-            return "No file was uploaded yet.", no_update, no_update, no_update, no_update, no_update, no_update
-
-        if not target_col:
-            return "No target column was given.", no_update, no_update, no_update, no_update, no_update, no_update
-
-        try:
-            Dataset.from_csv(file_path, target_col=target_col)
-        except (ValueError, KeyError, TypeError) as e:
-            return f"Could not load CSV: {e}", no_update, no_update, no_update, no_update, no_update, no_update
-
-        path = Path(file_path)
-        path.with_suffix(".target.txt").write_text(target_col)
-        message = status.success(f"Dataset {path.stem} added and selected, click Fit Tree to fit a tree on it.")
-        return None, False, build_dropdown_options(), str(path), NO_FILE_SELECTED_PLACEHOLDER, None, message
-
-    # --- CSV UPLOAD ---
-    @app.callback(
-        Output(ids.MODAL_CSV_FILE_NAME, "children"),
-        Output(ids.MODAL_CSV_FEEDBACK, "children"),
-
-        Input(ids.MODAL_CSV_UPLOAD, "contents"),
-        State(ids.MODAL_CSV_UPLOAD, "filename"),
-        State(ids.MODAL_CSV_FILE_NAME, "children"),
-        prevent_initial_call=True,
-    )
-    def csv_upload(contents, filename, old_file_name):
-        if contents is None:
-            raise PreventUpdate
-        DIR_DATASET_UPLOAD.mkdir(parents=True, exist_ok=True)
-
-        old_file_path = str(DIR_DATASET_UPLOAD / old_file_name)
-        if old_file_name != NO_FILE_SELECTED_PLACEHOLDER:
-            path = Path(old_file_path)
-            if path.exists():
-                path.unlink()
-
-        _, content_string = contents.split(",", 1)
-        decoded = base64.b64decode(content_string)
-
-        filename = Path(filename).name
-        path = DIR_DATASET_UPLOAD / filename
-
-        if path.exists():
-            return NO_FILE_SELECTED_PLACEHOLDER, f"There already exists a dataset with the name {filename}."
-
-        path.write_bytes(decoded)
-        return filename, no_update
-
     # --- LOAD TREE ---
     @app.callback(
         Output(ids.STORE_VIZ_TREE, "data", allow_duplicate=True),
@@ -346,6 +233,9 @@ def register_callbacks(app):
     def fit_tree(n_clicks, dataset_name, method_name, max_depth, max_model_depth, min_sample_split, min_sample_leaf, feature_color):
         if n_clicks is None:
             raise PreventUpdate
+        if not dataset_name:
+            message = status.warning("Select or add a dataset first.")
+            return no_update, no_update, no_update, no_update, no_update, no_update, "", message
         if None in (max_depth, max_model_depth, min_sample_split, min_sample_leaf):
             message = status.warning("Fill in all tree parameters (max depth, max model depth, min sample split "
                                      "and min sample leaf) before fitting.")
@@ -359,9 +249,13 @@ def register_callbacks(app):
         viz_tree_dict = viz_tree.to_dict()
         tree_params = _make_tree_params(viz_tree, dataset_name, method_name, max_depth, max_model_depth,
                                         min_sample_split, min_sample_leaf, training_time)
+        set_props(ids.INPUT_DATASET, {"options": dropdown_options()})  # a suggested dataset is now downloaded
 
         color_switch = no_update if feature_color or method_name in ("Pilot", "BcPilot") else True
         message = status.success(f"Fitted {method_name} on {_dataset_label(dataset_name)} in {training_time}.")
+        if viz_tree.task == "classification" and len(np.unique(viz_tree.y_train)) > 2:
+            message = status.warning(f"{message['text']} This is a multiclass tree: the node metrics and plots "
+                                     f"still treat it as two classes, multiclass views are not implemented yet.")
         return viz_tree_dict, viz_tree_dict, tree_params, tree_params, time.time(), color_switch, "", message
 
     # --- LOAD NEW TREE WITH ADAPTER ---

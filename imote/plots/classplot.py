@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from matplotlib.patches import Patch
 from imote.nodes.base_node import BaseNode
 from imote.nodes.internal_node import InternalNode, LinearNode
@@ -73,9 +74,8 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
     feature_label = make_feature_label(feature_names, feature_idx, max_length=40)
 
     edges, discrete = _bin_edges(x, node)
-    plt.hist([x[y == c] for c in classes], bins=edges, stacked=True,
-             color=[class_colors[c] for c in classes], label=[_class_label(c) for c in classes],
-             rwidth=0.85 if discrete else None, edgecolor="white", linewidth=0.3)
+    sns.histplot(x=x, hue=y, bins=edges, multiple="fill", hue_order=classes, palette=class_colors,
+                 shrink=0.85 if discrete else 1, edgecolor="white", linewidth=0.3, alpha=1, legend=False)
     if discrete:
         plt.xticks(np.unique(x) if len(np.unique(x)) <= 10 else None)
 
@@ -103,9 +103,10 @@ def make_classification_plot(node: InternalNode, viz_tree_X, viz_tree_y, directo
         plt.axvline(x=highlight_x[feature_idx], linestyle="--", color="r")
 
     plt.xlabel(feature_label)
-    plt.ylabel("Count")
+    plt.ylabel("Relative frequency")
     ax = plt.gca()
-    class_legend = ax.legend(fontsize="small", ncols=1 if len(classes) <= 5 else 2, loc="upper right")
+    class_handles = [Patch(facecolor=class_colors[c], label=_class_label(c)) for c in classes]
+    class_legend = ax.legend(handles=class_handles, fontsize="small", ncols=1 if len(classes) <= 5 else 2, loc="upper right")
     if left_legend_handle is not None:
         ax.add_artist(class_legend)
         ax.legend(handles=[left_legend_handle], fontsize="small", loc="upper left")

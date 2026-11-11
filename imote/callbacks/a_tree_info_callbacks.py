@@ -1,9 +1,8 @@
-from pathlib import Path
-
 import dash_bootstrap_components as dbc
 from dash import html, Output, Input
 from imote import ids
 from imote.config import TASK_COLORS
+from imote.dataset.dataset_registry import display_name
 
 def _param(value) -> str:
     return "—" if value in (-1, None) else str(value)
@@ -52,7 +51,7 @@ def format_tree_info(
         dbc.Row([
             dbc.Col([
                 html.Small("Dataset name", className="text-muted d-block fw-bold"),
-                html.Span(children=Path(dataset_name).stem, className="fs-5")
+                html.Span(children=display_name(str(dataset_name)), className="fs-5")
             ], width=6),
             dbc.Col([
                 html.Small("Method ⓘ", className="text-muted d-block fw-bold"),
