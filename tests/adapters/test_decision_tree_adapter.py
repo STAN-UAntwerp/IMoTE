@@ -50,8 +50,8 @@ def test_classification_log_odds_of_a_pure_leaf_are_finite():
 
 @pytest.fixture
 def load_dataset(monkeypatch):
-    def use(y):
-        dataset = Dataset(X, y)
+    def use(y, task):
+        dataset = Dataset(X, y, task=task)
         monkeypatch.setattr("imote.callbacks.c_new_tree_callbacks.load_dataset", lambda _: dataset)
     return use
 
@@ -61,13 +61,28 @@ def load_dataset(monkeypatch):
     ("DecisionTreeClassifier", "classification", y_class + 1),  # classes don't have to be 0/1
 ])
 def test_fit_new_tree(load_dataset, method_name, task, y):
-    load_dataset(y)
+    load_dataset(y, task)
     tree, _ = fit_new_tree("data", method_name, 3, 15, 20, 5)
     assert tree.task == task
     assert tree.get_depth() <= 3
 
 
-def test_fit_classifier_needs_binary_target(load_dataset):
-    load_dataset(np.arange(300) % 3)
-    with pytest.raises(ValueError, match="binary target"):
-        fit_new_tree("data", "DecisionTreeClassifier", 3, 15, 20, 5)
+def test_fit_classifier_on_multiclass_target(load_dataset):
+    load_dataset(np.arange(300) % 3, "classification")
+    tree, _ = fit_new_tree("data", "DecisionTreeClassifier", 3, 15, 20, 5)
+    assert tree.task == "classification"
+    np.testing.assert_array_equal(np.unique(tree.y_train), [0, 1, 2])
+
+
+def test_fit_binary_method_on_multiclass_target_raises(load_dataset):
+    load_dataset(np.arange(300) % 3, "classification")
+    with pytest.raises(ValueError, match="doesn't work on multiclass"):
+        fit_new_tree("data", "BcPilot", 3, 15, 20, 5)
+
+
+@pytest.mark.parametrize("method_name, task", [("DecisionTreeClassifier", "regression"),
+                                               ("DecisionTreeRegressor", "classification")])
+def test_fit_method_of_other_task_raises(load_dataset, method_name, task):
+    load_dataset(y_class, task)
+    with pytest.raises(ValueError, match="doesn't work on"):
+        fit_new_tree("data", method_name, 3, 15, 20, 5)
