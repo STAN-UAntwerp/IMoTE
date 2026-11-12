@@ -143,7 +143,7 @@ def _side_by_side(contours: list[Contour], gap: float) -> tuple[list[float], Con
 
 
 def tidy_tree(tree: TreeStructure, sizes: dict[str, tuple[float, float]], node_gap: float, level_gap: float,
-              align_leaves: bool = False
+              align_leaves: bool = False, leaf_columns: bool = False
               ) -> tuple[dict[str, tuple[float, float]], dict[tuple[str, str], list[tuple[float, float]]]]:
     """Positions of the nodes (top to bottom) and the bends of the edges that need them.
 
@@ -154,6 +154,8 @@ def tidy_tree(tree: TreeStructure, sizes: dict[str, tuple[float, float]], node_g
         level_gap: Vertical gap between two levels.
         align_leaves: Put all nodes without children on the lowest level. Their edge goes to where the leaf would be
             otherwise and then straight down, the layout keeps that vertical part free.
+        leaf_columns: Leaves stay right below their parent, but nothing goes below them: every leaf has a column to
+            itself down to the lowest level, so the tree is as wide as with align_leaves.
     """
     max_depth = max(tree.depth.values(), default=0)
     level = {node_id: max_depth if align_leaves and not tree.children[node_id] else tree.depth[node_id]
@@ -171,6 +173,10 @@ def tidy_tree(tree: TreeStructure, sizes: dict[str, tuple[float, float]], node_g
     for node_id in reversed(tree.order):
         half_width = sizes[node_id][0] / 2
         children = tree.children[node_id]
+        if not children and leaf_columns:
+            n_levels = max_depth - level[node_id] + 1
+            contours[node_id] = Contour([-half_width] * n_levels, [half_width] * n_levels)
+            continue
         if not children:
             n_above = level[node_id] - tree.depth[node_id]  # levels the vertical part of the edge goes through
             room = node_gap / 2
@@ -271,7 +277,7 @@ def _keep_positions(tree: TreeStructure, sizes: dict[str, tuple[float, float]], 
     return new, new_bends
 
 
-def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: bool = False,
+def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: bool = False, leaf_columns: bool = False,
                     rank_sep: float = 10, node_sep: float = 10, previous: dict | None = None,
                     stylesheet: list[dict] = CYTOSCAPE_STYLESHEET) -> tuple[list[dict], dict]:
     """Lays out the tree in the elements.
@@ -280,6 +286,7 @@ def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: b
         elements: Cytoscape elements of a tree (or a forest), edges in child order.
         direction: "TB" (top to bottom) or "LR" (left to right).
         align_leaves: Put all leaves on the lowest level.
+        leaf_columns: Leaves right below their parent, each in a column of its own (as wide as align_leaves).
         rank_sep: Gap between the levels.
         node_sep: Gap between nodes next to each other.
         previous: The previous layout, its nodes stay where they are if the tree only changed a little (collapsed,
@@ -296,7 +303,7 @@ def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: b
     if direction == "LR":
         sizes = {node_id: (h, w) for node_id, (w, h) in sizes.items()}
 
-    positions, bends = tidy_tree(tree, sizes, node_sep, rank_sep, align_leaves)
+    positions, bends = tidy_tree(tree, sizes, node_sep, rank_sep, align_leaves, leaf_columns)
     parents = {child: node_id for node_id in tree.order for child in tree.children[node_id]}
     nodes = {node_id: [parents.get(node_id), tree.children[parents[node_id]].index(node_id) if node_id in parents else 0,
                        _n_samples(node_elements[node_id]), not tree.children[node_id],

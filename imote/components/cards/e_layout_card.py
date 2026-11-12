@@ -41,6 +41,7 @@ def make_layout_card() -> dbc.Card:
                                     id=ids.NODE_RANKER,
                                     options=[
                                         {"label": "Compact", "value": "Compact"},
+                                        {"label": "Leaves in columns", "value": "Leaves in columns"},
                                         {"label": "Align leaves to bottom", "value": "Align leaves to bottom"},
                                     ],
                                     value="Compact",

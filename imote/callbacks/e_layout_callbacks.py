@@ -7,7 +7,6 @@ from imote.config import NODE_PLOTS_EXTRA_SEP, LAYOUT_SEP_BY_NODE_SIZE
 from imote.viz_tree.tree_layout import layout_elements
 
 DISPLAY_DIRECTIONS = {"Top Bottom": "TB", "Left Right": "LR"}
-ALIGN_LEAVES = {"Compact": False, "Align leaves to bottom": True}
 
 
 def register_callbacks(app):
@@ -63,7 +62,8 @@ def register_callbacks(app):
         # Only a change of the tree keeps the nodes in place, a layout setting or Refit lays out the whole tree
         tree_changed = set(ctx.triggered_prop_ids) == {f"{ids.STORE_ELEMENTS}.data"}
         elements, layout = layout_elements(
-            elements, direction=DISPLAY_DIRECTIONS[rank_dir], align_leaves=ALIGN_LEAVES[node_rank], rank_sep=rank_sep,
+            elements, direction=DISPLAY_DIRECTIONS[rank_dir], align_leaves=node_rank == "Align leaves to bottom",
+            leaf_columns=node_rank == "Leaves in columns", rank_sep=rank_sep,
             node_sep=node_sep, previous=old_layout if tree_changed else None)
         layout["_time"] = time.time()  # changes every time, so cytoscape runs the layout even if nothing else changed
         old_positions = (old_layout or {}).get("positions") or {}

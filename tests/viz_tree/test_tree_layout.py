@@ -316,3 +316,19 @@ def test_real_collapse_keeps_nodes(tmp_path):
     assert all(new[node_id] == old[node_id] for node_id in ["node0", "node1", "node2", "node3"])
     assert new["node4"] == (old["node2"][0], pytest.approx(new["node4"][1]))  # the collapsed node, below node2
     assert not overlapping(new_elements, after)
+
+
+def test_leaf_columns_as_wide_as_aligned_leaves_with_leaves_below_their_parent():
+    elements = [node("r"), node("leaf", "LeafNode"), node("s"), node("l1", "LeafNode"), node("l2", "LeafNode"),
+                edge("r", "leaf"), edge("r", "s"), edge("s", "l1"), edge("s", "l2")]
+    new_elements, layout = layout_elements(elements, leaf_columns=True)
+    pos, compact, aligned = positions(layout), positions(layout_elements(elements)[1]), \
+        positions(layout_elements(elements, align_leaves=True)[1])
+    assert pos["leaf"][1] == compact["leaf"][1] == pos["s"][1]  # right below its parent
+    assert not any(ROUTED_EDGE_CLASS in el.get("classes", "") for el in new_elements)
+    width = lambda p: max(x for x, _ in p.values()) - min(x for x, _ in p.values())
+    assert width(pos) == pytest.approx(width(aligned)) and width(pos) > width(compact)
+    assert not overlapping(new_elements, layout)
+    # No node below a leaf
+    leaf_box, s_box = boxes(new_elements, layout)["leaf"], boxes(new_elements, layout)["l1"]
+    assert leaf_box[2] < s_box[0] or s_box[2] < leaf_box[0]
