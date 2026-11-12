@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -721,6 +721,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-the-tree-is-laid-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the tree is laid out
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1411,6 +1422,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#how-the-tree-is-laid-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the tree is laid out
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1447,7 +1469,7 @@
 <tbody>
 <tr>
 <td><strong>Refit layout</strong></td>
-<td>Re-runs the automatic layout, useful after dragging things around</td>
+<td>Puts all nodes back in place and fits the tree in the view, useful after dragging things around or zooming</td>
 </tr>
 <tr>
 <td><strong>Display direction</strong></td>
@@ -1455,23 +1477,29 @@
 </tr>
 <tr>
 <td><strong>Layout type</strong></td>
-<td>Determinese what is prioritiesed: make the tree <strong>compact</strong> or to <strong>align leaves to the bottom</strong>.</td>
+<td><strong>Compact</strong> keeps every node right below its parent, <strong>Leaves in columns</strong> too but gives every leaf its own column (as wide as the next option), <strong>Align leaves to bottom</strong> puts all leaves on the last level</td>
 </tr>
 <tr>
 <td><strong>Nodes vertical gap</strong></td>
-<td>Spacing between tree levels (ranks)</td>
+<td>Spacing between tree levels, 0 puts the levels right against each other</td>
 </tr>
 <tr>
 <td><strong>Nodes horizontal gap</strong></td>
-<td>Spacing between sibling nodes at the same level</td>
+<td>Spacing between nodes next to each other on the same level</td>
 </tr>
 </tbody>
 </table>
-<p>The graph uses the <a href="https://github.com/dagrejs/dagre">dagre</a> layout engine, which arranges nodes level by level and tries to minimize edge crossings.</p>
-<div class="admonition warning">
-<p class="admonition-title">Dagre layout limitations</p>
-<p>The Dagre layout algorithm is not always able to produce an optimal layout. For larger or more complex trees, nodes and edges may occasionally be positioned in a way that appears confusing or unintuitive. This is a limitation of the layout algorithm rather than of the underlying tree itself.</p>
-</div>
+<h2 id="how-the-tree-is-laid-out">How the tree is laid out<a class="headerlink" href="#how-the-tree-is-laid-out" title="Permanent link">&para;</a></h2>
+<p>The graph uses a tidy tree layout, made for trees:</p>
+<ul>
+<li>The left child of a split ("No") is always on the left, the right child ("Yes") on the right.</li>
+<li>Every node is centred above its children, a chain of linear nodes goes straight down.</li>
+<li>Subtrees are pushed together as close as they fit, nodes never overlap and edges don't run through other nodes.</li>
+<li>With <strong>Leaves in columns</strong>, nothing is drawn below a leaf, so every leaf stands out like in <strong>Align leaves to bottom</strong>,
+  but stays right below its parent.</li>
+<li>With <strong>Align leaves to bottom</strong>, the edge to a leaf bends at the level where the leaf would be in the compact layout and
+  then goes straight down.</li>
+</ul>
 
 
 
@@ -1530,7 +1558,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.expand", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

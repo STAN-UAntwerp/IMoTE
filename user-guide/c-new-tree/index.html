@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -677,13 +677,41 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#uploading-a-csv-dataset" class="md-nav__link">
+  <a href="#datasets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Uploading a CSV dataset
+        Datasets
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a dataset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-dataset-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The dataset file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1473,13 +1501,41 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#uploading-a-csv-dataset" class="md-nav__link">
+  <a href="#datasets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Uploading a CSV dataset
+        Datasets
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a dataset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-dataset-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The dataset file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1548,11 +1604,11 @@ an adapter.</p>
 <tbody>
 <tr>
 <td><strong>Dataset</strong></td>
-<td>The dataset on which the tree will be fitted. A selection of datasets from the PMLB repository are available, each is downloaded once and then loaded from <code>~/.imote</code>. A csv file with a new dataset can also be uploaded.</td>
+<td>The dataset on which the tree will be fitted, chosen from your list of datasets (see <a href="#datasets">Datasets</a> below). The pencil button opens the settings of the selected dataset, <strong>Add</strong> adds a dataset from PMLB, the UCI repository or a file.</td>
 </tr>
 <tr>
 <td><strong>Method</strong></td>
-<td>The model tree algorithm to use: PILOT or M5 (see the <a href="../../">home</a> page for a brief description of each).</td>
+<td>The tree algorithm to use (see the <a href="../../">home</a> page for a brief description of PILOT and M5).</td>
 </tr>
 <tr>
 <td><strong>Max depth</strong></td>
@@ -1587,15 +1643,78 @@ datasets or deeper trees.</p>
   field and click <strong>Load tree</strong>. If the field is left empty, the application loads the most recently saved tree from
   <code>~/.imote/saved_trees</code>.</li>
 </ul>
-<h2 id="uploading-a-csv-dataset">Uploading a CSV dataset<a class="headerlink" href="#uploading-a-csv-dataset" title="Permanent link">&para;</a></h2>
-<div style="max-width: 350px;">
-<p><img alt="Screenshot: New Tree card, expanded" src="../../assets/screenshots/csv_upload.png" /></p>
+<h2 id="datasets">Datasets<a class="headerlink" href="#datasets" title="Permanent link">&para;</a></h2>
+<p>Every dataset you add is stored in its own folder in <code>~/.imote/datasets</code>. The list also suggests a few PMLB datasets, 
+they are downloaded the first time a tree is fitted on them.</p>
+<h3 id="adding-a-dataset">Adding a dataset<a class="headerlink" href="#adding-a-dataset" title="Permanent link">&para;</a></h3>
+<div style="max-width: 450px;">
+<p><img alt="Screenshot: dialog to add a dataset" src="../assets/screenshots/dataset-add.png" /></p>
 </div>
-<p>When choosing to upload a CSV dataset, the following pop-up is shown. The uploaded dataset should be a numeric
-dataframe, with one column specified as the target column. In the input field below the upload, you can specify the
-target column by its name or by its index (e.g., the first or last column).</p>
-<p>If you want to use PILOT or M5, categorical variables need to be converted to integers. Categorical variables are
-automatically detected as having fewer than 8 unique values.</p>
+<p>Click <strong>Add</strong> next to the dataset dropdown, then:</p>
+<ul>
+<li><strong>PMLB</strong>: search the <a href="https://epistasislab.github.io/pmlb/">PMLB</a> datasets by name, optionally only classification or
+  regression datasets. The number of rows, features and classes is shown for every dataset.</li>
+<li><strong>UCI repository</strong>: search the <a href="https://archive.ics.uci.edu/">UCI Machine Learning Repository</a> by name or id.</li>
+<li><strong>Upload a file</strong>: CSV, TSV, TXT and UCI-style <code>.data</code> files (the separator and header row are detected), Excel
+  (<code>.xlsx</code>, <code>.xls</code>), Parquet, Feather, ARFF and JSON. Parquet and Feather need <code>pyarrow</code>
+  (<code>pip install imote[parquet]</code>), old <code>.xls</code> files need <code>xlrd</code> (<code>pip install imote[xls]</code>).</li>
+</ul>
+<p>Clicking a search result downloads the dataset. Next, its settings are shown:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Response</strong></td>
+<td>The column to predict. PMLB and UCI datasets fill this in from their metadata, for a file the last column (or a column called <code>target</code>) is proposed.</td>
+</tr>
+<tr>
+<td><strong>Task</strong></td>
+<td>Regression or classification, guessed from the response (text, or at most 10 whole numbers, is classification). With more than two classes the dataset is multiclass.</td>
+</tr>
+<tr>
+<td><strong>Categorical features</strong></td>
+<td>Text columns are always categorical. For some PMLB datasets the categorical columns are listed in <code>imote/benchmark_info.py</code>, otherwise numeric columns with fewer than 8 different values are proposed as categorical.</td>
+</tr>
+<tr>
+<td><strong>Columns to leave out</strong></td>
+<td>Columns that are not used as features, such as id columns.</td>
+</tr>
+</tbody>
+</table>
+<p>The box below the settings shows the result: the number of rows and features, the classes, how many rows are left out
+and which methods can be used. Click <strong>Save</strong> to add the dataset to the list, or <strong>Cancel</strong> to abort.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Classification datasets can be added, but fitting classification trees isn't available yet: for such a dataset
+no method can be chosen.</p>
+</div>
+<p>Text columns are coded as numbers. Rows with a missing value (an empty cell, <code>NaN</code> or <code>?</code>) are left out.</p>
+<h3 id="the-dataset-file">The dataset file<a class="headerlink" href="#the-dataset-file" title="Permanent link">&para;</a></h3>
+<p>All settings are saved in <code>dataset.toml</code> in the folder of the dataset. You can edit this file by hand, for example
+to change the order of the classes (for two classes the second one is the positive class) or of the categories, or to
+leave out rows by removing a category.</p>
+<div class="highlight"><pre><span></span><code><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Abalone"</span>
+<span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"uci"</span>
+<span class="n">source_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"data.tsv.gz"</span>
+<span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Rings"</span><span class="w">  </span><span class="c1"># automatically detected (UCI metadata)</span>
+<span class="n">task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"regression"</span><span class="w">  </span><span class="c1"># automatically detected</span>
+<span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]</span>
+
+<span class="k">[read]</span>
+<span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span>
+<span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="k">[categorical]</span>
+<span class="n">Sex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"F"</span><span class="p">,</span><span class="w"> </span><span class="s2">"I"</span><span class="p">,</span><span class="w"> </span><span class="s2">"M"</span><span class="p">]</span><span class="w">  </span><span class="c1"># automatically detected (UCI metadata)</span>
+</code></pre></div>
+<p>The pencil button next to the dataset dropdown opens the same settings for a dataset on the list, there it can also be
+removed (this deletes its folder).</p>
 <h2 id="using-an-adapter-to-upload-a-tree">Using an adapter to upload a tree<a class="headerlink" href="#using-an-adapter-to-upload-a-tree" title="Permanent link">&para;</a></h2>
 <p>The application also allows you to upload a linear model tree using an adapter. An adapter converts a tree from an
 external implementation into the internal <code>VizTree</code> object used for visualization.
@@ -1606,7 +1725,7 @@ algorithms in different languages to be imported. It also provides more details 
 <h3 id="using-an-adapter">Using an Adapter<a class="headerlink" href="#using-an-adapter" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Select the desired adapter from the dropdown.</li>
-<li>Select the dataset used to fit the tree. You can upload the dataset (or a sample) as a CSV.</li>
+<li>Select the dataset used to fit the tree. You can add the dataset (or a sample) as a file.</li>
 <li>Provide the <strong>path to the model</strong> or file containing the tree information.</li>
 <li>Click on <strong>Load with Adapter</strong>.</li>
 </ul>
@@ -1668,7 +1787,7 @@ algorithms in different languages to be imported. It also provides more details 
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.expand", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
