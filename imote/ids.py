@@ -15,6 +15,7 @@ STORE_STATUS = "store-status"
 STORE_STATUS_HISTORY = "store-status-history"
 STORE_GRAPH_PLOTS = "store-graph-plots"
 STORE_TREE_DOWNLOAD = "store-tree-download"
+STORE_ELEMENTS = "store-elements"
 
 # --- Status bar (above the graph) -------------------------------------------
 STATUS_MESSAGE = "status-message"

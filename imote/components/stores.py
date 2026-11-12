@@ -1,5 +1,6 @@
 from dash import dcc, html
 from imote.config import get_initial_graph_info
+from imote.components.cytoscape_graph import initial_base_elements
 from imote import ids, status
 
 def make_global_stores() -> html.Div:
@@ -20,5 +21,7 @@ def make_global_stores() -> html.Div:
             dcc.Store(id=ids.STORE_STATUS_HISTORY, data=[]),
             dcc.Store(id=ids.STORE_GRAPH_PLOTS, data=[]),
             dcc.Store(id=ids.STORE_TREE_DOWNLOAD),
+            # The elements of the graph before the layout, e_layout_callbacks.py lays them out and shows them
+            dcc.Store(id=ids.STORE_ELEMENTS, data=initial_base_elements),
         ]
     )

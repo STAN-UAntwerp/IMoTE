@@ -106,7 +106,7 @@ def register_callbacks(app):
         return bool(dont_ask), False
 
     @app.callback(
-        Output(ids.CYTOSCAPE_GRAPH, "elements", allow_duplicate=True),
+        Output(ids.STORE_ELEMENTS, "data"),
         Output(ids.STORE_STATUS, "data", allow_duplicate=True),
 
         Input(ids.ELEMENTS_TRIGGER, "data"),

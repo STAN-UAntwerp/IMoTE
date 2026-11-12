@@ -9,15 +9,25 @@ The **Layout** card controls how the tree graph is arranged on screen. It doesn'
 
 ## Controls
 
-| Control                  | Description                                                                                       |
-|--------------------------|---------------------------------------------------------------------------------------------------|
-| **Refit layout**         | Re-runs the automatic layout, useful after dragging things around                                 |
-| **Display direction**    | **Top Bottom** or **Left Right** - the direction the tree grows in                                |
-| **Layout type**          | Determinese what is prioritiesed: make the tree **compact** or to **align leaves to the bottom**. |
-| **Nodes vertical gap**   | Spacing between tree levels (ranks)                                                               |
-| **Nodes horizontal gap** | Spacing between sibling nodes at the same level                                                   |
+| Control                  | Description                                                                                                     |
+|--------------------------|-----------------------------------------------------------------------------------------------------------------|
+| **Refit layout**         | Puts all nodes back in place and fits the tree in the view, useful after dragging things around or zooming     |
+| **Display direction**    | **Top Bottom** or **Left Right** - the direction the tree grows in                                              |
+| **Layout type**          | **Compact** keeps every node right below its parent, **Align leaves to bottom** puts all leaves on the last level |
+| **Nodes vertical gap**   | Spacing between tree levels, 0 puts the levels right against each other                                         |
+| **Nodes horizontal gap** | Spacing between nodes next to each other on the same level                                                      |
 
-The graph uses the [dagre](https://github.com/dagrejs/dagre) layout engine, which arranges nodes level by level and tries to minimize edge crossings.
+## How the tree is laid out
 
-!!! warning "Dagre layout limitations"
-    The Dagre layout algorithm is not always able to produce an optimal layout. For larger or more complex trees, nodes and edges may occasionally be positioned in a way that appears confusing or unintuitive. This is a limitation of the layout algorithm rather than of the underlying tree itself.
+The graph uses a tidy tree layout, made for trees:
+
+- The left child of a split ("No") is always on the left, the right child ("Yes") on the right, also after collapsing,
+  pruning or showing a subtree.
+- Every node is centred above its children, a chain of linear nodes goes straight down.
+- Subtrees are pushed together as close as they fit, nodes never overlap and edges don't run through other nodes.
+- With **Align leaves to bottom**, the edge to a leaf bends at the level where the leaf would be in the compact layout and
+  then goes straight down.
+
+The layout is computed again when the tree, the node size or a layout setting changes, the nodes then move to their new
+place. Highlighting a path or changing colours and labels keeps the nodes where they are, so dragged nodes and the zoom
+stay.

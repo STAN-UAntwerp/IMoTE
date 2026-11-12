@@ -247,6 +247,16 @@ CYTOSCAPE_STYLESHEET = [
     },
     # ── Specific edges ────────────────────────────────────────────────────
     {
+        # Edges with bends, set by tree_layout.py
+        "selector": "edge.routed",
+        "style": {
+            "curve-style": "segments",
+            "segment-weights": "data(seg_w)",
+            "segment-distances": "data(seg_d)",
+            "edge-distances": "node-position",
+        }
+    },
+    {
         "selector": "edge.combine_lin",
         "style": {
             "mid-target-arrow-shape": "circle",
