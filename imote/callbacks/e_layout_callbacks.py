@@ -60,9 +60,11 @@ def register_callbacks(app):
         if show_node_plots:
             rank_sep += NODE_PLOTS_EXTRA_SEP
             node_sep += NODE_PLOTS_EXTRA_SEP
+        # Only a change of the tree keeps the nodes in place, a layout setting or Refit lays out the whole tree
+        tree_changed = set(ctx.triggered_prop_ids) == {f"{ids.STORE_ELEMENTS}.data"}
         elements, layout = layout_elements(
             elements, direction=DISPLAY_DIRECTIONS[rank_dir], align_leaves=ALIGN_LEAVES[node_rank], rank_sep=rank_sep,
-            node_sep=node_sep)
+            node_sep=node_sep, previous=old_layout if tree_changed else None)
         layout["_time"] = time.time()  # changes every time, so cytoscape runs the layout even if nothing else changed
         old_positions = (old_layout or {}).get("positions") or {}
         if ctx.triggered_id != ids.BTN_LAYOUT and old_positions == layout["positions"]:

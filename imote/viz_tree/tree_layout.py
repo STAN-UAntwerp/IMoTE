@@ -56,7 +56,7 @@ def node_size(element: dict, stylesheet: list[dict] = CYTOSCAPE_STYLESHEET) -> t
     """Width and height a node takes in the graph: its shape with padding and border, or its label if that's larger.
     Like cytoscape, later rules in the stylesheet override earlier ones."""
     data = element["data"]
-    classes = set(element.get("classes", "").split())
+    classes = set(element.get("classes", "").split()) - {"highlight"}  # its thicker border shouldn't move nodes
     style: dict[str, Any] = {}
     for rule in stylesheet:
         if _selects(rule["selector"], classes):
@@ -214,8 +214,65 @@ def segment_data(source: tuple[float, float], target: tuple[float, float],
     return " ".join(f"{w:.4f}" for w in weights), " ".join(f"{d:.2f}" for d in distances)
 
 
+def _n_samples(element: dict) -> float | None:
+    n_samples = element["data"].get("n_samples")
+    return n_samples.item() if hasattr(n_samples, "item") else n_samples  # numpy numbers to plain ones for JSON
+
+
+def _keep_positions(tree: TreeStructure, sizes: dict[str, tuple[float, float]], positions: dict, bends: dict,
+                    nodes: dict[str, list], previous: dict, swap: bool) -> tuple[dict, dict] | None:
+    """Positions that keep the nodes of the previous layout in place, None if that isn't possible.
+
+    A node stays where it was if it's the same node: the same parent, place among its siblings, number of samples, size
+    and being a leaf or not. A new node takes the place of the sibling it replaces (a pruned subtree becomes a leaf),
+    otherwise it goes where the tidy tree puts it relative to its parent (the node below a collapsed node, the children
+    of an expanded node). If nodes would overlap or children would swap, None: the whole tree is laid out again.
+    """
+    old_nodes = previous.get("_nodes") or {}
+    old = {node_id: (p["y"], p["x"]) if swap else (p["x"], p["y"])
+           for node_id, p in (previous.get("positions") or {}).items()}
+    kept = {node_id for node_id in tree.order if node_id in old and old_nodes.get(node_id) == nodes[node_id]}
+    if not kept:
+        return None
+    old_children: dict[str, dict[int, str]] = {}
+    for node_id, (parent, index, *_) in old_nodes.items():
+        old_children.setdefault(parent, {})[index] = node_id
+
+    new: dict[str, tuple[float, float]] = {}
+    for node_id in tree.order:  # parents first
+        parent, index = nodes[node_id][:2]
+        if node_id in kept:
+            new[node_id] = old[node_id]
+            continue
+        if parent is None:
+            return None  # a new root
+        dy = positions[node_id][1] - positions[parent][1]
+        replaced = old_children.get(parent, {}).get(index)
+        if len(old_children.get(parent, {})) == len(tree.children[parent]) and replaced in old:
+            new[node_id] = (old[replaced][0], new[parent][1] + dy)
+        else:
+            new[node_id] = (new[parent][0] + positions[node_id][0] - positions[parent][0], new[parent][1] + dy)
+
+    for node_id in tree.order:
+        xs = [new[child][0] for child in tree.children[node_id]]
+        if xs != sorted(xs) or any(new[child][1] <= new[node_id][1] for child in tree.children[node_id]):
+            return None
+    boxes = sorted((x - sizes[n][0] / 2, x + sizes[n][0] / 2, y - sizes[n][1] / 2, y + sizes[n][1] / 2)
+                   for n, (x, y) in new.items())
+    for i, (left, right, top, bottom) in enumerate(boxes):
+        for other in boxes[i + 1:]:
+            if other[0] >= right - 0.01:
+                break
+            if other[2] < bottom - 0.01 and top < other[3] - 0.01:
+                return None
+
+    new_bends = {(parent, child): [(new[child][0], new[parent][1] + y - positions[parent][1]) for _, y in points]
+                 for (parent, child), points in bends.items()}
+    return new, new_bends
+
+
 def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: bool = False,
-                    rank_sep: float = 10, node_sep: float = 10,
+                    rank_sep: float = 10, node_sep: float = 10, previous: dict | None = None,
                     stylesheet: list[dict] = CYTOSCAPE_STYLESHEET) -> tuple[list[dict], dict]:
     """Lays out the tree in the elements.
 
@@ -225,6 +282,8 @@ def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: b
         align_leaves: Put all leaves on the lowest level.
         rank_sep: Gap between the levels.
         node_sep: Gap between nodes next to each other.
+        previous: The previous layout, its nodes stay where they are if the tree only changed a little (collapsed,
+            pruned), see _keep_positions. None lays out the whole tree.
         stylesheet: Gives the size of the nodes.
 
     Returns:
@@ -238,6 +297,13 @@ def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: b
         sizes = {node_id: (h, w) for node_id, (w, h) in sizes.items()}
 
     positions, bends = tidy_tree(tree, sizes, node_sep, rank_sep, align_leaves)
+    parents = {child: node_id for node_id in tree.order for child in tree.children[node_id]}
+    nodes = {node_id: [parents.get(node_id), tree.children[parents[node_id]].index(node_id) if node_id in parents else 0,
+                       _n_samples(node_elements[node_id]), not tree.children[node_id],
+                       round(sizes[node_id][0], 1), round(sizes[node_id][1], 1)] for node_id in tree.order}
+    kept = _keep_positions(tree, sizes, positions, bends, nodes, previous, direction == "LR") if previous else None
+    if kept:
+        positions, bends = kept
     if direction == "LR":
         positions = {node_id: (y, x) for node_id, (x, y) in positions.items()}
         bends = {edge: [(y, x) for x, y in points] for edge, points in bends.items()}
@@ -262,9 +328,10 @@ def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: b
     layout = {
         "name": "preset",
         "positions": {node_id: {"x": round(x, 2), "y": round(y, 2)} for node_id, (x, y) in positions.items()},
-        "fit": True,
+        "fit": not kept,  # kept nodes keep the zoom as well
         "padding": FIT_PADDING,
         "animate": True,
         "animationDuration": ANIMATION_DURATION,
+        "_nodes": nodes,  # cytoscape ignores this, the next layout uses it to recognise the nodes
     }
     return new_elements, layout

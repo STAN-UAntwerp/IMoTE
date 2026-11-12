@@ -21,6 +21,7 @@ def make_cytoscape_graph() -> cyto.Cytoscape:
         elements=initial_elements,
         stylesheet=initial_stylesheet,
         layout=initial_layout,
+        autoRefreshLayout=False,
         style={
             "width": "100%",
             "height": "100%",

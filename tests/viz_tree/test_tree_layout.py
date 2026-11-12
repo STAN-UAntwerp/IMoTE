@@ -240,3 +240,79 @@ def test_left_child_stays_left_after_collapse(tmp_path):
     pcon = next(el["data"]["id"] for el in elements if el["data"].get("node_type") == "PconNode")
     left, right = [el["data"]["target"] for el in elements if el["data"].get("source") == pcon]
     assert pos[left][0] < pos[right][0]
+
+
+# ── Keeping the nodes in place ──────────────────────────────────────────────────
+def without_subtree(elements, root):
+    """The elements without the nodes below root."""
+    tree = {el["data"]["target"]: el["data"]["source"] for el in elements if "source" in el["data"]}
+    def below(node_id):
+        while node_id in tree:
+            node_id = tree[node_id]
+            if node_id == root:
+                return True
+        return False
+    return [el for el in elements if not below(el["data"].get("target", el["data"].get("id")))]
+
+
+def test_collapse_keeps_the_other_nodes_in_place():
+    elements = full_binary(4)
+    _, before = layout_elements(elements)
+    collapsed = without_subtree(elements, "n1") + [node("c1", "CollapsedNode"), edge("n1", "c1")]
+    _, after = layout_elements(collapsed, previous=before)
+    old, new = positions(before), positions(after)
+    assert all(new[node_id] == old[node_id] for node_id in new if node_id != "c1")
+    assert new["c1"][0] == old["n1"][0] and new["c1"][1] > old["n1"][1]  # right below the collapsed node
+    assert not after["fit"]
+    # Without the previous layout the tree gets compacted
+    assert positions(layout_elements(collapsed)[1]) != new
+
+
+def test_pruned_subtree_becomes_a_leaf_in_its_place():
+    elements = full_binary(4)
+    _, before = layout_elements(elements)
+    pruned = [el for el in without_subtree(elements, "n4") if el["data"].get("id") != "n4"
+              and el["data"].get("target") != "n4"]
+    pruned += [node("leaf", "LeafNode"), edge("n1", "leaf")]
+    pruned.sort(key=lambda el: el["data"].get("target", "") != "n3")  # keep n3 the left child of n1
+    _, after = layout_elements(pruned, previous=before)
+    old, new = positions(before), positions(after)
+    assert new["leaf"][0] == old["n4"][0]
+    assert all(new[node_id] == old[node_id] for node_id in new if node_id != "leaf")
+
+
+def test_highlight_doesnt_move_nodes():
+    elements = full_binary(3)
+    _, before = layout_elements(elements)
+    highlighted = [{**el, "classes": el["classes"] + " highlight"} for el in elements]
+    assert positions(layout_elements(highlighted)[1]) == positions(before)
+
+
+def test_a_different_tree_is_laid_out_again():
+    elements = [node(el["data"]["id"], el["classes"], n_samples=1) if "source" not in el["data"] else el
+                for el in full_binary(3)]
+    _, before = layout_elements(elements)
+    other = [node(el["data"]["id"], el["classes"], n_samples=2) if "source" not in el["data"] else el
+             for el in full_binary(3)]
+    _, after = layout_elements(other, previous=before)
+    assert after["fit"]
+
+
+def test_new_nodes_that_dont_fit_lay_out_the_whole_tree():
+    small = without_subtree(full_binary(4), "n1") + [node("c1", "CollapsedNode"), edge("n1", "c1")]
+    _, before = layout_elements(small)
+    _, after = layout_elements(full_binary(4), previous=before)  # expanded again: no room next to n2's subtree
+    assert after["fit"]
+    assert positions(after) == positions(layout_elements(full_binary(4))[1])
+
+
+def test_real_collapse_keeps_nodes(tmp_path):
+    viz_tree = make_pilot_tree()
+    _, before = layout_elements(tree_elements(viz_tree, tmp_path))
+    viz_tree.collapse(viz_tree.nodes[2])
+    elements = tree_elements(VizTree.from_dict(viz_tree.to_dict()), tmp_path)
+    new_elements, after = layout_elements(elements, previous=before)
+    old, new = positions(before), positions(after)
+    assert all(new[node_id] == old[node_id] for node_id in ["node0", "node1", "node2", "node3"])
+    assert new["node4"] == (old["node2"][0], pytest.approx(new["node4"][1]))  # the collapsed node, below node2
+    assert not overlapping(new_elements, after)

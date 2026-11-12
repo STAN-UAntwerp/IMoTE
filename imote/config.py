@@ -62,7 +62,7 @@ DEFAULT_MIN_SAMPLE_SPLIT = 100
 DEFAULT_MIN_SAMPLE_LEAF = 25
 
 # --- Layout card defaults ------------------------------------------------
-LAYOUT_SEP_BY_NODE_SIZE = {0: (10, 150, 1), 1: (8, 75, 0.5), 2: (1, 15, 0.1)}
+LAYOUT_SEP_BY_NODE_SIZE = {0: (10, 60, 1), 1: (8, 30, 0.5), 2: (1, 5, 0.1)}
 DEFAULT_RANK_SEP, SEP_SLIDER_MAX, SEP_SLIDER_STEP = LAYOUT_SEP_BY_NODE_SIZE[0]
 DEFAULT_NODE_SEP = DEFAULT_RANK_SEP
 

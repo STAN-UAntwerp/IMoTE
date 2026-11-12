@@ -124,7 +124,6 @@ def register_callbacks(app):
         State(ids.HIGHLIGHT_OPTIONS, "value"),
         State(ids.SWITCH_DATA_EDGE_WIDTH, "value"),
         State(ids.SWITCH_DATA_NODE_SIZE, "value"),
-        State(ids.STORE_TREE_PARAMS, "data"),
         prevent_initial_call=True,
     )
     def update_elements(
@@ -142,7 +141,6 @@ def register_callbacks(app):
             highlight_options,
             use_edge_width,
             use_node_size,
-            tree_params,
     ):
         if show_node_plots and not modal_dont_ask and ctx.triggered_id != ids.MODAL_BTN_CONFIRM:
             raise PreventUpdate
@@ -154,9 +152,6 @@ def register_callbacks(app):
 
         viz_tree = VizTree.from_dict(viz_tree_dict)
         highlight_x_arr = None if highlight_x is None else np.array(highlight_x)
-        show_all_labels = (tree_params["subtree_node_id"] !=-1 or
-                           tree_params["collapsed_nodes_count"] != 0 or
-                           tree_params["pruned"])
 
         try:
             elements = viz_tree_to_cytoscape_elements(
@@ -177,7 +172,6 @@ def register_callbacks(app):
                 only_show_highlight=only_show_highlight,
                 use_edge_width = use_edge_width,
                 use_node_size = use_node_size,
-                show_all_labels = show_all_labels,
             )
         except Exception as e:
             return no_update, status.error(f"Could not draw the tree: {e}")

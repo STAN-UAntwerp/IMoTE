@@ -21,13 +21,9 @@ The **Layout** card controls how the tree graph is arranged on screen. It doesn'
 
 The graph uses a tidy tree layout, made for trees:
 
-- The left child of a split ("No") is always on the left, the right child ("Yes") on the right, also after collapsing,
-  pruning or showing a subtree.
+- The left child of a split ("No") is always on the left, the right child ("Yes") on the right.
 - Every node is centred above its children, a chain of linear nodes goes straight down.
 - Subtrees are pushed together as close as they fit, nodes never overlap and edges don't run through other nodes.
 - With **Align leaves to bottom**, the edge to a leaf bends at the level where the leaf would be in the compact layout and
   then goes straight down.
 
-The layout is computed again when the tree, the node size or a layout setting changes, the nodes then move to their new
-place. Highlighting a path or changing colours and labels keeps the nodes where they are, so dragged nodes and the zoom
-stay.
