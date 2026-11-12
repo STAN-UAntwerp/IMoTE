@@ -22,6 +22,7 @@ class CombinedLinNode(BaseNode):
 
     def __init__(self, nodes: List[LinearNode]):
         super().__init__(nodes[-1].indices, nodes[-1].y_res, nodes[-1].rss)
+        self.log_odds = nodes[-1].log_odds
         pivot_indices = []
         lin_coefficients = {}
         intercept = 0

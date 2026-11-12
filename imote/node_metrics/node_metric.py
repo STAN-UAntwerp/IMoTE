@@ -1,8 +1,12 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
+from scipy.special import entr, expit
+from sklearn.metrics import roc_auc_score, average_precision_score, precision_score, recall_score, f1_score
 
 from imote.nodes.base_node import BaseNode
+from imote.nodes.collapsed_node import CollapsedNode
+from imote.nodes.none_node import NoneNode
 from imote.nodes.split_node import SplitNode
 
 NODE_METRICS_REGISTRY: dict[str, "type[BaseNodeMetric]"] = {}
@@ -23,14 +27,20 @@ def register_metric(name: str):
         return metric_cls
     return decorator
 
+def metrics_for_task(task: str) -> list[str]:
+    """Names of the registered metrics that apply to the task."""
+    return [name for name, metric_cls in NODE_METRICS_REGISTRY.items() if task in metric_cls.tasks]
+
 class BaseNodeMetric(ABC):
     """Base class for a single metric computed on a tree node.
 
     Attributes:
+        tasks: Tree tasks this metric applies to.
         higher_is_better: True or False if a higher value means a better metric, None if the metric has no better side.
         value_range: (low, high) of the values a metric can have.
     """
 
+    tasks: tuple[str, ...] = ("regression", "classification")
     higher_is_better: bool | None = None
     value_range: tuple[float, float] | None = None
 
@@ -94,10 +104,15 @@ class NSamplesMetric(BaseNodeMetric):
     def compute(node, y_train):
         return int(np.sum(node.indices))
 
+# ---------------------------------------------------------------------------
+# Regression metrics
+# ---------------------------------------------------------------------------
+
+
 @register_metric("RSS")
 class RSSMetric(BaseNodeMetric):
     """Residual sum of squares of the node's own residuals (y_res)."""
-
+    tasks = ("regression",)
     higher_is_better = False
 
     @staticmethod
@@ -107,7 +122,7 @@ class RSSMetric(BaseNodeMetric):
 @register_metric("MAE")
 class MAEMetric(BaseNodeMetric):
     """Mean absolute error between true and predicted values at this node."""
-
+    tasks = ("regression",)
     higher_is_better = False
 
     @staticmethod
@@ -117,7 +132,7 @@ class MAEMetric(BaseNodeMetric):
 @register_metric("MSE")
 class MSEMetric(BaseNodeMetric):
     """Mean squared error between true and predicted values at this node."""
-
+    tasks = ("regression",)
     higher_is_better = False
 
     @staticmethod
@@ -127,7 +142,7 @@ class MSEMetric(BaseNodeMetric):
 @register_metric("RMSE")
 class RMSEMetric(BaseNodeMetric):
     """Root mean squared error between true and predicted values at this node."""
-
+    tasks = ("regression",)
     higher_is_better = False
 
     @staticmethod
@@ -137,7 +152,7 @@ class RMSEMetric(BaseNodeMetric):
 @register_metric("R2")
 class R2Metric(BaseNodeMetric):
     """Coefficient of determination (R^2) at this node."""
-
+    tasks = ("regression",)
     higher_is_better = True
     value_range = (0.0, 1.0)
 
@@ -153,6 +168,7 @@ class R2Metric(BaseNodeMetric):
 @register_metric("Mean Residual")
 class MeanResidualMetric(BaseNodeMetric):
     """Mean of the node's own residuals (y_res)."""
+    tasks = ("regression",)
 
     @staticmethod
     def compute(node, y_train):
@@ -161,12 +177,228 @@ class MeanResidualMetric(BaseNodeMetric):
 @register_metric("Std Residual")
 class StdResidualMetric(BaseNodeMetric):
     """Standard deviation of the node's own residuals (y_res)."""
-
+    tasks = ("regression",)
     higher_is_better = False
 
     @staticmethod
     def compute(node, y_train):
         return float(np.std(node.y_res))
+
+# ---------------------------------------------------------------------------
+# Classification metrics (y_train is 0/1, node.log_odds are the log-odds of the node's samples before the node)
+# ---------------------------------------------------------------------------
+
+def _gini(y: np.ndarray) -> float:
+    """Gini impurity of 0/1 labels, 0 for no samples."""
+    p = np.mean(y) if len(y) else 0.0
+    return float(2 * p * (1 - p))
+
+def _entropy(y: np.ndarray) -> float:
+    """Entropy in bits of 0/1 labels, 0 for no samples."""
+    p = np.mean(y) if len(y) else 0.0
+    return float((entr(p) + entr(1 - p)) / np.log(2))
+
+def _leaves(node: BaseNode) -> list[BaseNode]:
+    """Leaves of the subtree starting at a node, a collapsed part of the tree counts with its hidden leaves."""
+    if isinstance(node, CollapsedNode):
+        return _leaves(node.parent)
+    if isinstance(node, NoneNode):
+        return []
+    children = node.get_children()
+    return [leaf for child in children for leaf in _leaves(child)] if children else [node]
+
+def _subtree_log_odds(node: BaseNode) -> np.ndarray:
+    """Log-odds of the node's samples from the leaves of the subtree starting at the node."""
+    log_odds = np.full(len(node.indices), np.nan)
+    for leaf in _leaves(node):
+        log_odds[leaf.indices] = leaf.log_odds
+    return log_odds[node.indices]
+
+def _label_score(score, node: BaseNode, y_train: np.ndarray) -> float:
+    """Precision, recall or F1 of the subtree at a node, nan if there are no samples or it is undefined."""
+    y_true = y_train[node.indices]
+    if len(y_true) == 0:
+        return float("nan")
+    return float(score(y_true, _subtree_log_odds(node) > 0, zero_division=np.nan))
+
+def _ranking_score(score, node: BaseNode, y_train: np.ndarray) -> float | str:
+    """AUROC or AUPRC of the subtree at a node, "-" if it has one class or its leaves give a single score."""
+    y_true, log_odds = y_train[node.indices], _subtree_log_odds(node)
+    if len(np.unique(y_true)) < 2 or len(np.unique(log_odds)) < 2:
+        return "-"
+    return float(score(y_true, log_odds))
+
+@register_metric("Class 0 count")
+class Class0CountMetric(BaseNodeMetric):
+    """Number of samples of class 0 at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, y_train):
+        y_true = y_train[node.indices]
+        return int(np.sum(y_true == 0))
+
+@register_metric("Class 0 fraction")
+class Class0FractionMetric(BaseNodeMetric):
+    """Fraction of the samples at this node that are of class 0."""
+    tasks = ("classification",)
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean(1-y_train[node.indices]))
+
+@register_metric("Class 1 count")
+class Class1CountMetric(BaseNodeMetric):
+    """Number of samples of class 1 at this node."""
+    tasks = ("classification",)
+
+    @staticmethod
+    def compute(node, y_train):
+        y_true = y_train[node.indices]
+        return int(np.sum(y_true == 1))
+
+@register_metric("Class 1 fraction")
+class Class1FractionMetric(BaseNodeMetric):
+    """Fraction of the samples at this node that are of class 1."""
+    tasks = ("classification",)
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean(y_train[node.indices]))
+
+@register_metric("Mean Probability")
+class MeanProbabilityMetric(BaseNodeMetric):
+    """Mean predicted probability of class 1 at this node."""
+    tasks = ("classification",)
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean(expit(node.log_odds)))
+
+@register_metric("Accuracy")
+class AccuracyMetric(BaseNodeMetric):
+    """Fraction of samples at this node that are classified correctly."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean((node.log_odds > 0) == y_train[node.indices]))
+
+@register_metric("Accuracy (of subtree)")
+class SubtreeAccuracyMetric(BaseNodeMetric):
+    """Fraction of samples at this node that the subtree starting at this node classifies correctly."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean((_subtree_log_odds(node) > 0) == y_train[node.indices]))
+
+@register_metric("Precision (of subtree)")
+class SubtreePrecisionMetric(BaseNodeMetric):
+    """Fraction of the samples predicted as class 1 by the subtree starting at this node that are of class 1."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _label_score(precision_score, node, y_train)
+
+@register_metric("Recall (of subtree)")
+class SubtreeRecallMetric(BaseNodeMetric):
+    """Fraction of the class 1 samples at this node predicted as class 1 by the subtree starting at this node."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _label_score(recall_score, node, y_train)
+
+@register_metric("F1 (of subtree)")
+class SubtreeF1Metric(BaseNodeMetric):
+    """Harmonic mean of the precision and recall of the subtree starting at this node."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _label_score(f1_score, node, y_train)
+
+@register_metric("Gini")
+class GiniMetric(BaseNodeMetric):
+    """Gini impurity of the samples at this node, 0 if they are all of one class."""
+    tasks = ("classification",)
+    higher_is_better = False
+    value_range = (0.0, 0.5)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _gini(y_train[node.indices])
+
+@register_metric("Entropy")
+class EntropyMetric(BaseNodeMetric):
+    """Entropy in bits of the samples at this node, 0 if they are all of one class."""
+    tasks = ("classification",)
+    higher_is_better = False
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _entropy(y_train[node.indices])
+
+@register_metric("AUROC (of subtree)")
+class SubtreeAUROCMetric(BaseNodeMetric):
+    """Area under the ROC curve of the subtree starting at this node."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _ranking_score(roc_auc_score, node, y_train)
+
+@register_metric("AUPRC (of subtree)")
+class SubtreeAUPRCMetric(BaseNodeMetric):
+    """Area under the precision recall curve of the subtree starting at this node."""
+    tasks = ("classification",)
+    higher_is_better = True
+    value_range = (0.0, 1.0)
+
+    @staticmethod
+    def compute(node, y_train):
+        return _ranking_score(average_precision_score, node, y_train)
+
+@register_metric("Log-loss")
+class LogLossMetric(BaseNodeMetric):
+    """Mean binary cross-entropy at this node."""
+    tasks = ("classification",)
+    higher_is_better = False
+    value_range = (0.0, np.inf)
+
+    @staticmethod
+    def compute(node, y_train):
+        f = node.log_odds
+        return float(np.mean(np.logaddexp(0, f) - y_train[node.indices] * f))
+
+@register_metric("Brier score")
+class BrierScoreMetric(BaseNodeMetric):
+    """Mean squared error of the predicted probability of class 1 at this node."""
+    tasks = ("classification",)
+    higher_is_better = False
+    value_range = (0.0, 0.5)
+
+    @staticmethod
+    def compute(node, y_train):
+        return float(np.mean((expit(node.log_odds) - y_train[node.indices]) ** 2))
 
 # ---------------------------------------------------------------------------
 # Split node specific metrics
@@ -184,4 +416,33 @@ class SplitBalanceMetric(BaseNodeMetric):
             n_right = np.sum(node.right_child.indices)
             n_total = np.sum(node.indices)
             return n_right / n_total
+        return "-"
+
+def _impurity_decrease(node: SplitNode, y_train: np.ndarray, impurity) -> float:
+    """Impurity of a split node minus the impurity of its children, weighted by their number of samples."""
+    y_node, y_left, y_right = (y_train[n.indices] for n in (node, node.left_child, node.right_child))
+    return impurity(y_node) - (len(y_left) * impurity(y_left) + len(y_right) * impurity(y_right)) / len(y_node)
+
+@register_metric("Split gini decrease")
+class GiniDecreaseMetric(BaseNodeMetric):
+    """Decrease in Gini impurity from the split at this node."""
+    tasks = ("classification",)
+    higher_is_better = True
+
+    @staticmethod
+    def compute(node, y_train):
+        if isinstance(node, SplitNode) and node.indices.any():
+            return _impurity_decrease(node, y_train, _gini)
+        return "-"
+
+@register_metric("Split information gain")
+class InformationGainMetric(BaseNodeMetric):
+    """Decrease in entropy (bits) from the split at this node."""
+    tasks = ("classification",)
+    higher_is_better = True
+
+    @staticmethod
+    def compute(node, y_train):
+        if isinstance(node, SplitNode) and node.indices.any():
+            return _impurity_decrease(node, y_train, _entropy)
         return "-"

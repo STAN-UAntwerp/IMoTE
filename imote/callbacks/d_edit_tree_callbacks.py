@@ -3,6 +3,8 @@ from dash import Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
 
 from imote import ids, status
+from imote.config import NODE_LABEL_STRUCTURE
+from imote.node_metrics.node_metric import metrics_for_task
 from imote.nodes.collapsed_node import CollapsedNode
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.internal_node import LinearNode
@@ -31,6 +33,17 @@ def register_callbacks(app):
     )
     def toggle_card(n_clicks, is_open):
         return not is_open
+
+    @app.callback(
+        Output(ids.NODE_LABEL_SELECT, "options"),
+        Output(ids.NODE_LABEL_SELECT, "value", allow_duplicate=True),
+        Input(ids.STORE_TREE_PARAMS, "data"),
+        State(ids.NODE_LABEL_SELECT, "value"),
+        prevent_initial_call=True,
+    )
+    def update_node_label_options(tree_params, node_label):
+        options = [NODE_LABEL_STRUCTURE, *metrics_for_task(tree_params.get("task", "regression"))]
+        return options, no_update if node_label in options else NODE_LABEL_STRUCTURE
 
     @app.callback(
         Output(ids.STORE_VIZ_TREE, "data", allow_duplicate=True),

@@ -2,10 +2,11 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc
 from imote.components.cards.bb_node_plot_settings_card import make_settings_card
 from imote import ids
-from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
-from imote.config import DEFAULT_NODE_METRICS
+from imote.node_metrics.node_metric import metrics_for_task
+from imote.config import DEFAULT_NODE_METRICS, get_initial_graph_info
 
 def make_node_info_card() -> dbc.Card:
+    task = get_initial_graph_info()[1].get("task", "regression")
     return dbc.Card(
         [
             dbc.CardBody([
@@ -33,8 +34,8 @@ def make_node_info_card() -> dbc.Card:
                     dbc.Col([
                         html.Small("Metrics", className="text-muted d-block fw-bold"),
                         dcc.Dropdown(
-                            list(NODE_METRICS_REGISTRY.keys()),
-                            DEFAULT_NODE_METRICS,
+                            metrics_for_task(task),
+                            DEFAULT_NODE_METRICS[task],
                             id=ids.NODE_INFO_METRICS_DROPDOWN,
                             multi=True,
                             closeOnSelect=False,

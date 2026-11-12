@@ -26,6 +26,7 @@ class VizTree:
         y_train: Training target values used to fit the tree.
         y_hat: Predictions of the tree on X_train.
         tree_id: Identifier for this tree, defaults to a unique ID.
+        task: "regression" or "classification"
         feature_names: Names of the columns of X_train, or None if unknown.
         target_name: Name of the target variable, or None if unknown.
     """
@@ -37,6 +38,7 @@ class VizTree:
     y_train: np.ndarray
     y_hat: np.ndarray
     tree_id: str
+    task: str
     feature_names: Optional[List[str]]
     target_name: Optional[str]
 
@@ -46,6 +48,7 @@ class VizTree:
                  y_train: np.ndarray,
                  y_hat: np.ndarray,
                  tree_id: str = None,
+                 task: str = "regression",
                  feature_names: Optional[List[str]] = None,
                  target_name: Optional[str] = None,
                  ):
@@ -58,12 +61,14 @@ class VizTree:
                 None to compute them via predict().
             tree_id: Identifier for this tree. Defaults to the current
                 timestamp (format "%d-%m-%y_%H-%M-%S") if not given.
+            task: "regression" or "classification".
             feature_names: Names of the columns of X_train, or None if unknown.
             target_name: Name of the target variable, or None if unknown.
 
         Raises:
             ValueError: If the number of feature_names doesn't match the number of columns in X_train.
         """
+        self.task = task
         if tree_id is None:
             self.tree_id = datetime.now().strftime('%d-%m-%y_%H-%M-%S')
         else:
@@ -111,9 +116,11 @@ class VizTree:
         Returns:
             A new VizTree instance wrapping the model's tree.
         """
-        root_node = adapter.build_root_node(X_train, y_train, model)
-        y_hat = adapter.predict(X_train, model)
-        return cls(root_node, X_train, y_train, y_hat, feature_names=feature_names, target_name=target_name)
+        kwargs = {"feature_names": feature_names} if adapter.needs_feature_names else {}
+        root_node = adapter.build_root_node(X_train, y_train, model, **kwargs)
+        y_hat = adapter.predict(X_train, model, **kwargs)
+        return cls(root_node, X_train, y_train, y_hat, task=adapter.task,
+                   feature_names=feature_names, target_name=target_name)
 
     def get_feature_name(self, idx: int) -> str:
         """Returns the name of feature idx, or "X<idx>" if the feature names are unknown."""
@@ -362,6 +369,7 @@ class VizTree:
             rss=prune_node.rss,
             node_model=model,
         )
+        new_leaf_node.log_odds = prune_node.log_odds
         new_leaf_node.set_id(prune_node.id)
 
         parent = node_path[-2]
@@ -382,6 +390,7 @@ class VizTree:
         """
         return {
             "tree_id": self.tree_id,
+            "task": self.task,
             "X_train": self.X_train.tolist(),
             "y_train": self.y_train.tolist(),
             "y_hat": self.y_hat.tolist(),
@@ -409,6 +418,7 @@ class VizTree:
 
         obj = cls.__new__(cls)
         obj.tree_id = viz_dict["tree_id"]
+        obj.task = viz_dict.get("task", "regression")
         obj.X_train = np.array(viz_dict["X_train"])
         obj.y_train = np.array(viz_dict["y_train"])
         obj.y_hat = np.array(viz_dict["y_hat"])

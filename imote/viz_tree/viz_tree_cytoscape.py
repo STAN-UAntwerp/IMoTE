@@ -15,8 +15,9 @@ from matplotlib.colors import to_hex
 from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
+from imote.plots.classplot import make_classification_plot
 from datetime import datetime
-from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, metrics_for_task
 from imote.nodes.label_formatter import LabelFormatter
 from imote.node_metrics.node_labels import display_names, metric_colors, metric_text
 from imote.config import (NODE_TYPE_COLORS, MIN_EDGE_WIDTH, MAX_EDGE_WIDTH, MIN_NODE_HEIGHT, MAX_NODE_HEIGHT,
@@ -139,6 +140,8 @@ def viz_tree_to_cytoscape_elements(
 
     n_features = viz_tree.X_train.shape[1]
     shown_names = viz_tree.feature_names if use_feature_names else None
+    if label_metric not in metrics_for_task(viz_tree.task):
+        label_metric = None  # e.g. a classification metric still selected while a regression tree loads
     if label_metric:
         metric = NODE_METRICS_REGISTRY[label_metric]
         values = [metric.compute(node, viz_tree.y_train) for node in nodes]
@@ -182,16 +185,21 @@ def viz_tree_to_cytoscape_elements(
             node_highlight_x = highlight_x
 
         if show_node_plots and isinstance(node, InternalNode):
-            make_regression_plot(
-                node,
-                viz_tree.X_train,
-                f"{dir_live}/regplots/regplot_node{node.id}_{elements_id}.svg",
-                fig_size,
-                feature_colors,
-                viz_tree.feature_names,
-                node_highlight_x,
-                viz_tree.target_name,
-            )
+            plot_file = f"{dir_live}/regplots/regplot_node{node.id}_{elements_id}.svg"
+            if viz_tree.task == "classification":
+                make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, plot_file, fig_size,
+                                         feature_colors, viz_tree.feature_names, node_highlight_x)
+            else:
+                make_regression_plot(
+                    node,
+                    viz_tree.X_train,
+                    plot_file,
+                    fig_size,
+                    feature_colors,
+                    viz_tree.feature_names,
+                    node_highlight_x,
+                    viz_tree.target_name,
+                )
             data["dir_regplot"] = f"/internal_regplots/regplot_node{node.id}_{elements_id}.svg"
             classes.append("regplot")
 

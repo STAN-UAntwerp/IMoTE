@@ -2,10 +2,11 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 from imote import ids
-from imote.config import DEFAULT_COLLAPSE_LEVEL, NODE_LABEL_STRUCTURE
-from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
+from imote.config import DEFAULT_COLLAPSE_LEVEL, NODE_LABEL_STRUCTURE, get_initial_graph_info
+from imote.node_metrics.node_metric import metrics_for_task
 
 def make_edit_tree_card() -> dbc.Card:
+    task = get_initial_graph_info()[1].get("task", "regression")
     return dbc.Card(
         [
             dbc.CardHeader(
@@ -69,7 +70,7 @@ def make_edit_tree_card() -> dbc.Card:
                                         html.Span("Node label: "),
                                         dbc.Select(
                                             id=ids.NODE_LABEL_SELECT,
-                                            options=[NODE_LABEL_STRUCTURE, *NODE_METRICS_REGISTRY],
+                                            options=[NODE_LABEL_STRUCTURE, *metrics_for_task(task)],
                                             value=NODE_LABEL_STRUCTURE,
                                             size="sm",
                                             style={"width": "180px"},

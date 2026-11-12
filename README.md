@@ -21,8 +21,9 @@ makes them easy to explore, explain and present.
 
 **Fit or load a tree**
 
-- Fit **PILOT** [[1]](#references) or **M5** [[2]](#references) trees on built-in
-  [PMLB](https://epistasislab.github.io/pmlb/) datasets or on your own CSV file.
+- Fit **PILOT** [[1]](#references), **M5** [[2]](#references) or decision trees on datasets you search and download
+  from [PMLB](https://epistasislab.github.io/pmlb/) or the [UCI repository](https://archive.ics.uci.edu/), or on your
+  own file (CSV, Excel, Parquet, ARFF, JSON, ...), for regression or classification.
 - Save the tree you are looking as an SVG image or to load it again later.
 - Load trees fitted with other tools through an **adapter**. An adapter for trees from the R package
   [partykit](https://cran.r-project.org/package=partykit) is included as an example.
@@ -59,7 +60,7 @@ imote
 Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). The app starts with an example
 PILOT tree. Click a node to inspect it, or open the **New Tree** card on the right to fit a tree on another dataset.
 
-IMoTE stores saved trees, uploaded datasets, downloaded PMLB datasets and generated plots in `~/.imote`. Set the 
+IMoTE stores saved trees, uploaded datasets, downloaded datasets and generated plots in `~/.imote`. Set the 
 `IMOTE_HOME` environment variable to use another folder.
 
 ## Documentation

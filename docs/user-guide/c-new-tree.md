@@ -12,8 +12,8 @@ an adapter.
 
 | Field                 | Description                                                                                                                                                       |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Dataset**           | The dataset on which the tree will be fitted. A selection of datasets from the PMLB repository are available, each is downloaded once and then loaded from `~/.imote`. A csv file with a new dataset can also be uploaded. |
-| **Method**            | The model tree algorithm to use: PILOT or M5 (see the [home](../index.md) page for a brief description of each).                             |
+| **Dataset**           | The dataset on which the tree will be fitted, chosen from your list of datasets (see [Datasets](#datasets) below). The pencil button opens the settings of the selected dataset, **Add** adds a dataset from PMLB, the UCI repository or a file. |
+| **Method**            | The tree algorithm to use (see the [home](../index.md) page for a brief description of PILOT and M5).                                                             |
 | **Max depth**         | The maximum depth of the tree. (The root node is at depth 0.)                                                                                                     |
 | **Max model depth**   | PILOT only feauture: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).                                                  |
 | **Min samples split** | The minimum number of samples required before a node may be considered for splitting.                                                                             |
@@ -36,19 +36,70 @@ The following actions are also available:
   field and click **Load tree**. If the field is left empty, the application loads the most recently saved tree from
   `~/.imote/saved_trees`.
 
-## Uploading a CSV dataset
+## Datasets
 
-<div style="max-width: 350px;" markdown="1">
+Every dataset you add is stored in its own folder in `~/.imote/datasets`. The list also suggests a few PMLB datasets, 
+they are downloaded the first time a tree is fitted on them.
 
-![Screenshot: New Tree card, expanded](../assets/screenshots/csv_upload.png)
+### Adding a dataset
+
+<div style="max-width: 450px;" markdown="1">
+
+![Screenshot: dialog to add a dataset](../assets/screenshots/dataset-add.png)
 </div>
 
-When choosing to upload a CSV dataset, the following pop-up is shown. The uploaded dataset should be a numeric
-dataframe, with one column specified as the target column. In the input field below the upload, you can specify the
-target column by its name or by its index (e.g., the first or last column).
+Click **Add** next to the dataset dropdown, then:
 
-If you want to use PILOT or M5, categorical variables need to be converted to integers. Categorical variables are
-automatically detected as having fewer than 8 unique values.
+* **PMLB**: search the [PMLB](https://epistasislab.github.io/pmlb/) datasets by name, optionally only classification or
+  regression datasets. The number of rows, features and classes is shown for every dataset.
+* **UCI repository**: search the [UCI Machine Learning Repository](https://archive.ics.uci.edu/) by name or id.
+* **Upload a file**: CSV, TSV, TXT and UCI-style `.data` files (the separator and header row are detected), Excel
+  (`.xlsx`, `.xls`), Parquet, Feather, ARFF and JSON. Parquet and Feather need `pyarrow`
+  (`pip install imote[parquet]`), old `.xls` files need `xlrd` (`pip install imote[xls]`).
+
+Clicking a search result downloads the dataset. Next, its settings are shown:
+
+| Setting                  | Description |
+|--------------------------|-------------|
+| **Response**             | The column to predict. PMLB and UCI datasets fill this in from their metadata, for a file the last column (or a column called `target`) is proposed. |
+| **Task**                 | Regression or classification, guessed from the response (text, or at most 10 whole numbers, is classification). With more than two classes the dataset is multiclass. |
+| **Categorical features** | Text columns are always categorical. For some PMLB datasets the categorical columns are listed in `imote/benchmark_info.py`, otherwise numeric columns with fewer than 8 different values are proposed as categorical. |
+| **Columns to leave out** | Columns that are not used as features, such as id columns. |
+
+The box below the settings shows the result: the number of rows and features, the classes, how many rows are left out
+and which methods can be used. Click **Save** to add the dataset to the list, or **Cancel** to abort.
+
+!!! note
+    Classification datasets can be added, but fitting classification trees isn't available yet: for such a dataset
+    no method can be chosen.
+
+Text columns are coded as numbers. Rows with a missing value (an empty cell, `NaN` or `?`) are left out.
+
+### The dataset file
+
+All settings are saved in `dataset.toml` in the folder of the dataset. You can edit this file by hand, for example
+to change the order of the classes (for two classes the second one is the positive class) or of the categories, or to
+leave out rows by removing a category.
+
+```toml
+name = "Abalone"
+source = "uci"
+source_id = 1
+file = "data.tsv.gz"
+response = "Rings"  # automatically detected (UCI metadata)
+task = "regression"  # automatically detected
+ignore = []
+
+[read]
+sep = "\t"
+header = true
+
+[categorical]
+Sex = ["F", "I", "M"]  # automatically detected (UCI metadata)
+```
+
+The pencil button next to the dataset dropdown opens the same settings for a dataset on the list, there it can also be
+removed (this deletes its folder).
 
 ## Using an adapter to upload a tree
 
@@ -62,6 +113,6 @@ algorithms in different languages to be imported. It also provides more details 
 
 ### Using an Adapter
 * Select the desired adapter from the dropdown.
-* Select the dataset used to fit the tree. You can upload the dataset (or a sample) as a CSV.
+* Select the dataset used to fit the tree. You can add the dataset (or a sample) as a file.
 * Provide the **path to the model** or file containing the tree information.
 * Click on **Load with Adapter**.

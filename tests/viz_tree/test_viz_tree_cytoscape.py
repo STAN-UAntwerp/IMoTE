@@ -4,7 +4,7 @@ from imote.config import NODE_TYPE_COLORS
 from imote.nodes.internal_node import LinearNode
 from imote.nodes.node_model import ConstantNodeModel, SimpleLinearNodeModel
 from imote.nodes.split_node import PconNode
-from tests.helpers import X, leaf, mask, y
+from tests.helpers import X, leaf, make_classification_tree, mask, y
 from imote.viz_tree.viz_tree import VizTree
 from imote.viz_tree.viz_tree_cytoscape import viz_tree_to_cytoscape_elements
 
@@ -125,3 +125,18 @@ def test_metric_labels_show_only_the_value(pilot_tree, tmp_path):
     for el in nodes_of(elements(pilot_tree, tmp_path, label_metric="RSS")).values():
         float(el["data"]["label"])
         assert "metric" in el["classes"]
+
+
+def test_classification_metric_labels(tmp_path):
+    labels = [el["data"]["label"] for el in nodes_of(elements(make_classification_tree(), tmp_path, label_metric="Accuracy")).values()]
+    assert labels == ["0.5", "1", "0.75"]
+
+
+def test_metric_of_other_task_falls_back_to_structure(pilot_tree, tmp_path):
+    for el in nodes_of(elements(pilot_tree, tmp_path, label_metric="AUROC (of subtree)")).values():
+        assert "metric" not in el["classes"]
+
+
+def test_classification_node_plots(live_dir):
+    els = elements(make_classification_tree(), live_dir, show_node_plots=True)
+    assert "regplot" in nodes_of(els)["node0"]["classes"]

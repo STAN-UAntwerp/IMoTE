@@ -3,7 +3,7 @@ import warnings
 from pathlib import Path
 
 from imote import ids, status
-from dash import Input, Output, State, html, dcc, no_update, ctx
+from dash import Input, Output, State, html, dcc, no_update, NoUpdate, ctx
 from dash.exceptions import PreventUpdate
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,15 +11,16 @@ from urllib.parse import quote
 import dash_bootstrap_components as dbc
 
 from imote.callbacks.d_edit_tree_callbacks import find_node_by_cytoscape_id
-from imote.config import DIR_LIVE_OUTPUT, DIR_PACKAGE, NODE_TYPE_COLORS
+from imote.config import DIR_LIVE_OUTPUT, DIR_PACKAGE, NODE_TYPE_COLORS, DEFAULT_NODE_METRICS
 from imote.nodes.internal_node import InternalNode
 from imote.nodes.leaf_node import LeafNode
 from imote.nodes.node_model import LinearNodeModel
 from imote.plots.predsplot import predsplot
 from imote.plots.predsplot2 import predsplot2
 from imote.plots.regplot import make_regression_plot
+from imote.plots.classplot import make_class_pie_plot, make_classification_plot
 from imote.viz_tree.viz_tree import VizTree
-from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY
+from imote.node_metrics.node_metric import NODE_METRICS_REGISTRY, metrics_for_task
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,40 @@ NO_NODE_SELECTED_DESCRIPTION = "Click a node in the graph to see its details."
 
 def _plot_note(text: str, level: str = "muted", icon: str = "bi-info-circle"):
     return html.Small([html.I(className=f"bi {icon} me-1"), text], className=f"text-{level} d-block")
+
+def _highlight_array(highlight_x, node_highlight):
+    return None if highlight_x is None or not node_highlight else np.array(highlight_x)
+
+
+def _feature_colors(viz_tree) -> list:
+    n_features = viz_tree.X_train.shape[1]
+    cmap = plt.colormaps['tab20'].resampled(n_features)
+    return [cmap(i) for i in range(n_features)]
+
+
+def make_class_plots(viz_tree, node, node_highlight, figw, figh, highlight_x):
+    """Makes the class plots of a node of a classification tree: a pie chart of the classes of its samples and,
+    for an internal node, the classes along its split feature.
+
+    Returns the paths of the svg files, and a note if the plots could not be made.
+    """
+    if viz_tree.task != "classification" or not node.indices.any():
+        return [], None
+    file_dirs = []
+    try:
+        pie_file_dir = DIR_LIVE_OUTPUT / "regplots" / f"classpie_node{node.id}_{viz_tree.tree_id}.svg"
+        make_class_pie_plot(node, viz_tree.y_train, str(pie_file_dir), (figw, figh))
+        file_dirs.append(pie_file_dir)
+        if isinstance(node, InternalNode):
+            class_file_dir = DIR_LIVE_OUTPUT / "regplots" / f"classplot_node{node.id}_{viz_tree.tree_id}.svg"
+            make_classification_plot(node, viz_tree.X_train, viz_tree.y_train, str(class_file_dir), (figw, figh),
+                                     _feature_colors(viz_tree), None, _highlight_array(highlight_x, node_highlight))
+            file_dirs.append(class_file_dir)
+    except Exception as e:
+        logger.exception("Could not make the class plots of node %s", node.id)
+        return file_dirs, _plot_note(f"Could not make the class plots: {e}", "danger", "bi-x-circle-fill")
+    return file_dirs, None
+
 
 def make_node_plot(viz_tree, node, node_highlight, display_type, nmax, figw, figh,
                    predsplot_options, highlight_x, predsplot_type):
@@ -38,11 +73,8 @@ def make_node_plot(viz_tree, node, node_highlight, display_type, nmax, figw, fig
     truncate_total_pred = "truncate" in predsplot_options
     staircase = "staircase" in predsplot_options
     type2 = "type2" in predsplot_type
-    highlight_x_arr = None if highlight_x is None or not node_highlight else np.array(highlight_x)
-
-    n_features = viz_tree.X_train.shape[1]
-    cmap = plt.colormaps['tab20'].resampled(n_features)
-    feature_colors = [cmap(i) for i in range(n_features)]
+    highlight_x_arr = _highlight_array(highlight_x, node_highlight)
+    feature_colors = _feature_colors(viz_tree)
 
     try:
         if isinstance(node, LeafNode):
@@ -158,6 +190,22 @@ def register_callbacks(app):
 
         return badge_label, badge_style, description, metrics_components
 
+    @app.callback(
+        Output(ids.NODE_INFO_METRICS_DROPDOWN, "options"),
+        Output(ids.NODE_INFO_METRICS_DROPDOWN, "value"),
+
+        Input(ids.STORE_TREE_PARAMS, "data"),
+        State(ids.NODE_INFO_METRICS_DROPDOWN, "value"),
+        prevent_initial_call=True
+    )
+    def update_metric_options(tree_params, metric_names):
+        task = tree_params.get("task", "regression")
+        options = metrics_for_task(task)
+        if np.all([(name in options) for name in metric_names]):
+            raise PreventUpdate
+        else:
+            return options, DEFAULT_NODE_METRICS[task]
+
 
     @app.callback(
         Output(ids.NODE_INFO_PLOT_COLLAPSE, "is_open"),
@@ -225,12 +273,17 @@ def register_callbacks(app):
 
         viz_tree = VizTree.from_dict(viz_tree_dict)
         node = find_node_by_cytoscape_id(viz_tree, selected_node[0]["id"])
-        file_dir, note = make_node_plot(viz_tree, node, selected_node[0]["highlight"], display_type, nmax, figw, figh,
+        node_highlight = selected_node[0]["highlight"]
+        file_dir, note = make_node_plot(viz_tree, node, node_highlight, display_type, nmax, figw, figh,
                                         predsplot_options, highlight_x, predsplot_type)
-        if file_dir is None:
-            return note, None
+        class_file_dirs, class_note = make_class_plots(viz_tree, node, node_highlight, figw, figh, highlight_x)
 
-        return html.Img(src=svg_data_url(file_dir), style={"maxWidth": "100%"}), str(file_dir)
+        children = [note] if file_dir is None else [html.Img(src=svg_data_url(file_dir), style={"maxWidth": "100%"})]
+        children += [html.Img(src=svg_data_url(class_file_dir), style={"maxWidth": "100%"})
+                     for class_file_dir in class_file_dirs]
+        if class_note is not None:
+            children.append(class_note)
+        return children, None if file_dir is None else str(file_dir)
 
     @app.callback(
         Output(ids.STORE_GRAPH_PLOTS, "data"),

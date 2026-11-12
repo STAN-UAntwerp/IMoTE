@@ -69,9 +69,11 @@ def metric_text(value, compact: bool = False) -> str:
         return "≈0"
     if not compact:
         return str(int(value)) if float(value).is_integer() else f"{value:.4g}"
-    for limit, suffix in ((1e-9, "n"), (1e-6, "μ"), (1e-3, "m")):
+    for limit, suffix in ((1e-6, "n"), (1e-3, "μ")):
         if abs(value) <= limit:
-            return f"{value / limit:.3g}{suffix}"
+            return f"{value * 1000 / limit:.3g}{suffix}"
+    if abs(value) <= 1e-2:
+        return f"{value:.2g}"
     for limit, suffix in ((1e9, "G"), (1e6, "M"), (1e3, "k")):
         if abs(value) >= limit:
             return f"{value / limit:.3g}{suffix}"
@@ -95,6 +97,10 @@ def metric_colors(values: list, metric: type[BaseNodeMetric]) -> list[str]:
             continue
         if metric.value_range is not None:
             low, high = metric.value_range
+            if low == -np.inf:
+                low = np.min(unique_values)
+            if high == np.inf:
+                high = np.max(unique_values)
             if value < low or value > high:
                 colors.append(NO_METRIC_COLOR)
                 continue

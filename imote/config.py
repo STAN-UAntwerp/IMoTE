@@ -12,39 +12,33 @@ INITIAL_TREE_PATH = DIR_PACKAGE / "assets" / "initial_tree.pkl"
 DIR_USER_DATA = Path(os.environ.get("IMOTE_HOME", Path.home() / ".imote")).expanduser()
 DIR_LIVE_OUTPUT = DIR_USER_DATA / "live"
 DIR_SAVED_VIZ_TREES = DIR_USER_DATA / "saved_trees"
-DIR_DATASET_UPLOAD = DIR_USER_DATA / "uploaded_datasets"
-DIR_PMLB_CACHE = DIR_USER_DATA / "pmlb_datasets"
+DIR_DATASETS = DIR_USER_DATA / "datasets"
 
 # --- New Tree card defaults / options -----------------------------------
 
-NEW_CSV_OPTION = "__new_csv__"
-NO_FILE_SELECTED_PLACEHOLDER = "No file uploaded."
+# Classification trees are still in development: False keeps them out of the UI (methods, adapters, dataset tasks).
+ENABLE_CLASSIFICATION = False
 
-PMLB_OPTIONS = [
-    {"label": "PMLB: 547_no2", "value": "547_no2.pmlb"},
-    {"label": "PMLB: 294_satellite_image", "value": "294_satellite_image.pmlb"},
-    {"label": "PMLB: 1199_BNG_echoMonths", "value": "1199_BNG_echoMonths.pmlb"},
-    {"label": "PMLB: 537_houses", "value": "537_houses.pmlb"},
-    {"label": "PMLB: 658_fri_c3_250_25", "value": "658_fri_c3_250_25.pmlb"},
-    {"label": "PMLB: 505_tecator", "value": "505_tecator.pmlb"},
-    {"label": "PMLB: 560_bodyfat", "value": "560_bodyfat.pmlb"},
-    {"label": "PMLB: 485_analcatdata_vehicle", "value": "485_analcatdata_vehicle.pmlb"},
-    {"label": "PMLB: 210_cloud", "value": "210_cloud.pmlb"},
-    {"label": "PMLB: 1028_SWD", "value": "1028_SWD.pmlb"},
-    {"label": "PMLB: 197_cpu_act", "value": "197_cpu_act.pmlb"},
-    {"label": "PMLB: 564_fried", "value": "564_fried.pmlb"},
-]
+SUGGESTED_PMLB_DATASETS = ["547_no2", "1199_BNG_echoMonths", "564_fried", "537_houses"] + (
+    ["titanic", "magic", "iris"] if ENABLE_CLASSIFICATION else [])
 
-METHOD_OPTIONS = [
-    {"label": "Pilot", "value": "Pilot"},
-    {"label": "M5", "value": "M5"},
-]
+# Methods to fit a new tree and the tasks they work on: "regression", "binary" or "multiclass" (classification).
+METHODS = {
+    "Pilot": {"label": "Pilot", "tasks": {"regression"}},
+    "M5": {"label": "M5", "tasks": {"regression"}},
+    "DecisionTreeRegressor": {"label": "Decision tree", "tasks": {"regression"}},
+    "BcPilot": {"label": "Pilot (classification)", "tasks": {"binary"}},
+    "DecisionTreeClassifier": {"label": "Decision tree (classification)", "tasks": {"binary", "multiclass"}},
+}
+# The methods offered in the New Tree card
+SHOWN_METHODS = {value: method for value, method in METHODS.items()
+                 if ENABLE_CLASSIFICATION or method["tasks"] == {"regression"}}
 
 ADAPTER_OPTIONS = [
     {"label": "Partykit", "value": "Partykit"},
     {"label": "Pilot", "value": "Pilot"},
     {"label": "M5", "value": "M5"},
-]
+] + ([{"label": "BoostingMachine (Amadea)", "value": "BoostingMachine"}] if ENABLE_CLASSIFICATION else [])
 DEFAULT_ADAPTER_NAME = "Partykit"
 
 NODE_TYPE_COLORS = {
@@ -61,15 +55,13 @@ NODE_TYPE_COLORS = {
 }
 
 DEFAULT_METHOD_NAME = "Pilot"
-DEFAULT_DATASET_NAME = "547_no2.pmlb"
+DEFAULT_DATASET_NAME = "pmlb-547_no2"
 DEFAULT_MAX_DEPTH = 8
 DEFAULT_MAX_MODEL_DEPTH = 15
 DEFAULT_MIN_SAMPLE_SPLIT = 100
 DEFAULT_MIN_SAMPLE_LEAF = 25
 
 # --- Layout card defaults ------------------------------------------------
-# Vertical and horizontal gap between the nodes for each node size (0 normal, 1 minimal, 2 tiny):
-# (gap set when the node size changes, slider maximum, slider step)
 LAYOUT_SEP_BY_NODE_SIZE = {0: (10, 150, 1), 1: (8, 75, 0.5), 2: (1, 15, 0.1)}
 DEFAULT_RANK_SEP, SEP_SLIDER_MAX, SEP_SLIDER_STEP = LAYOUT_SEP_BY_NODE_SIZE[0]
 DEFAULT_NODE_SEP = DEFAULT_RANK_SEP
@@ -83,7 +75,6 @@ DEFAULT_FIG_H = 3.4
 
 MIN_EDGE_WIDTH = 0.8
 MAX_EDGE_WIDTH = 8
-# Edges in the minimal and tiny views are thinner, so they fit the smaller nodes (also used for the data flow widths)
 VIEW_EDGE_WIDTH_SCALES = {"minimal": 0.8, "tiny": 0.3}
 
 MIN_NODE_HEIGHT = 0.1
@@ -91,7 +82,12 @@ MAX_NODE_HEIGHT = 50
 
 SPINNER_COLOR = "primary"
 
-DEFAULT_NODE_METRICS = ["ID", "# Samples", "RSS", 'MAE']
+DEFAULT_NODE_METRICS = {
+    "regression": ["ID", "# Samples", "RSS", "MAE"],
+    "classification": ["ID", "# Samples", "Class 0 count", "Class 1 count", "Gini"],
+}
+
+TASK_COLORS = {"regression": NODE_TYPE_COLORS["LinearNode"], "classification": NODE_TYPE_COLORS["PconcNode"]}
 
 @lru_cache(maxsize=1)
 def get_initial_graph_info():
