@@ -9,7 +9,7 @@ the adapter that loads these trees into IMoTE. It shows the complete path for a 
 2. write an adapter that reads the file and converts it into a `VizTree`,
 3. load the tree in the application.
 
-See the [adapter overview](adapter_overview.md) for the general interface and the `VizTree` structure that the adapter
+See [the adapter interface](adapter_interface.md) for the general interface and [the VizTree object](viztree_structure.md) for the structure that the adapter
 builds.
 
 ## 1. Fit and export the model in R
@@ -146,7 +146,7 @@ column order, with `0.0` for features that are not in the leaf model:
 
 **Internal nodes** become a `SplitNode` for a numerical split or a `SplitCNode` for a categorical split. The split
 variable is converted to its column index `pivot_idx`, the samples are divided over the two children with the
-[helpers](adapter_overview.md#helpers), and both children are built recursively. `partykit` sends observations with
+helpers `split_by_threshold` and `split_by_categories`, and both children are built recursively. `partykit` sends observations with
 `x <= breaks` to the first child, which matches the convention of `SplitNode`. For a categorical split, the categories
 whose `index` is `1` go to the left child. No model is applied on either side of the split, so both side models are a
 `NoneNodeModel`:
@@ -179,7 +179,7 @@ whose `index` is `1` go to the left child. No model is applied on either side of
         )
 ```
 
-This is a condensed version of the code, see [`PartyKitAdapter`](../reference/adapters/partykit_adapter.md) for the
+This is a condensed version of the code, see the ```imote/adapters/partykit_adapter.py``` for the
 full implementation.
 
 The adapter doesn't override `predict`: the R model is not available from Python, so `VizTree` computes the
@@ -191,15 +191,6 @@ In the [New Tree](../user-guide/c-new-tree.md) card, open **Load a tree with an 
 adapter and the `547_no2` dataset, enter the path to `tree_547_no2.json` and click **Load with Adapter**. The dataset
 must be the one the tree was fitted on, with the features in the same order as in `names`. The tree can then be
 explored, highlighted, collapsed and saved like any tree fitted in the application.
-
-The same tree can also be loaded in Python:
-
-```python
-from imote import PartyKitAdapter, VizTree
-
-model = PartyKitAdapter.load_model("path/to/tree_547_no2.json")
-viz_tree = VizTree.from_model(PartyKitAdapter, X_train, y_train, model)
-```
 
 ## References
 <a id="1">[1]</a>

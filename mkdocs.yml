@@ -27,7 +27,11 @@ theme:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - md_in_html
   - toc:
       permalink: true
@@ -69,6 +73,9 @@ nav:
 
   - Adapter:
     - Overview: adapter/adapter_overview.md
+    - VizTree structure: adapter/viztree_structure.md
+    - Adapter interface: adapter/adapter_interface.md
+    - Writing your own adapter: adapter/writing_an_adapter.md
     - Example: adapter/partykit_example.md
 
   - Reference:
