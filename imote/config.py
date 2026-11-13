@@ -29,7 +29,7 @@ SUGGESTED_PMLB_DATASETS = ["547_no2", "1199_BNG_echoMonths", "564_fried", "537_h
 METHODS = {
     "Pilot": {"label": "Pilot", "tasks": {"regression"}},
     "M5": {"label": "M5", "tasks": {"regression"}},
-    "DecisionTreeRegressor": {"label": "Decision tree", "tasks": {"regression"}},
+    "DecisionTreeRegressor": {"label": "Decision tree (Sklearn)", "tasks": {"regression"}},
     "BcPilot": {"label": "Pilot (classification)", "tasks": {"binary"}},
     "DecisionTreeClassifier": {"label": "Decision tree (classification)", "tasks": {"binary", "multiclass"}},
 }
