@@ -168,10 +168,6 @@ class BcPilotAdapter(BaseAdapter):
         return node
 
     @staticmethod
-    def load_model(model_path):
-        raise NotImplementedError()
-
-    @staticmethod
     def predict(X, model) -> np.ndarray:
         proba = model.predict_proba(X)[:, 1] # Predict and select proba of class 1
         proba = np.clip(proba, 1e-15, 1 - 1e-15)

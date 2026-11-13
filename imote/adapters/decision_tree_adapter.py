@@ -67,10 +67,6 @@ class _DecisionTreeAdapter(BaseAdapter):
             node.log_odds = np.full(len(current_y), value)
         return node
 
-    @staticmethod
-    def load_model(model_path):
-        raise NotImplementedError()
-
 
 @register_adapter("DecisionTreeRegressor")
 class DecisionTreeRegressorAdapter(_DecisionTreeAdapter):

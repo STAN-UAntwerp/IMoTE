@@ -146,9 +146,5 @@ class PilotAdapter(BaseAdapter):
             raise ValueError(f"Unknown node type: {node_type}")
 
     @staticmethod
-    def load_model(model_path):
-        raise NotImplementedError()
-
-    @staticmethod
     def predict(X, model) -> np.ndarray:
         return model.predict(X)

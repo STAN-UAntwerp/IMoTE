@@ -3,6 +3,9 @@ from pathlib import Path
 from functools import lru_cache
 import pickle
 
+import imote.adapters  # registers all adapters in ADAPTERS_REGISTRY
+from imote.adapters.base_adapter import ADAPTERS_REGISTRY, BaseAdapter
+
 # --- Filesystem ---------------------------------------------------------
 # Read-only files shipped inside the package.
 DIR_PACKAGE = Path(__file__).resolve().parent
@@ -34,11 +37,10 @@ METHODS = {
 SHOWN_METHODS = {value: method for value, method in METHODS.items()
                  if ENABLE_CLASSIFICATION or method["tasks"] == {"regression"}}
 
-ADAPTER_OPTIONS = [
-    {"label": "Partykit", "value": "Partykit"},
-    {"label": "Pilot", "value": "Pilot"},
-    {"label": "M5", "value": "M5"},
-] + ([{"label": "BoostingMachine (Amadea)", "value": "BoostingMachine"}] if ENABLE_CLASSIFICATION else [])
+ADAPTER_OPTIONS = [{"label": adapter.label or name, "value": name}
+                   for name, adapter in ADAPTERS_REGISTRY.items()
+                   if adapter.load_model is not BaseAdapter.load_model
+                   and (ENABLE_CLASSIFICATION or adapter.task == "regression")]
 DEFAULT_ADAPTER_NAME = "Partykit"
 
 NODE_TYPE_COLORS = {

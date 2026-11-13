@@ -105,8 +105,8 @@ removed (this deletes its folder).
 
 The application also allows you to upload a linear model tree using an adapter. An adapter converts a tree from an
 external implementation into the internal `VizTree` object used for visualization.
-Currently, adapters are available for PILOT, M5, and the _partykit_ package in R. (PILOT and M5 trees can also be
-trained directly in the application.) The _partykit_ adapter supports trees fitted using `lmtree()` in R.
+Currently, a tree can be loaded from a file for the _partykit_ package in R, which supports trees fitted using
+`lmtree()`. PILOT and M5 trees are trained directly in the application.
 
 The documentation page of the [adapter](../adapter/adapter_overview.md) explains how to implement your own adapter, allowing trees from other linear model tree
 algorithms in different languages to be imported. It also provides more details on the partykit adapter.

@@ -34,6 +34,9 @@ class BaseAdapter(ABC):
     """If True, build_root_node() and predict() also get the dataset's feature names as keyword argument
     feature_names, for models that refer to features by name instead of by column position."""
 
+    label: str | None = None
+    """Name shown in the adapter dropdown of the New Tree card, defaults to the registered name."""
+
     @staticmethod
     @abstractmethod
     def build_root_node(X_train: np.ndarray, y_train: np.ndarray, model) -> BaseNode:
@@ -51,9 +54,13 @@ class BaseAdapter(ABC):
         pass
 
     @staticmethod
-    @abstractmethod
     def load_model(model_path: str):
         """Loads a fitted model from disk.
+
+        This is optional: only adapters that implement it can load a
+        model file and are listed in the adapter dropdown of the New Tree
+        card. Adapters for models fitted inside the application (e.g.
+        PILOT and M5) don't need it.
 
         Args:
             model_path: Path to the serialized model file.
@@ -61,8 +68,11 @@ class BaseAdapter(ABC):
         Returns:
             The loaded model, in the format this adapter's
             build_root_node() expects.
+
+        Raises:
+            NotImplementedError: If the adapter can't load model files.
         """
-        pass
+        raise NotImplementedError("This adapter can't load model files")
 
     @staticmethod
     def predict(X: np.ndarray, model) -> np.ndarray | None:

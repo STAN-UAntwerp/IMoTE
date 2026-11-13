@@ -132,6 +132,7 @@ class BoostingMachineAdapter(BaseAdapter):
 
     task = "classification"
     needs_feature_names = True
+    label = "BoostingMachine (Amadea)"
 
     @staticmethod
     def load_model(model_path: str) -> dict:

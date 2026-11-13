@@ -10,9 +10,5 @@ class M5Adapter(BaseAdapter):
         return build_root_node_from_m5(model, X_train, y_train)
 
     @staticmethod
-    def load_model(model_path):
-        raise NotImplementedError()
-
-    @staticmethod
     def predict(X, m5_model) -> np.ndarray:
         return m5_model.predict(X)
