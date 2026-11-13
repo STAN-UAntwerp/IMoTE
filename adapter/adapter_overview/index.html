@@ -16,7 +16,7 @@
         <link rel="prev" href="../../user-guide/f-highlight/">
       
       
-        <link rel="next" href="../partykit_example/">
+        <link rel="next" href="../viztree_structure/">
       
       
         
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adapter" class="md-skip">
+        <a href="#adapters" class="md-skip">
           Skip to content
         </a>
       
@@ -834,32 +834,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#viztree" class="md-nav__link">
+  <a href="#in-this-section" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VizTree
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-adapter-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The adapter interface
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-your-own-adapter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Writing your own adapter
+        In this section
       
     </span>
   </a>
@@ -870,6 +848,90 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../viztree_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VizTree structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adapter_interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing_an_adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing your own adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1423,32 +1485,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#viztree" class="md-nav__link">
+  <a href="#in-this-section" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VizTree
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-adapter-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The adapter interface
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-your-own-adapter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Writing your own adapter
+        In this section
       
     </span>
   </a>
@@ -1475,85 +1515,45 @@
   
 
 
-<h1 id="adapter">Adapter<a class="headerlink" href="#adapter" title="Permanent link">&para;</a></h1>
-<p>Different tools exist to fit linear model trees to tabular data. These include the implemented PILOT and M5 algorithms
-which can be used to fit new trees in the applications (see <a href="../../user-guide/c-new-tree/">New Tree</a>).</p>
-<p>An <strong>adapter</strong> is the piece of code that formats or translates a fitted model into the internal <code>VizTree</code> object used
-for visualisation
-that the application understands. Adding support for a new type of linear model tree means writing a new adapter.</p>
-<h2 id="viztree">VizTree<a class="headerlink" href="#viztree" title="Permanent link">&para;</a></h2>
-<p>The internal representation of a linear model tree is a <a href="../../reference/viz_tree/"><code>VizTree</code></a> object. It provides the
-functionality required by the application and can be serialized to a dictionary, allowing trees to be easily saved and
-loaded.</p>
-<p>A <code>VizTree</code> consists of a linked tree of <code>BaseNode</code> objects, starting at the root node stored in the <code>root_node</code>
-attribute. Each node can have children, which contain the information for the corresponding part of the
-tree. The tree ends at a leaf node, which has no children.</p>
-<p>All nodes are instances of <code>BaseNode</code> or one of its subclasses. Different node types represent different structures and
-provide different visualisation functionality. See the <a href="../../reference/reference_overview/">reference</a> for the
-full documentation.</p>
-<p>Every node stores the row <code>indices</code>, <code>y_res</code> (residuals or fitted <code>y</code> values), and <code>RSS</code> (residual sum of squares).</p>
-<p>The currently supported node types are:</p>
-<table>
-<thead>
-<tr>
-<th>Node type</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../../reference/nodes/leaf_node/"><code>LeafNode</code></a></td>
-<td>Terminal node containing a <a href="../../reference/nodes/node_model/"><code>NodeModel</code></a>, either a <a href="../../reference/nodes/node_model/"><code>LinearNodeModel</code></a> or <a href="../../reference/nodes/node_model/"><code>ConstantNodeModel</code></a>.</td>
-</tr>
-<tr>
-<td><a href="../../reference/nodes/split_node/"><code>SplitNode</code></a></td>
-<td>Two-child node that routes samples based on a split. Numerical variants include <a href="../../reference/nodes/split_node/"><code>PlinNode</code></a>, <a href="../../reference/nodes/split_node/"><code>BlinNode</code></a>, and <a href="../../reference/nodes/split_node/"><code>PconNode</code></a>, categorical variants include <a href="../../reference/nodes/split_node/"><code>SplitCNode</code></a> and <a href="../../reference/nodes/split_node/"><code>PconcNode</code></a>.</td>
-</tr>
-<tr>
-<td><a href="../../reference/nodes/internal_node/"><code>LinearNode</code></a></td>
-<td>Single child node that applies a one dimensional linear model before passing the samples to its child.</td>
-</tr>
-</tbody>
-</table>
-<p>See the <a href="../../reference/reference_overview/">reference</a> for the
-full documentation. Additional node types can be added if required.</p>
-<h2 id="the-adapter-interface">The adapter interface<a class="headerlink" href="#the-adapter-interface" title="Permanent link">&para;</a></h2>
-<p>An adapter is a class inheriting from <a href="../../reference/adapters/base_adapter/"><code>BaseAdapter</code></a> and registered with a name
-using <code>@register_adapter("YourFormat")</code>.</p>
-<p>It implements two required methods and one optional method:</p>
+<h1 id="adapters">Adapters<a class="headerlink" href="#adapters" title="Permanent link">&para;</a></h1>
+<p>IMoTE can fit linear model trees itself with PILOT and M5 (see <a href="../../user-guide/c-new-tree/">New Tree</a>), but many
+other algorithms and implementations exist, often in other languages and each with its own output format and tree
+structure. To support all of them, IMoTE converts every tree to one common representation, a
+<a href="../viztree_structure/"><code>VizTree</code></a> object. All functionality of the application (drawing the graph, node plots, path
+highlighting, prediction plots, collapsing, pruning, saving and loading) is built on this representation only.</p>
+<p>An <strong>adapter</strong> is a small class that translates a fitted model into a <code>VizTree</code>. Supporting a new type of linear model
+tree therefore only requires writing one adapter, the rest of the application doesn't change.</p>
+<pre class="mermaid"><code>flowchart LR
+    fit["Fitted in IMoTE:&lt;br/&gt;PILOT, M5"]
+    file["Model file&lt;br/&gt;JSON, R export, ..."]
+
+    subgraph adapter["Adapter"]
+        load["load_model()"]
+        build["build_root_node()"]
+        load --&gt; build
+    end
+
+    viztree["VizTree"]
+    app["Graph, node plots,&lt;br/&gt;pruning, saving, ..."]
+
+    file --&gt; load
+    fit --&gt; build
+    build --&gt; viztree
+    viztree --&gt; app</code></pre>
+<p>A model reaches its adapter in one of two ways:</p>
 <ul>
-<li><strong><code>load_model</code></strong>: Loads the model from its original file format.</li>
-<li><strong><code>build_root_node</code></strong>: Converts the loaded model into the <code>BaseNode</code> linked tree described above.</li>
-<li><strong><code>predict</code></strong> <em>(optional)</em>: Predicts directly using the original model instead of the <code>BaseNode</code> tree. If this method
-  is not implemented, or returns <code>None</code>, <code>VizTree</code> performs predictions by traversing the <code>BaseNode</code> tree.</li>
+<li><strong>Fitted in the application.</strong> PILOT and M5 trees are fitted in the New Tree card, and the fitted model object is
+  passed directly to the <code>Pilot</code> or <code>M5</code> adapter.</li>
+<li><strong>Loaded from a file.</strong> A tree fitted elsewhere is exported to a file, which the adapter reads with <code>load_model</code>.
+  This is how, for example, trees fitted with the R package partykit are loaded.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseAdapter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="nd">@staticmethod</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Load your model's file format from disk."""</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build_root_node</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Convert the loaded model into a BaseNode linked tree."""</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Optional: predict directly via the original model."""</span>
-</code></pre></div>
-<p>Once registered and implemented the adapter shows up as one of the options in the
-<a href="../../user-guide/c-new-tree/">new tree</a> card, from which a tree can be loaded.</p>
-<h2 id="writing-your-own-adapter">Writing your own adapter<a class="headerlink" href="#writing-your-own-adapter" title="Permanent link">&para;</a></h2>
+<h2 id="in-this-section">In this section<a class="headerlink" href="#in-this-section" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Create <code>imote/adapters/your_format_adapter.py</code>.</li>
-<li>Subclass <code>BaseAdapter</code> and decorate it with <code>@register_adapter("YourFormat")</code>.
-   Import it in <code>imote/adapters/__init__.py</code> so the adapter is registered when IMoTE starts.</li>
-<li>Implement <code>load_model</code> for your file format.</li>
-<li>Implement <code>build_root_node</code> as described above.</li>
-<li>(Optional) implement the <code>predict</code> function with your model.</li>
+<li><a href="../viztree_structure/">The VizTree object</a>: the structure an adapter has to build, with the available node types.</li>
+<li><a href="../adapter_interface/">The adapter interface</a>: the methods an adapter implements.</li>
+<li><a href="../writing_an_adapter/">Writing your own adapter</a>: a step-by-step guide.</li>
+<li><a href="../partykit_example/">Example: the partykit adapter</a> a complete adapter for trees fitted in R.</li>
 </ol>
-<p>See the <a href="../partykit_example/">partykit adapter</a> for an example of an implemented adapter.</p>
 
 
 

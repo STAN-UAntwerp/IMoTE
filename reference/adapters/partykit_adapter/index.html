@@ -799,6 +799,90 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../adapter/viztree_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VizTree structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../adapter/adapter_interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../adapter/writing_an_adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing your own adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../adapter/partykit_example/" class="md-nav__link">
         
   
@@ -1685,10 +1769,7 @@
 <span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@register_adapter</span><span class="p">(</span><span class="s1">'Partykit'</span><span class="p">)</span>
+<span class="normal">130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@register_adapter</span><span class="p">(</span><span class="s1">'Partykit'</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PartyKitAdapter</span><span class="p">(</span><span class="n">BaseAdapter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Adapter that builds a BaseNode linked tree from an R `partykit` package model export."""</span>
 
@@ -1763,7 +1844,6 @@
             <span class="k">return</span> <span class="n">LeafNode</span><span class="p">(</span>
                 <span class="n">indices</span><span class="o">=</span><span class="n">current_indices</span><span class="p">,</span>
                 <span class="n">y_res</span><span class="o">=</span><span class="n">current_y_res</span><span class="p">,</span>
-                <span class="n">rss</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="c1">#TODO</span>
                 <span class="n">node_model</span><span class="o">=</span><span class="n">node_model</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1782,7 +1862,6 @@
                 <span class="k">return</span> <span class="n">SplitNode</span><span class="p">(</span>
                     <span class="n">indices</span><span class="o">=</span><span class="n">current_indices</span><span class="p">,</span>
                     <span class="n">y_res</span><span class="o">=</span><span class="n">current_y_res</span><span class="p">,</span>
-                    <span class="n">rss</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="c1">#TODO</span>
                     <span class="n">pivot_idx</span><span class="o">=</span><span class="n">pivot_idx</span><span class="p">,</span>
                     <span class="n">pivot_value</span><span class="o">=</span><span class="n">pivot_value</span><span class="p">,</span>
                     <span class="n">left_child</span><span class="o">=</span><span class="n">left_child</span><span class="p">,</span>
@@ -1801,7 +1880,6 @@
                 <span class="k">return</span> <span class="n">SplitCNode</span><span class="p">(</span>
                     <span class="n">indices</span><span class="o">=</span><span class="n">current_indices</span><span class="p">,</span>
                     <span class="n">y_res</span><span class="o">=</span><span class="n">current_y_res</span><span class="p">,</span>
-                    <span class="n">rss</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="c1">#TODO</span>
                     <span class="n">pivot_idx</span><span class="o">=</span><span class="n">pivot_idx</span><span class="p">,</span>
                     <span class="n">pivot_value</span><span class="o">=</span><span class="n">left_categories</span><span class="p">,</span>
                     <span class="n">left_child</span><span class="o">=</span><span class="n">left_child</span><span class="p">,</span>

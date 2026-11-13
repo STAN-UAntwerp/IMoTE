@@ -799,6 +799,90 @@
   
   
     <li class="md-nav__item">
+      <a href="../../adapter/viztree_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VizTree structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adapter/adapter_interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adapter/writing_an_adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing your own adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../adapter/partykit_example/" class="md-nav__link">
         
   
@@ -2417,8 +2501,7 @@ subtrees, pruning, and serialization. It also saves the training data.</p>
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">VizTree</span><span class="p">:</span>
+<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">VizTree</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""VizTree is used to store the tree and visualise it in the application.</span>
 <span class="sd">    It wraps a linked tree of BaseNode instances and provides the operations</span>
 <span class="sd">    the visualization app needs: node/edge collection, prediction, collapsing/expanding</span>
@@ -2772,7 +2855,6 @@ subtrees, pruning, and serialization. It also saves the training data.</p>
         <span class="n">new_leaf_node</span> <span class="o">=</span> <span class="n">LeafNode</span><span class="p">(</span>
             <span class="n">indices</span><span class="o">=</span><span class="n">prune_node</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span>
             <span class="n">y_res</span><span class="o">=</span><span class="n">prune_node</span><span class="o">.</span><span class="n">y_res</span><span class="p">,</span>
-            <span class="n">rss</span><span class="o">=</span><span class="n">prune_node</span><span class="o">.</span><span class="n">rss</span><span class="p">,</span>
             <span class="n">node_model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">new_leaf_node</span><span class="o">.</span><span class="n">log_odds</span> <span class="o">=</span> <span class="n">prune_node</span><span class="o">.</span><span class="n">log_odds</span>
@@ -4421,8 +4503,7 @@ or its immediate parent, is not a LinearNode or SplitNode.</p>
 <span class="normal">377</span>
 <span class="normal">378</span>
 <span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prune_node</span><span class="p">:</span> <span class="n">InternalNode</span><span class="p">):</span>
+<span class="normal">380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prune_node</span><span class="p">:</span> <span class="n">InternalNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Prunes a subtree in place, replacing it with a new leaf.</span>
 
 <span class="sd">    Args:</span>
@@ -4457,7 +4538,6 @@ or its immediate parent, is not a LinearNode or SplitNode.</p>
     <span class="n">new_leaf_node</span> <span class="o">=</span> <span class="n">LeafNode</span><span class="p">(</span>
         <span class="n">indices</span><span class="o">=</span><span class="n">prune_node</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span>
         <span class="n">y_res</span><span class="o">=</span><span class="n">prune_node</span><span class="o">.</span><span class="n">y_res</span><span class="p">,</span>
-        <span class="n">rss</span><span class="o">=</span><span class="n">prune_node</span><span class="o">.</span><span class="n">rss</span><span class="p">,</span>
         <span class="n">node_model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">new_leaf_node</span><span class="o">.</span><span class="n">log_odds</span> <span class="o">=</span> <span class="n">prune_node</span><span class="o">.</span><span class="n">log_odds</span>
@@ -4535,7 +4615,8 @@ or its immediate parent, is not a LinearNode or SplitNode.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/viz_tree/viz_tree.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">382</span>
+<span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
@@ -4555,8 +4636,7 @@ or its immediate parent, is not a LinearNode or SplitNode.</p>
 <span class="normal">400</span>
 <span class="normal">401</span>
 <span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">403</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Serializes the tree to a dictionary.</span>
 
 <span class="sd">    Returns:</span>
@@ -4668,7 +4748,8 @@ or its immediate parent, is not a LinearNode or SplitNode.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/viz_tree/viz_tree.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">406</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">405</span>
+<span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
 <span class="normal">409</span>
@@ -4695,8 +4776,7 @@ or its immediate parent, is not a LinearNode or SplitNode.</p>
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">viz_dict</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"VizTree"</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Reconstructs a VizTree instance from a dictionary.</span>
 

@@ -799,6 +799,90 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../adapter/viztree_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VizTree structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../adapter/adapter_interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../adapter/writing_an_adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing your own adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../adapter/partykit_example/" class="md-nav__link">
         
   
@@ -2134,8 +2218,7 @@ categorical split.</p>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
+<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SplitNode</span><span class="p">(</span><span class="n">InternalNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Split node with a left and right child.</span>
 
@@ -2164,7 +2247,7 @@ categorical split.</p>
     <span class="n">left_model</span><span class="p">:</span> <span class="n">NodeModel</span>
     <span class="n">right_model</span><span class="p">:</span> <span class="n">NodeModel</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rss</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">pivot_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
                  <span class="n">left_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span> <span class="n">right_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span>
                  <span class="n">left_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">,</span> <span class="n">right_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">):</span>
@@ -2172,7 +2255,6 @@ categorical split.</p>
 <span class="sd">        Args:</span>
 <span class="sd">            indices: Row indices of the samples belonging to this node.</span>
 <span class="sd">            y_res: Residuals of the target variable at this node.</span>
-<span class="sd">            rss: Residual sum of squares at this node.</span>
 <span class="sd">            pivot_idx: Index of the feature the split is based on.</span>
 <span class="sd">            pivot_value: Threshold value, or list of left categories for a</span>
 <span class="sd">                categorical split.</span>
@@ -2185,7 +2267,7 @@ categorical split.</p>
 <span class="sd">            TypeError: If a side model is not an instance of model_type, or</span>
 <span class="sd">                pivot_value doesn't match the kind of split.</span>
 <span class="sd">        """</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">y_res</span><span class="p">,</span> <span class="n">rss</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">y_res</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pivot_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_pivot_value</span><span class="p">(</span><span class="n">pivot_value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">left_child</span> <span class="o">=</span> <span class="n">left_child</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">right_child</span> <span class="o">=</span> <span class="n">right_child</span>
@@ -2389,7 +2471,7 @@ categorical split.</p>
 
 
 <h3 id="imote.nodes.split_node.SplitNode.__init__" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rss</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> <span class="n">left_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span> <span class="n">right_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span> <span class="n">left_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">,</span> <span class="n">right_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> <span class="n">left_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span> <span class="n">right_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span> <span class="n">left_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">,</span> <span class="n">right_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">)</span></code>
 
 <a href="#imote.nodes.split_node.SplitNode.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -2435,22 +2517,6 @@ categorical split.</p>
             <td>
               <div class="doc-md-description">
                 <p>Residuals of the target variable at this node.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>rss</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Residual sum of squares at this node.</p>
               </div>
             </td>
             <td>
@@ -2610,8 +2676,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rss</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_res</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
              <span class="n">pivot_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
              <span class="n">left_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span> <span class="n">right_child</span><span class="p">:</span> <span class="n">BaseNode</span><span class="p">,</span>
              <span class="n">left_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">,</span> <span class="n">right_model</span><span class="p">:</span> <span class="n">NodeModel</span><span class="p">):</span>
@@ -2619,7 +2684,6 @@ pivot_value doesn't match the kind of split.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        indices: Row indices of the samples belonging to this node.</span>
 <span class="sd">        y_res: Residuals of the target variable at this node.</span>
-<span class="sd">        rss: Residual sum of squares at this node.</span>
 <span class="sd">        pivot_idx: Index of the feature the split is based on.</span>
 <span class="sd">        pivot_value: Threshold value, or list of left categories for a</span>
 <span class="sd">            categorical split.</span>
@@ -2632,7 +2696,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="sd">        TypeError: If a side model is not an instance of model_type, or</span>
 <span class="sd">            pivot_value doesn't match the kind of split.</span>
 <span class="sd">    """</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">y_res</span><span class="p">,</span> <span class="n">rss</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">)</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">y_res</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pivot_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_pivot_value</span><span class="p">(</span><span class="n">pivot_value</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">left_child</span> <span class="o">=</span> <span class="n">left_child</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">right_child</span> <span class="o">=</span> <span class="n">right_child</span>
@@ -2714,7 +2778,8 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">84</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">83</span>
+<span class="normal">84</span>
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span>
@@ -2722,8 +2787,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">89</span>
 <span class="normal">90</span>
 <span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">goes_left</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">goes_left</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Returns whether a sample with this pivot feature value goes to the left child.</span>
 
 <span class="sd">    Args:</span>
@@ -2808,7 +2872,8 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+<span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
@@ -2818,8 +2883,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">goes_left_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">goes_left_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Vectorized goes_left: returns a boolean mask of the values routed to the left child.</span>
 
 <span class="sd">    Args:</span>
@@ -2876,13 +2940,13 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
+<span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseNode</span><span class="p">]:</span>
+<span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseNode</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Returns this node's left and right children.</span>
 
 <span class="sd">    Returns:</span>
@@ -2942,14 +3006,14 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">116</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
+<span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span>
 <span class="normal">120</span>
 <span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">children</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseNode</span><span class="p">]):</span>
+<span class="normal">122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">children</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseNode</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""Replaces this node's left and right children.</span>
 
 <span class="sd">    Args:</span>
@@ -3012,7 +3076,8 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">132</span>
+<span class="normal">133</span>
 <span class="normal">134</span>
 <span class="normal">135</span>
 <span class="normal">136</span>
@@ -3020,8 +3085,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="n">LabelFormatter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="n">LabelFormatter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Returns the full display label for this node.</span>
 
 <span class="sd">    Returns:</span>
@@ -3076,7 +3140,8 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+<span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
@@ -3085,8 +3150,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="n">LabelFormatter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="n">LabelFormatter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Returns the split condition and, if the split has models, the model on each side.</span>
 
 <span class="sd">    Returns:</span>
@@ -3162,7 +3226,8 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">156</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">155</span>
+<span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
@@ -3180,8 +3245,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Serializes the node to a dictionary.</span>
 
 <span class="sd">    Returns:</span>
@@ -3281,7 +3345,8 @@ pivot_value doesn't match the kind of split.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
+<span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
 <span class="normal">180</span>
@@ -3300,8 +3365,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dic</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SplitNode"</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Reconstructs a SplitNode instance, including children and models.</span>
 
@@ -3364,11 +3428,11 @@ pivot_value doesn't match the kind of split.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
+<span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SplitCNode</span><span class="p">(</span><span class="n">SplitNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Categorical SplitNode: pivot_value lists the categories routed to the left child."""</span>
 
@@ -3425,11 +3489,11 @@ pivot_value doesn't match the kind of split.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
+<span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
+<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlinNode</span><span class="p">(</span><span class="n">SplitNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""PLIN: piecewise linear split with a SimpleLinearNodeModel on each side."""</span>
 
@@ -3486,7 +3550,8 @@ pivot_value doesn't match the kind of split.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
+<span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
@@ -3496,8 +3561,7 @@ pivot_value doesn't match the kind of split.</p>
 <span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
+<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">BlinNode</span><span class="p">(</span><span class="n">SplitNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""BLIN: broken linear split, like PLIN but the two models are continuous at pivot_value."""</span>
 
@@ -3561,11 +3625,11 @@ pivot_value doesn't match the kind of split.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
+<span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PconNode</span><span class="p">(</span><span class="n">SplitNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""PCON: piecewise constant split with a ConstantNodeModel on each side."""</span>
 
@@ -3622,11 +3686,11 @@ pivot_value doesn't match the kind of split.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>imote/nodes/split_node.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
+<span class="normal">235</span>
 <span class="normal">236</span>
 <span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
+<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@BaseNode</span><span class="o">.</span><span class="n">register</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PconcNode</span><span class="p">(</span><span class="n">PconNode</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""PCONC: categorical PCON, pivot_value lists the categories routed to the left child."""</span>
 

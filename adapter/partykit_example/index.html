@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://stan-uantwerp.github.io/IMoTE/adapter/partykit_example/">
       
       
-        <link rel="prev" href="../adapter_overview/">
+        <link rel="prev" href="../writing_an_adapter/">
       
       
         <link rel="next" href="../../reference/reference_overview/">
@@ -799,6 +799,90 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../viztree_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VizTree structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adapter_interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../writing_an_adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing your own adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -862,10 +946,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fit-and-export-the-model-in-r" class="md-nav__link">
+  <a href="#1-fit-and-export-the-model-in-r" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fit and export the model in R
+        1. Fit and export the model in R
       
     </span>
   </a>
@@ -873,10 +957,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#define-the-new-adapter" class="md-nav__link">
+  <a href="#2-define-the-adapter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Define the new adapter
+        2. Define the adapter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-load-the-tree-in-imote" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Load the tree in IMoTE
       
     </span>
   </a>
@@ -1423,10 +1518,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fit-and-export-the-model-in-r" class="md-nav__link">
+  <a href="#1-fit-and-export-the-model-in-r" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fit and export the model in R
+        1. Fit and export the model in R
       
     </span>
   </a>
@@ -1434,10 +1529,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#define-the-new-adapter" class="md-nav__link">
+  <a href="#2-define-the-adapter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Define the new adapter
+        2. Define the adapter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-load-the-tree-in-imote" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Load the tree in IMoTE
       
     </span>
   </a>
@@ -1477,11 +1583,20 @@
 
 <h1 id="example-the-partykit-adapter">Example: the partykit adapter<a class="headerlink" href="#example-the-partykit-adapter" title="Permanent link">&para;</a></h1>
 <p><code>partykit</code> is an R package for fitting model-based recursive partitioning trees <a href="#1">[1]</a>. Its <code>lmtree</code> function
-implements the MOB model tree algorithm <a href="#2">[2]</a>. This example shows how an adapter is written to load the tree fitted
-by the MOB into the application. </p>
-<h2 id="fit-and-export-the-model-in-r">Fit and export the model in R<a class="headerlink" href="#fit-and-export-the-model-in-r" title="Permanent link">&para;</a></h2>
-<p>The package has no native or intuitive export system that is easy to use, so a simple list was created
-with all the relevant info and saved as a JSON file.</p>
+implements the MOB model tree algorithm <a href="#2">[2]</a>: it recursively splits the data on the variable for which the
+parameters of a linear model are most unstable, and fits a linear regression in every leaf. This page walks through
+the adapter that loads these trees into IMoTE. It shows the complete path for a model fitted outside Python:</p>
+<ol>
+<li>fit the tree in R and export it to a file IMoTE can read,</li>
+<li>write an adapter that reads the file and converts it into a <code>VizTree</code>,</li>
+<li>load the tree in the application.</li>
+</ol>
+<p>See <a href="../adapter_interface/">the adapter interface</a> for the general interface and <a href="../viztree_structure/">the VizTree object</a> for the structure that the adapter
+builds.</p>
+<h2 id="1-fit-and-export-the-model-in-r">1. Fit and export the model in R<a class="headerlink" href="#1-fit-and-export-the-model-in-r" title="Permanent link">&para;</a></h2>
+<p><code>partykit</code> has no export format that is easy to read from Python, so the relevant information of every node is
+collected in a list and written to a JSON file. The example below fits a tree on the <code>547_no2</code> dataset from PMLB,
+using all variables both as regressors in the leaf models and as candidate split variables (<code>target ~ . | .</code>).</p>
 <div class="highlight"><pre><span></span><code><span class="nf">library</span><span class="p">(</span><span class="n">partykit</span><span class="p">)</span>
 <span class="nf">library</span><span class="p">(</span><span class="n">jsonlite</span><span class="p">)</span>
 
@@ -1492,72 +1607,90 @@ with all the relevant info and saved as a JSON file.</p>
 <span class="c1"># Fit linear model tree to all the data</span>
 <span class="n">tree</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">lmtree</span><span class="p">(</span><span class="n">target</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">no2</span><span class="p">)</span>
 
-<span class="c1"># Write tree opbject to JSON file</span>
+<span class="c1"># Collect the information of every node</span>
 <span class="n">nodes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">lapply</span><span class="p">(</span><span class="nf">nodeids</span><span class="p">(</span><span class="n">tree</span><span class="p">),</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">nd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tree</span><span class="p">[</span><span class="n">id</span><span class="p">]</span>
+<span class="w">  </span><span class="n">nd</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tree</span><span class="p">[</span><span class="n">id</span><span class="p">]</span><span class="w">                       </span><span class="c1"># subtree rooted at node id</span>
 <span class="w">  </span><span class="n">node_obj</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">node_party</span><span class="p">(</span><span class="n">nd</span><span class="p">)</span>
 <span class="w">  </span><span class="n">is_terminal</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">is.terminal</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)</span>
 
 <span class="w">  </span><span class="n">node_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span>
-<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">id</span><span class="m">-1</span><span class="p">,</span>
-<span class="w">    </span><span class="n">is_terminal</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">is_terminal</span><span class="p">,</span>
-<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">info_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)</span><span class="o">$</span><span class="n">nobs</span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w">                       </span><span class="c1"># zero-based, to index the node list from Python</span>
+<span class="w">    </span><span class="n">is_terminal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">is_terminal</span><span class="p">,</span>
+<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">info_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)</span><span class="o">$</span><span class="n">nobs</span>
 <span class="w">  </span><span class="p">)</span>
 
 <span class="w">  </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_terminal</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1"># model coefficients at this leaf</span>
-<span class="w">    </span><span class="n">coefs</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">coef</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id</span><span class="p">)</span>
-<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">coefficients</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.list</span><span class="p">(</span><span class="n">coefs</span><span class="p">)</span>
+<span class="w">    </span><span class="c1"># coefficients of the linear model in this leaf</span>
+<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">coefficients</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">as.list</span><span class="p">(</span><span class="nf">coef</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">id</span><span class="p">))</span>
 <span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">split</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">split_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)</span>
-<span class="w">    </span><span class="n">varid</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">split</span><span class="o">$</span><span class="n">varid</span>
-<span class="w">    </span><span class="n">varname</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="nf">data_party</span><span class="p">(</span><span class="n">tree</span><span class="p">))[</span><span class="n">varid</span><span class="p">]</span>
+<span class="w">    </span><span class="n">varname</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="nf">data_party</span><span class="p">(</span><span class="n">tree</span><span class="p">))[</span><span class="n">split</span><span class="o">$</span><span class="n">varid</span><span class="p">]</span>
 <span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">split_var</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">varname</span>
-<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">breaks</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">split</span><span class="o">$</span><span class="n">breaks</span>
-<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">split</span><span class="o">$</span><span class="n">index</span>
+<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">breaks</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">split</span><span class="o">$</span><span class="n">breaks</span><span class="w">   </span><span class="c1"># threshold of a numerical split</span>
+<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">index</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">split</span><span class="o">$</span><span class="n">index</span><span class="w">     </span><span class="c1"># child (1 or 2) of every level for a categorical split</span>
 <span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">levels</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">levels</span><span class="p">(</span><span class="n">tree</span><span class="o">$</span><span class="n">data</span><span class="p">[[</span><span class="n">varname</span><span class="p">]])</span>
-<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">kids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">id</span><span class="m">-1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="nf">kids_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)[[</span><span class="m">1</span><span class="p">]]</span><span class="o">$</span><span class="n">id</span><span class="m">-1</span><span class="p">,</span><span class="nf">kids_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)[[</span><span class="m">2</span><span class="p">]]</span><span class="o">$</span><span class="n">id</span><span class="m">-1</span><span class="p">)</span>
+<span class="w">    </span><span class="c1"># ids in the subtree start at 1 for node id, convert them to zero-based ids in the full tree</span>
+<span class="w">    </span><span class="n">node_info</span><span class="o">$</span><span class="n">kids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="nf">kids_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)[[</span><span class="m">1</span><span class="p">]]</span><span class="o">$</span><span class="n">id</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="nf">kids_node</span><span class="p">(</span><span class="n">node_obj</span><span class="p">)[[</span><span class="m">2</span><span class="p">]]</span><span class="o">$</span><span class="n">id</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="w">  </span><span class="n">node_info</span>
 <span class="p">})</span>
 
 <span class="n">tree_json</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span>
-<span class="w">  </span><span class="n">names</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">tree</span><span class="o">$</span><span class="n">data</span><span class="p">),</span>
-<span class="w">  </span><span class="n">nodes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">nodes</span>
-<span class="w">  </span><span class="p">)</span>
+<span class="w">  </span><span class="n">names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">tree</span><span class="o">$</span><span class="n">data</span><span class="p">),</span>
+<span class="w">  </span><span class="n">nodes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nodes</span>
+<span class="p">)</span>
 
-<span class="nf">write_json</span><span class="p">(</span><span class="n">tree_json</span><span class="p">,</span><span class="w"> </span><span class="s">"..path/tree_547_no2.json"</span><span class="p">,</span><span class="w"> </span><span class="n">auto_unbox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">null</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"null"</span><span class="p">)</span>
+<span class="nf">write_json</span><span class="p">(</span><span class="n">tree_json</span><span class="p">,</span><span class="w"> </span><span class="s">"path/to/tree_547_no2.json"</span><span class="p">,</span><span class="w"> </span><span class="n">auto_unbox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">null</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"null"</span><span class="p">)</span>
 </code></pre></div>
-<p>The JSON is will look like:</p>
+<p>The resulting JSON looks like this:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">"names"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"y"</span><span class="p">,</span><span class="w"> </span><span class="s2">"x1"</span><span class="p">,</span><span class="w"> </span><span class="s2">"x2"</span><span class="p">,</span><span class="w"> </span><span class="s2">"..."</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"names"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"target"</span><span class="p">,</span><span class="w"> </span><span class="s2">"x1"</span><span class="p">,</span><span class="w"> </span><span class="s2">"x2"</span><span class="p">,</span><span class="w"> </span><span class="s2">"..."</span><span class="p">],</span>
 <span class="w">  </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"is_terminal"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"n"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"split_var"</span><span class="p">:</span><span class="w"> </span><span class="s2">"x1"</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"breaks"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"kids"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">"is_terminal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"coefficients"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"(Intercept)"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.2</span><span class="p">,</span><span class="w"> </span><span class="nt">"x2"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">}</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="w">      </span><span class="nt">"n"</span><span class="p">:</span><span class="w"> </span><span class="mi">230</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"coefficients"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"(Intercept)"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.2</span><span class="p">,</span><span class="w"> </span><span class="nt">"x1"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w"> </span><span class="nt">"x2"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.3</span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">"..."</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Under <code>names</code> the feature names are stored in the same column order as <code>X_train</code>.  Each entry in <code>nodes</code> is either a
-split node (<code>split_var</code> with either <code>breaks</code> for a numeric threshold or <code>index</code>/<code>levels</code> for a categorical split) or 
-a leaf node (<code>is_terminal: true</code>, with a linear model's <code>coefficients</code>).</p>
-<h2 id="define-the-new-adapter">Define the new adapter<a class="headerlink" href="#define-the-new-adapter" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>names</code> contains the column names of the data, with the response first, followed by the features in the same
+  column order as the dataset used in IMoTE.</li>
+<li><code>nodes</code> is a flat list in which node <code>i</code> is stored at position <code>i</code>, with the root at position <code>0</code>. Every node is
+  either:<ul>
+<li>an <strong>internal node</strong>, with the split variable <code>split_var</code>, either <code>breaks</code> (the threshold of a numerical split)
+  or <code>index</code> and <code>levels</code> (the child each category is sent to, for a categorical split), and the positions of its
+  two children in <code>kids</code>,</li>
+<li>a <strong>leaf</strong> (<code>is_terminal: true</code>), with the <code>coefficients</code> of its linear model, including the <code>(Intercept)</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-define-the-adapter">2. Define the adapter<a class="headerlink" href="#2-define-the-adapter" title="Permanent link">&para;</a></h2>
+<p>The adapter is registered under the name <code>Partykit</code>. <code>load_model</code> simply parses the JSON file:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@register_adapter</span><span class="p">(</span><span class="s1">'Partykit'</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PartyKitAdapter</span><span class="p">(</span><span class="n">BaseAdapter</span><span class="p">):</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No such file path to load model: </span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
+</code></pre></div>
+<p><code>build_root_node</code> starts at the root node (position <code>0</code> in the node list) with all training samples, and drops the
+response from <code>names</code> to get the feature names in column order:</p>
+<div class="highlight"><pre><span></span><code>    <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_root_node</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="n">root_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="n">node_list</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="s2">"nodes"</span><span class="p">]</span>
@@ -1566,13 +1699,62 @@ a leaf node (<code>is_terminal: true</code>, with a linear model's <code>coeffic
             <span class="n">node_list</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">,</span> <span class="n">node_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">root_indices</span>
         <span class="p">)</span>
 </code></pre></div>
-<p>See <a href="../../reference/adapters/partykit_adapter/"><code>partykit_adapter.py</code></a> for
-the full recursive implementation.</p>
-<p>The Partykit adapter doesn't override <code>predict</code> so <code>VizTree</code> computes its predictions by walking the built tree.</p>
+<p>The recursive function converts one node at a time. Since <code>lmtree</code> only fits models in the leaves, the <code>y_res</code> of
+every node are simply the <code>y</code> values of the samples that reach it.</p>
+<p><strong>Leaves</strong> become a <code>LeafNode</code> with a <code>LinearNodeModel</code>. The coefficients are looked up by feature name and put in
+column order, with <code>0.0</code> for features that are not in the leaf model:</p>
+<div class="highlight"><pre><span></span><code>        <span class="n">current_y_res</span> <span class="o">=</span> <span class="n">y_train</span><span class="p">[</span><span class="n">current_indices</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="s2">"is_terminal"</span><span class="p">]:</span>
+            <span class="n">coefficients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">node</span><span class="p">[</span><span class="s2">"coefficients"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">feature_names</span><span class="p">])</span>
+            <span class="n">node_model</span> <span class="o">=</span> <span class="n">LinearNodeModel</span><span class="p">(</span><span class="n">coefficients</span><span class="p">,</span> <span class="n">node</span><span class="p">[</span><span class="s2">"coefficients"</span><span class="p">][</span><span class="s2">"(Intercept)"</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">LeafNode</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">current_indices</span><span class="p">,</span> <span class="n">y_res</span><span class="o">=</span><span class="n">current_y_res</span><span class="p">,</span> <span class="n">node_model</span><span class="o">=</span><span class="n">node_model</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Internal nodes</strong> become a <code>SplitNode</code> for a numerical split or a <code>SplitCNode</code> for a categorical split. The split
+variable is converted to its column index <code>pivot_idx</code>, the samples are divided over the two children with the
+helpers <code>split_by_threshold</code> and <code>split_by_categories</code>, and both children are built recursively. <code>partykit</code> sends observations with
+<code>x &lt;= breaks</code> to the first child, which matches the convention of <code>SplitNode</code>. For a categorical split, the categories
+whose <code>index</code> is <code>1</code> go to the left child. No model is applied on either side of the split, so both side models are a
+<code>NoneNodeModel</code>:</p>
+<div class="highlight"><pre><span></span><code>        <span class="n">pivot_idx</span> <span class="o">=</span> <span class="n">feature_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">"split_var"</span><span class="p">])</span>
+        <span class="n">left_node</span> <span class="o">=</span> <span class="n">node_list</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">"kids"</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">right_node</span> <span class="o">=</span> <span class="n">node_list</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">"kids"</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="s2">"breaks"</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>  <span class="c1"># numerical split</span>
+            <span class="n">pivot_value</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s2">"breaks"</span><span class="p">]</span>
+            <span class="n">left_indices</span><span class="p">,</span> <span class="n">right_indices</span> <span class="o">=</span> <span class="n">split_by_threshold</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">current_indices</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">,</span> <span class="n">pivot_value</span><span class="p">)</span>
+            <span class="n">node_cls</span> <span class="o">=</span> <span class="n">SplitNode</span>
+        <span class="k">else</span><span class="p">:</span>                 <span class="c1"># categorical split</span>
+            <span class="n">pivot_value</span> <span class="o">=</span> <span class="p">[</span><span class="n">lvl</span> <span class="k">for</span> <span class="n">lvl</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">"levels"</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="s2">"index"</span><span class="p">])</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">left_indices</span><span class="p">,</span> <span class="n">right_indices</span> <span class="o">=</span> <span class="n">split_by_categories</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">current_indices</span><span class="p">,</span> <span class="n">pivot_idx</span><span class="p">,</span> <span class="n">pivot_value</span><span class="p">)</span>
+            <span class="n">node_cls</span> <span class="o">=</span> <span class="n">SplitCNode</span>
+
+        <span class="k">return</span> <span class="n">node_cls</span><span class="p">(</span>
+            <span class="n">indices</span><span class="o">=</span><span class="n">current_indices</span><span class="p">,</span>
+            <span class="n">y_res</span><span class="o">=</span><span class="n">current_y_res</span><span class="p">,</span>
+            <span class="n">pivot_idx</span><span class="o">=</span><span class="n">pivot_idx</span><span class="p">,</span>
+            <span class="n">pivot_value</span><span class="o">=</span><span class="n">pivot_value</span><span class="p">,</span>
+            <span class="n">left_child</span><span class="o">=</span><span class="n">PartyKitAdapter</span><span class="o">.</span><span class="n">_build_recursive</span><span class="p">(</span>
+                <span class="n">node_list</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">,</span> <span class="n">left_node</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">left_indices</span><span class="p">),</span>
+            <span class="n">right_child</span><span class="o">=</span><span class="n">PartyKitAdapter</span><span class="o">.</span><span class="n">_build_recursive</span><span class="p">(</span>
+                <span class="n">node_list</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">,</span> <span class="n">right_node</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">right_indices</span><span class="p">),</span>
+            <span class="n">left_model</span><span class="o">=</span><span class="n">NoneNodeModel</span><span class="p">(),</span>
+            <span class="n">right_model</span><span class="o">=</span><span class="n">NoneNodeModel</span><span class="p">(),</span>
+        <span class="p">)</span>
+</code></pre></div>
+<p>This is a condensed version of the code, see the <code>imote/adapters/partykit_adapter.py</code> for the
+full implementation.</p>
+<p>The adapter doesn't override <code>predict</code>: the R model is not available from Python, so <code>VizTree</code> computes the
+predictions by routing every observation down the converted tree to the linear model of its leaf.</p>
+<h2 id="3-load-the-tree-in-imote">3. Load the tree in IMoTE<a class="headerlink" href="#3-load-the-tree-in-imote" title="Permanent link">&para;</a></h2>
+<p>In the <a href="../../user-guide/c-new-tree/">New Tree</a> card, open <strong>Load a tree with an adapter</strong>, select the <code>Partykit</code>
+adapter and the <code>547_no2</code> dataset, enter the path to <code>tree_547_no2.json</code> and click <strong>Load with Adapter</strong>. The dataset
+must be the one the tree was fitted on, with the features in the same order as in <code>names</code>. The tree can then be
+explored, highlighted, collapsed and saved like any tree fitted in the application.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<p><a id="1">[1]</a> 
+<p><a id="1">[1]</a>
 Hothorn, T., &amp; Zeileis, A. (2015). partykit: A modular toolkit for recursive partytioning in R. The Journal of Machine Learning Research, 16(1), 3905-3909.</p>
-<p><a id="2">[2]</a> 
+<p><a id="2">[2]</a>
 Zeileis, A., Hothorn, T., &amp; Hornik, K. (2008). Model-based recursive partitioning. Journal of Computational and Graphical Statistics, 17(2), 492-514.</p>
 
 

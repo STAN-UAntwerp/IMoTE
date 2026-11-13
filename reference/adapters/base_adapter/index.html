@@ -799,6 +799,90 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../adapter/viztree_structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VizTree structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../adapter/adapter_interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapter interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../adapter/writing_an_adapter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing your own adapter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../adapter/partykit_example/" class="md-nav__link">
         
   
@@ -1106,6 +1190,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;needs_feature_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imote.adapters.base_adapter.BaseAdapter.label" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;label
       
     </span>
   </a>
@@ -1551,6 +1646,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#imote.adapters.base_adapter.BaseAdapter.label" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;label
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#imote.adapters.base_adapter.BaseAdapter.build_root_node" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1760,7 +1866,17 @@ into the BaseNode linked tree structure that VizTree expects.</p>
 <span class="normal">80</span>
 <span class="normal">81</span>
 <span class="normal">82</span>
-<span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseAdapter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseAdapter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Abstract base class for adapters that build a VizTree from a model.</span>
 
 <span class="sd">    An adapter translates a fitted model from a specific source</span>
@@ -1773,6 +1889,9 @@ into the BaseNode linked tree structure that VizTree expects.</p>
     <span class="n">needs_feature_names</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="w">    </span><span class="sd">"""If True, build_root_node() and predict() also get the dataset's feature names as keyword argument</span>
 <span class="sd">    feature_names, for models that refer to features by name instead of by column position."""</span>
+
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""Name shown in the adapter dropdown of the New Tree card, defaults to the registered name."""</span>
 
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
@@ -1791,9 +1910,13 @@ into the BaseNode linked tree structure that VizTree expects.</p>
         <span class="k">pass</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Loads a fitted model from disk.</span>
+
+<span class="sd">        This is optional: only adapters that implement it can load a</span>
+<span class="sd">        model file and are listed in the adapter dropdown of the New Tree</span>
+<span class="sd">        card. Adapters for models fitted inside the application (e.g.</span>
+<span class="sd">        PILOT and M5) don't need it.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            model_path: Path to the serialized model file.</span>
@@ -1801,8 +1924,11 @@ into the BaseNode linked tree structure that VizTree expects.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            The loaded model, in the format this adapter's</span>
 <span class="sd">            build_root_node() expects.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError: If the adapter can't load model files.</span>
 <span class="sd">        """</span>
-        <span class="k">pass</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"This adapter can't load model files"</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -1876,6 +2002,29 @@ into the BaseNode linked tree structure that VizTree expects.</p>
 
         <p>If True, build_root_node() and predict() also get the dataset's feature names as keyword argument
 feature_names, for models that refer to features by name instead of by column position.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="imote.adapters.base_adapter.BaseAdapter.label" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#imote.adapters.base_adapter.BaseAdapter.label" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Name shown in the adapter dropdown of the New Tree card, defaults to the registered name.</p>
 
     </div>
 
@@ -1991,10 +2140,7 @@ supports (as returned by load_model()).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/adapters/base_adapter.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
@@ -2005,7 +2151,10 @@ supports (as returned by load_model()).</p>
 <span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span>
-<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="nd">@abstractmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_root_node</span><span class="p">(</span><span class="n">X_train</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_train</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseNode</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Builds the BaseNode linked tree representing a fitted model.</span>
@@ -2033,7 +2182,6 @@ supports (as returned by load_model()).</p>
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
   </span>
 
@@ -2043,6 +2191,10 @@ supports (as returned by load_model()).</p>
     <div class="doc doc-contents ">
 
         <p>Loads a fitted model from disk.</p>
+<p>This is optional: only adapters that implement it can load a
+model file and are listed in the adapter dropdown of the New Tree
+card. Adapters for models fitted inside the application (e.g.
+PILOT and M5) don't need it.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2107,12 +2259,32 @@ supports (as returned by load_model()).</p>
     </table>
 
 
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the adapter can't load model files.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/adapters/base_adapter.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
 <span class="normal">59</span>
@@ -2121,10 +2293,24 @@ supports (as returned by load_model()).</p>
 <span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
-<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="nd">@abstractmethod</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Loads a fitted model from disk.</span>
+
+<span class="sd">    This is optional: only adapters that implement it can load a</span>
+<span class="sd">    model file and are listed in the adapter dropdown of the New Tree</span>
+<span class="sd">    card. Adapters for models fitted inside the application (e.g.</span>
+<span class="sd">    PILOT and M5) don't need it.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model_path: Path to the serialized model file.</span>
@@ -2132,8 +2318,11 @@ supports (as returned by load_model()).</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        The loaded model, in the format this adapter's</span>
 <span class="sd">        build_root_node() expects.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: If the adapter can't load model files.</span>
 <span class="sd">    """</span>
-    <span class="k">pass</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"This adapter can't load model files"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2233,23 +2422,23 @@ predictions by traversing the built BaseNode linked tree.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>imote/adapters/base_adapter.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">77</span>
 <span class="normal">78</span>
 <span class="normal">79</span>
 <span class="normal">80</span>
 <span class="normal">81</span>
 <span class="normal">82</span>
-<span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Predicts target values directly from the underlying model, if possible.</span>
 
