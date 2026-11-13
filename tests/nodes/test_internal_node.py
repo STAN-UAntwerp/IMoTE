@@ -10,7 +10,7 @@ from tests.nodes.conftest import make_leaf
 
 @pytest.fixture
 def lin(leaf):
-    node = LinearNode(np.array([0, 1]), np.array([0.2, -0.2]), 0.3, 3,
+    node = LinearNode(np.array([0, 1]), np.array([0.2, -0.2]), 3,
                       SimpleLinearNodeModel(3, 1.5, 0.25), leaf)
     node.set_id(0)
     return node

@@ -30,7 +30,6 @@ class PilotAdapter(BaseAdapter):
             return LeafNode(
                 indices=current_indices,
                 y_res=current_y_res,
-                rss=float(np.sum(current_y_res ** 2)),
                 node_model=LinearNodeModel(accumulated_coefficients, leaf_intercept),
             )
 
@@ -52,7 +51,6 @@ class PilotAdapter(BaseAdapter):
             return LinearNode(
                 indices=current_indices,
                 y_res=current_y_res,
-                rss=float(np.sum(current_y_res ** 2)),
                 pivot_idx=pivot_idx,
                 linear_model=SimpleLinearNodeModel(pivot_idx, coef, intercept),
                 child=child,
@@ -98,7 +96,6 @@ class PilotAdapter(BaseAdapter):
                 return PconNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -110,7 +107,6 @@ class PilotAdapter(BaseAdapter):
                 return PconcNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -122,7 +118,6 @@ class PilotAdapter(BaseAdapter):
                 return BlinNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -134,7 +129,6 @@ class PilotAdapter(BaseAdapter):
                 return PlinNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=float(np.sum(current_y_res ** 2)),
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,

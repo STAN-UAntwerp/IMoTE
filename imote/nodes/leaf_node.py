@@ -14,16 +14,15 @@ class LeafNode(BaseNode):
 
     node_model: LinearNodeModel = None
 
-    def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float,
+    def __init__(self, indices: np.ndarray, y_res: np.ndarray,
                  node_model: LinearNodeModel):
         """
         Args:
             indices: Row indices of the samples belonging to this node.
             y_res: Residuals of the target variable at this node.
-            rss: Residual sum of squares at this node.
             node_model: The prediction model for samples reaching this leaf.
         """
-        super().__init__(indices, y_res, rss)
+        super().__init__(indices, y_res)
         self.node_model = node_model
 
     def get_children(self) -> List[BaseNode]:

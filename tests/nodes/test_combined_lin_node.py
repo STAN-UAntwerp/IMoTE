@@ -9,10 +9,10 @@ from imote.nodes.node_model import SimpleLinearNodeModel
 
 @pytest.fixture
 def chain(leaf):
-    last = LinearNode(np.array([0, 1]), np.array([0.3, -0.3]), 0.2, 4,
+    last = LinearNode(np.array([0, 1]), np.array([0.3, -0.3]), 4,
                       SimpleLinearNodeModel(4, -1.0, 0.25), leaf)
     last.set_id(6)
-    first = LinearNode(np.array([0, 1, 2]), np.array([0.5, -0.5, 0.1]), 0.9, 2,
+    first = LinearNode(np.array([0, 1, 2]), np.array([0.5, -0.5, 0.1]), 2,
                        SimpleLinearNodeModel(2, 3.0, 0.5), last)
     first.set_id(5)
     return [first, last]

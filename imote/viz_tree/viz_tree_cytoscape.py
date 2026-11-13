@@ -175,8 +175,6 @@ def viz_tree_to_cytoscape_elements(
             "label_minimal": label_minimal,
             "description": node.get_description(LabelFormatter(viz_tree.feature_names)),
             "n_samples": n_samples,
-            "rss": float(f"{node.rss:.5g}"),
-            "rss_root_reduction": float(f"{(1 - node.rss/viz_tree.root_node.rss)*100:.3g}"),
             "highlight": node in highlight_nodes,
         }
         node_highlight_x = None

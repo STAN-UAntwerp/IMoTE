@@ -22,7 +22,7 @@ CLASSES = list(VALID)
 
 def make_split(cls, pivot_value=None, left_model=None, right_model=None, left=None, right=None):
     default_pivot, default_left, default_right = VALID[cls]
-    node = cls(np.array([0, 1, 2, 3]), np.zeros(4), 1.0, 2,
+    node = cls(np.array([0, 1, 2, 3]), np.zeros(4), 2,
                default_pivot if pivot_value is None else pivot_value,
                left or make_leaf(1), right or make_leaf(2),
                left_model or default_left, right_model or default_right)
@@ -116,7 +116,7 @@ def test_round_trip_keeps_class(cls):
 def test_round_trip_nested():
     inner = make_split(PconNode, left=make_leaf(2), right=NoneNode())
     inner.set_id(1)
-    lin = LinearNode(np.array([0]), np.array([0.0]), 0.0, 4, SimpleLinearNodeModel(4, 1.0, 0.0), make_leaf(4))
+    lin = LinearNode(np.array([0]), np.array([0.0]), 4, SimpleLinearNodeModel(4, 1.0, 0.0), make_leaf(4))
     lin.set_id(3)
     root = make_split(PlinNode, left=inner, right=lin)
 

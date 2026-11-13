@@ -7,7 +7,7 @@ class CollapsedNode(BaseNode):
     n_nodes: int
 
     def __init__(self, parent_node: BaseNode):
-        super().__init__(parent_node.indices, parent_node.y_res, parent_node.rss)
+        super().__init__(parent_node.indices, parent_node.y_res)
         self.log_odds = parent_node.log_odds
         copy_parent = parent_node.__class__.from_dict(parent_node.to_dict())
         self.parent_id = parent_node.id

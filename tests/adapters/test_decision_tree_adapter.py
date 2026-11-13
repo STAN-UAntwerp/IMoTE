@@ -31,11 +31,11 @@ def test_tree_matches_sklearn(adapter, model_cls, y):
     VizTree.from_dict(tree.to_dict())
 
 
-def test_regression_residuals_are_rss_of_the_node():
+def test_regression_residuals_of_the_node():
     model = DecisionTreeRegressor(max_depth=2, random_state=0).fit(X, y_reg)
     tree = VizTree.from_model(DecisionTreeRegressorAdapter, X, y_reg, model)
     root = tree.root_node
-    assert root.rss == pytest.approx(np.sum((y_reg - y_reg.mean()) ** 2))
+    np.testing.assert_allclose(root.y_res, y_reg - y_reg.mean())
     assert root.log_odds is None
 
 

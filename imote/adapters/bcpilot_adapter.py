@@ -72,14 +72,12 @@ class BcPilotAdapter(BaseAdapter):
         """
         current_y = y_train[current_indices]
         y_res = _working_response(current_y, f)
-        rss = float(np.sum(y_res ** 2))
         node_type = tree.node
 
         if node_type == "END":
             node = LeafNode(
                 indices=current_indices,
                 y_res=y_res,
-                rss=rss,
                 node_model=LinearNodeModel(accumulated_coefficients, accumulated_intercept),
             )
             node.log_odds = f
@@ -110,7 +108,6 @@ class BcPilotAdapter(BaseAdapter):
             node = LinearNode(
                 indices=current_indices,
                 y_res=y_res,
-                rss=rss,
                 pivot_idx=pivot_idx,
                 linear_model=SimpleLinearNodeModel(pivot_idx, coef, intercept),
                 child=child,
@@ -156,7 +153,6 @@ class BcPilotAdapter(BaseAdapter):
         node = node_cls(
             indices=current_indices,
             y_res=y_res,
-            rss=rss,
             pivot_idx=pivot_idx,
             pivot_value=pivot_value,
             left_child=left_child,

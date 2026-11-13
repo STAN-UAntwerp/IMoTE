@@ -15,15 +15,14 @@ class InternalNode(BaseNode, ABC):
 
     pivot_idx: int
 
-    def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float, pivot_idx: int):
+    def __init__(self, indices: np.ndarray, y_res: np.ndarray, pivot_idx: int):
         """
         Args:
             indices: Row indices of the samples belonging to this node.
             y_res: Residuals of the target variable at this node.
-            rss: Residual sum of squares at this node.
             pivot_idx: Index of the feature this node acts on.
         """
-        super().__init__(indices, y_res, rss)
+        super().__init__(indices, y_res)
         self.pivot_idx = pivot_idx
 
     def get_minimal_label(self, fmt: LabelFormatter) -> str:
@@ -56,18 +55,17 @@ class LinearNode(InternalNode):
     linear_model: SimpleLinearNodeModel
     child: BaseNode
 
-    def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float, pivot_idx: int,
+    def __init__(self, indices: np.ndarray, y_res: np.ndarray, pivot_idx: int,
                  linear_model: SimpleLinearNodeModel, child: BaseNode):
         """
         Args:
             indices: Row indices of the samples associated with this node.
             y_res: Residuals of the target variable at this node.
-            rss: Residual sum of squares at this node.
             pivot_idx: Index of the feature the linear term is based on.
             linear_model: One dimensional linear model applied at this node.
             child: The node's single child.
         """
-        super().__init__(indices, y_res, rss, pivot_idx)
+        super().__init__(indices, y_res, pivot_idx)
         self.linear_model = linear_model
         self.child = child
 

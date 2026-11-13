@@ -211,13 +211,11 @@ class BoostingMachineAdapter(BaseAdapter):
     def _build_recursive(tree, scale, feature_idx, X_train, y_train, current_indices, f_before) -> BaseNode:
         f = f_before[current_indices]
         y_res = _working_response(y_train[current_indices], f)
-        rss = float(np.sum(y_res ** 2))
 
         if "leaf" in tree:
             node = LeafNode(
                 indices=current_indices,
                 y_res=y_res,
-                rss=rss,
                 node_model=LinearNodeModel(np.zeros(X_train.shape[1]), scale * tree["score"]),
             )
         else:
@@ -226,7 +224,6 @@ class BoostingMachineAdapter(BaseAdapter):
             node = SplitNode(
                 indices=current_indices,
                 y_res=y_res,
-                rss=rss,
                 pivot_idx=pivot_idx,
                 pivot_value=tree["threshold"],
                 left_child=BoostingMachineAdapter._build_recursive(

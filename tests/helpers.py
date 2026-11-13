@@ -20,7 +20,7 @@ def mask(rows):
 
 def leaf(rows, coefs, intercept):
     m = mask(rows)
-    return LeafNode(m, y[m], 0.1, LinearNodeModel(np.array(coefs, dtype=float), intercept))
+    return LeafNode(m, y[m], LinearNodeModel(np.array(coefs, dtype=float), intercept))
 
 
 def make_pilot_tree() -> VizTree:
@@ -33,12 +33,12 @@ def make_pilot_tree() -> VizTree:
             └── node3 Leaf x2 - 1                                         rows 4-7
     Leaf models equal the sum of the models on their path, like the Pilot adapter builds them.
     """
-    blin = BlinNode(mask(range(4)), y[:4], 0.5, 2, 0.5,
+    blin = BlinNode(mask(range(4)), y[:4], 2, 0.5,
                     leaf([0, 2], [0, 0, 3], 1.0), leaf([1, 3], [0, 0, -1], 3.0),
                     SimpleLinearNodeModel(2, 2.0, 0.0), SimpleLinearNodeModel(2, -2.0, 2.0))
-    pcon = PconNode(mask(range(8)), y, 1.0, 0, 3.5, blin, leaf(range(4, 8), [0, 0, 1], -1.0),
+    pcon = PconNode(mask(range(8)), y, 0, 3.5, blin, leaf(range(4, 8), [0, 0, 1], -1.0),
                     ConstantNodeModel(1.0), ConstantNodeModel(-1.0))
-    root = LinearNode(mask(range(8)), y, 2.0, 2, SimpleLinearNodeModel(2, 1.0, 0.0), pcon)
+    root = LinearNode(mask(range(8)), y, 2, SimpleLinearNodeModel(2, 1.0, 0.0), pcon)
     return VizTree(root, X, y, None, tree_id="pilot")
 
 
@@ -50,10 +50,10 @@ def make_split_tree() -> VizTree:
         │   └── node4 Leaf 2 (all-zero coefficients)   rows 1, 2
         └── node2 Leaf 2*x2                            rows 4-7
     """
-    sc = SplitCNode(mask(range(4)), y[:4], 0.5, 1, [0],
+    sc = SplitCNode(mask(range(4)), y[:4], 1, [0],
                     leaf([0, 3], [1, 0, 0], 1.0), leaf([1, 2], [0, 0, 0], 2.0),
                     NoneNodeModel(), NoneNodeModel())
-    root = SplitNode(mask(range(8)), y, 1.0, 0, 3.5, sc, leaf(range(4, 8), [0, 0, 2], 0.0),
+    root = SplitNode(mask(range(8)), y, 0, 3.5, sc, leaf(range(4, 8), [0, 0, 2], 0.0),
                      NoneNodeModel(), NoneNodeModel())
     return VizTree(root, X, y, None, tree_id="split")
 
@@ -71,10 +71,10 @@ def make_classification_tree() -> VizTree:
         ├── node1 Leaf   rows 0-3, y = [0, 1, 1, 1], log_odds [-1, 1, 2, 0.5]
         └── node2 Leaf   rows 4-7, y = [0, 0, 0, 1], log_odds [-2, 1, -1, 0.5]
     """
-    left = LeafNode(mask(range(4)), y_cls[:4], 0.1, LinearNodeModel(np.zeros(3), 1.0))
+    left = LeafNode(mask(range(4)), y_cls[:4], LinearNodeModel(np.zeros(3), 1.0))
     left.log_odds = np.array([-1.0, 1.0, 2.0, 0.5])
-    right = LeafNode(mask(range(4, 8)), y_cls[4:], 0.1, LinearNodeModel(np.zeros(3), -1.0))
+    right = LeafNode(mask(range(4, 8)), y_cls[4:], LinearNodeModel(np.zeros(3), -1.0))
     right.log_odds = np.array([-2.0, 1.0, -1.0, 0.5])
-    root = PconNode(mask(range(8)), y_cls, 1.0, 0, 3.5, left, right, ConstantNodeModel(1.0), ConstantNodeModel(-1.0))
+    root = PconNode(mask(range(8)), y_cls, 0, 3.5, left, right, ConstantNodeModel(1.0), ConstantNodeModel(-1.0))
     root.log_odds = np.zeros(8)
     return VizTree(root, X, y_cls, None, tree_id="classification", task="classification")

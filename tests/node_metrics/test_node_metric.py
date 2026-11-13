@@ -141,7 +141,7 @@ def test_subtree_metrics_of_the_root_are_those_of_the_decision_tree():
 
 @pytest.mark.parametrize("name", ["AUROC (of subtree)", "AUPRC (of subtree)"])
 def test_ranking_metrics_of_a_leaf_with_one_score(name):
-    node = LeafNode(np.ones(4, dtype=bool), np.zeros(4), 0.0, LinearNodeModel(np.zeros(3), 1.0))
+    node = LeafNode(np.ones(4, dtype=bool), np.zeros(4), LinearNodeModel(np.zeros(3), 1.0))
     node.log_odds = np.full(4, 1.0)
     assert NODE_METRICS_REGISTRY[name].compute(node, np.array([0, 1, 0, 1])) == "-"
 
@@ -169,14 +169,14 @@ def test_default_metrics_are_registered(task):
 
 @pytest.mark.parametrize("name", ["Precision (of subtree)", "Recall (of subtree)", "F1 (of subtree)"])
 def test_label_metrics_are_nan_without_samples(name):
-    node = LeafNode(np.zeros(4, dtype=bool), np.array([]), 0.0, LinearNodeModel(np.zeros(3), 1.0))
+    node = LeafNode(np.zeros(4, dtype=bool), np.array([]), LinearNodeModel(np.zeros(3), 1.0))
     node.log_odds = np.array([])
     assert np.isnan(NODE_METRICS_REGISTRY[name].compute(node, np.array([0, 1, 0, 1])))
 
 
 @pytest.mark.parametrize("name", ["Precision (of subtree)", "Recall (of subtree)", "F1 (of subtree)"])
 def test_label_metrics_are_nan_for_all_correct_class_0_node(name):
-    node = LeafNode(np.ones(3, dtype=bool), np.zeros(3), 0.0, LinearNodeModel(np.zeros(3), 1.0))
+    node = LeafNode(np.ones(3, dtype=bool), np.zeros(3), LinearNodeModel(np.zeros(3), 1.0))
     node.log_odds = np.full(3, -2.0)
     assert np.isnan(NODE_METRICS_REGISTRY[name].compute(node, np.zeros(3)))
 

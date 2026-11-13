@@ -14,25 +14,21 @@ class BaseNode(ABC):
         id: Unique identifier assigned to the node, or None if unset.
         indices: Row indices of the samples associated with this node.
         y_res: Residuals of the target variable at this node.
-        rss: Residual sum of squares at this node.
         log_odds: Log-odds of the samples at this node from the model before this node, None for regression trees.
     """
     id: int
     indices: np.ndarray
     y_res: np.ndarray
-    rss: float
     log_odds: np.ndarray | None
 
-    def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float):
+    def __init__(self, indices: np.ndarray, y_res: np.ndarray):
         """
         Args:
             indices: Row indices of the samples belonging to this node.
             y_res: Residuals of the target variable at this node.
-            rss: Residual sum of squares at this node.
         """
         self.indices = indices
         self.y_res = y_res
-        self.rss = rss
         self.log_odds = None
 
     def set_id(self, id: int):
@@ -108,9 +104,9 @@ class BaseNode(ABC):
         own attributes.
 
         Returns:
-            Dictionary with the node's id, rss, indices, y_res and log_odds.
+            Dictionary with the node's id, indices, y_res and log_odds.
         """
-        node_dict = {"id": self.id, "rss": self.rss}
+        node_dict = {"id": self.id}
         if isinstance(self.indices, list):
             node_dict["indices"] = self.indices
         else:
@@ -140,7 +136,6 @@ class BaseNode(ABC):
         obj.id = node_dict["id"]
         obj.indices = np.array(node_dict["indices"])
         obj.y_res = np.array(node_dict["y_res"])
-        obj.rss = node_dict["rss"]
         obj.log_odds = np.array(node_dict["log_odds"]) if "log_odds" in node_dict else None
         return obj
 

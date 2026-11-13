@@ -366,7 +366,6 @@ class VizTree:
         new_leaf_node = LeafNode(
             indices=prune_node.indices,
             y_res=prune_node.y_res,
-            rss=prune_node.rss,
             node_model=model,
         )
         new_leaf_node.log_odds = prune_node.log_odds

@@ -27,14 +27,12 @@ def _build_root_node_from_m5(tree, node_models, X_train, y_train, current_indice
         model = node_models[node_id]
 
         if isinstance(model, ConstantLeafModel):
-            rss = model.error  # note: this is an RMSE, not a raw RSS like PILOT's Rt - rescale/rename if needed
             node_model = ConstantNodeModel(float(tree.value[node_id].ravel()[0]))
 
         elif isinstance(model, LinRegLeafModel):
             coefficients = np.zeros(n_features)
             coefficients[model.features] = model.model.coef_
             intercept = model.model.intercept_
-            rss = model.error  # same caveat as above
             node_model = LinearNodeModel(coefficients, intercept)
 
         else:
@@ -43,7 +41,6 @@ def _build_root_node_from_m5(tree, node_models, X_train, y_train, current_indice
         return LeafNode(
             indices=current_indices,
             y_res=current_y_res,
-            rss=rss,
             node_model=node_model,
         )
 
@@ -56,12 +53,10 @@ def _build_root_node_from_m5(tree, node_models, X_train, y_train, current_indice
         left_child = _build_root_node_from_m5(tree, node_models, X_train, y_train, left_indices, node_id=left_id)
         right_child = _build_root_node_from_m5(tree, node_models, X_train, y_train, right_indices, node_id=right_id)
 
-        rss = tree.impurity[node_id] * tree.n_node_samples[node_id]  # sklearn stores impurity as MSE; * n -> RSS
 
         return SplitNode(
             indices=current_indices,
             y_res=current_y_res,
-            rss=rss,
             pivot_idx=pivot_idx,
             pivot_value=pivot_value,
             left_child=left_child,

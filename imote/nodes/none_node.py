@@ -8,7 +8,7 @@ class NoneNode(BaseNode):
     """
 
     def __init__(self):
-        super().__init__(indices=None, y_res=None, rss=0.0)
+        super().__init__(indices=None, y_res=None)
 
     def get_children(self) -> List[BaseNode]:
         """Returns this node's children.

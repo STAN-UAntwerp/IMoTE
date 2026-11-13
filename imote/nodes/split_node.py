@@ -36,7 +36,7 @@ class SplitNode(InternalNode):
     left_model: NodeModel
     right_model: NodeModel
 
-    def __init__(self, indices: np.ndarray, y_res: np.ndarray, rss: float,
+    def __init__(self, indices: np.ndarray, y_res: np.ndarray,
                  pivot_idx: int, pivot_value: Union[float, list],
                  left_child: BaseNode, right_child: BaseNode,
                  left_model: NodeModel, right_model: NodeModel):
@@ -44,7 +44,6 @@ class SplitNode(InternalNode):
         Args:
             indices: Row indices of the samples belonging to this node.
             y_res: Residuals of the target variable at this node.
-            rss: Residual sum of squares at this node.
             pivot_idx: Index of the feature the split is based on.
             pivot_value: Threshold value, or list of left categories for a
                 categorical split.
@@ -57,7 +56,7 @@ class SplitNode(InternalNode):
             TypeError: If a side model is not an instance of model_type, or
                 pivot_value doesn't match the kind of split.
         """
-        super().__init__(indices, y_res, rss, pivot_idx)
+        super().__init__(indices, y_res, pivot_idx)
         self.pivot_value = self._check_pivot_value(pivot_value)
         self.left_child = left_child
         self.right_child = right_child

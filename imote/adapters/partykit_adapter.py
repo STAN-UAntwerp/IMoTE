@@ -83,7 +83,6 @@ class PartyKitAdapter(BaseAdapter):
             return LeafNode(
                 indices=current_indices,
                 y_res=current_y_res,
-                rss=-1, #TODO
                 node_model=node_model,
             )
         else:
@@ -102,7 +101,6 @@ class PartyKitAdapter(BaseAdapter):
                 return SplitNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=-1, #TODO
                     pivot_idx=pivot_idx,
                     pivot_value=pivot_value,
                     left_child=left_child,
@@ -121,7 +119,6 @@ class PartyKitAdapter(BaseAdapter):
                 return SplitCNode(
                     indices=current_indices,
                     y_res=current_y_res,
-                    rss=-1, #TODO
                     pivot_idx=pivot_idx,
                     pivot_value=left_categories,
                     left_child=left_child,

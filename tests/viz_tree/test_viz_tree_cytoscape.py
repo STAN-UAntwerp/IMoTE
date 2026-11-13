@@ -37,9 +37,9 @@ def chain_tree():
         │       └── node4 Leaf
         └── node2 Leaf                    rows 4-7
     """
-    lin2 = LinearNode(mask(range(4)), y[:4], 0.3, 0, SimpleLinearNodeModel(0, 1.0, 0.0), leaf(range(4), [1, 0, 2], 1.0))
-    lin1 = LinearNode(mask(range(4)), y[:4], 0.4, 2, SimpleLinearNodeModel(2, 2.0, 0.0), lin2)
-    root = PconNode(mask(range(8)), y, 1.0, 0, 3.5, lin1, leaf(range(4, 8), [0, 0, 1], -1.0),
+    lin2 = LinearNode(mask(range(4)), y[:4], 0, SimpleLinearNodeModel(0, 1.0, 0.0), leaf(range(4), [1, 0, 2], 1.0))
+    lin1 = LinearNode(mask(range(4)), y[:4], 2, SimpleLinearNodeModel(2, 2.0, 0.0), lin2)
+    root = PconNode(mask(range(8)), y, 0, 3.5, lin1, leaf(range(4, 8), [0, 0, 1], -1.0),
                     ConstantNodeModel(1.0), ConstantNodeModel(-1.0))
     return VizTree(root, X, y, None)
 
@@ -53,7 +53,7 @@ def test_default_elements(pilot_tree, tmp_path):
     assert all(s in nodes and t in nodes for s, t in edges)
     for el in nodes.values():
         assert el["data"]["node_type"] in el["classes"]
-        assert {"node_type", "color", "label", "label_minimal", "n_samples", "rss", "highlight"} <= el["data"].keys()
+        assert {"node_type", "color", "label", "label_minimal", "n_samples", "highlight"} <= el["data"].keys()
     assert nodes["node0"]["data"]["n_samples"] == 8
 
 

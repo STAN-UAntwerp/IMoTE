@@ -41,21 +41,18 @@ class _DecisionTreeAdapter(BaseAdapter):
         current_y = y_train[current_indices]
         value = cls._node_value(current_y)
         y_res = cls._residuals(current_y, value)
-        rss = float(np.sum(y_res ** 2))
 
         left_id, right_id = tree.children_left[node_id], tree.children_right[node_id]
         if left_id == -1:  # sklearn's TREE_LEAF sentinel
             node = LeafNode(
                 indices=current_indices,
                 y_res=y_res,
-                rss=rss,
                 node_model=LinearNodeModel(np.zeros(tree.n_features), value),
             )
         else:
             node = SplitNode(
                 indices=current_indices,
                 y_res=y_res,
-                rss=rss,
                 pivot_idx=int(tree.feature[node_id]),
                 pivot_value=float(tree.threshold[node_id]),
                 left_child=cls._build_recursive(tree, left_id, node_samples, y_train),
