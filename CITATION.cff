@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use IMoTE, please cite it as below."
+type: software
+title: "IMoTE: Interactive Model Tree Explorer"
+abstract: >-
+  An interactive application to fit, visualize and explore linear model trees for regression on tabular data.
+authors:
+  - family-names: Debois
+    given-names: Flor
+  - family-names: Servotte
+    given-names: Thomas
+  - family-names: Raymaekers
+    given-names: Jakob
+  - family-names: Verdonck
+    given-names: Tim
+license: MIT
+repository-code: "https://github.com/STAN-UAntwerp/IMoTE"
+url: "https://stan-uantwerp.github.io/IMoTE/"
+keywords:
+  - linear model trees
+  - model trees
+  - interpretability
+  - visualization
+  - PILOT

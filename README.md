@@ -1,15 +1,31 @@
 # IMoTE: Interactive Model Tree Explorer
 
 [![PyPI](https://img.shields.io/pypi/v/imote)](https://pypi.org/project/imote/)
+[![Tests](https://github.com/STAN-UAntwerp/IMoTE/actions/workflows/tests.yml/badge.svg)](https://github.com/STAN-UAntwerp/IMoTE/actions/workflows/tests.yml)
 [![Python](https://img.shields.io/pypi/pyversions/imote)](https://pypi.org/project/imote/)
 [![Documentation](https://img.shields.io/badge/docs-stan--uantwerp.github.io%2FIMoTE-1f77b4)](https://stan-uantwerp.github.io/IMoTE/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/STAN-UAntwerp/IMoTE/blob/main/LICENSE)
 
-**IMoTE** is an interactive application to fit, visualise and explore **linear model trees** for regression on
+**IMoTE** is an interactive application to fit, visualize and explore **linear model trees** for regression on
 tabular data. It shows a fitted tree as an interactive graph, lets you look at the linear model and the data behind
 every node, and traces a single data point through the tree to explain its prediction.
 
 ![IMoTE: the tree graph with the interaction cards on the right](https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/screenshots/app-overview.png)
+
+<table>
+  <tr>
+    <td width="33%"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/echo-left-right-highlight.png" alt="Highlighted path with node plots pinned on the graph"></a></td>
+    <td width="33%"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/cpu-data-flow.png" alt="Data flow through a large tree"></a></td>
+    <td width="33%"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/no2-pilot-node-plots.png" alt="Every node shown as its plot"></a></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Trace a data point, with node plots pinned on the graph</sub></td>
+    <td align="center"><sub>Data flow through a large tree</sub></td>
+    <td align="center"><sub>Every node shown as its plot</sub></td>
+  </tr>
+</table>
+
+More examples in the [Gallery](https://stan-uantwerp.github.io/IMoTE/gallery/).
 
 ## Why IMoTE?
 
@@ -24,7 +40,7 @@ makes them easy to explore, explain and present.
 - Fit **PILOT** [[1]](#references), **M5** [[2]](#references) or decision trees on datasets you search and download
   from [PMLB](https://epistasislab.github.io/pmlb/) or the [UCI repository](https://archive.ics.uci.edu/), or on your
   own file (CSV, Excel, Parquet, ARFF, JSON, ...), for regression.
-- Save the tree you are looking as an SVG image or to load it again later.
+- Download the tree you are looking at as an SVG image, or save it to load it again later.
 - Load trees fitted with other tools through an **adapter**. An adapter for trees from the R package
   [partykit](https://cran.r-project.org/package=partykit) is included as an example.
 
@@ -40,7 +56,10 @@ makes them easy to explore, explain and present.
 - Click a node to see its type, split and metrics (number of samples, RSS, MAE, ...).
 - See the plot of any node: the data and the fit of a split, or the prediction plot of a leaf that shows how each
   feature contributes to its predictions.
-- Turn on **Show all node plots** to replace every node of the graph by its plot or only pin next to their node.
+- Use the **global predsplot** of a leaf to see how the splits on the path *and* the leaf model together build up
+  the prediction.
+- Turn on **Show all node plots** to replace every node of the graph by its plot, or pin the plots of a few nodes
+  next to them on the graph.
 - Highlight the path of a data point through the tree, with its prediction.
 
 
@@ -58,7 +77,11 @@ imote
 ```
 
 Then open the address shown in the terminal (by default <http://127.0.0.1:8050>). The app starts with an example
-PILOT tree. Click a node to inspect it, or open the **New Tree** card on the right to fit a tree on another dataset.
+PILOT tree, fitted on the `1199_BNG_echoMonths` dataset. To get started:
+
+1. Click a node in the graph and turn on **Show node plot** in the **Node Information** card to see its data and fit.
+2. Open the **Highlight** card, click **Random point** and then **Highlight** to follow a data point through the tree.
+3. Open the **New Tree** card to fit a tree on another dataset.
 
 IMoTE stores saved trees, uploaded datasets, downloaded datasets and generated plots in `~/.imote`. Set the 
 `IMOTE_HOME` environment variable to use another folder.
@@ -72,12 +95,15 @@ The full documentation is at **<https://stan-uantwerp.github.io/IMoTE/>**, it in
 - the [Gallery](https://stan-uantwerp.github.io/IMoTE/gallery/), with screenshots of what IMoTE can show,
 - a guide on how to [write your own adapter](https://stan-uantwerp.github.io/IMoTE/adapter/adapter_overview/) for another type
   of linear model tree,
-- an [API reference](https://stan-uantwerp.github.io/IMoTE/reference/reference_overview/) of the tree and node classes used for visualisation.
+- an [API reference](https://stan-uantwerp.github.io/IMoTE/reference/reference_overview/) of the tree and node classes used for visualization.
 
 
-<!--
 ## Citing IMoTE
 
+If you use IMoTE, please cite the software with **Cite this repository** on the GitHub page (from
+[`CITATION.cff`](CITATION.cff)). A paper describing IMoTE is under review.
+
+<!--
 If you use IMoTE in your research, please cite the paper that introduces it:
 
 > *The paper describing IMoTE is in preparation. Its reference will be added here once it is published.*
@@ -107,8 +133,7 @@ python -m imote.app       # start the app in Dash debug mode, it reloads on code
 
 To work on the documentation: `pip install -e ".[docs]"`, then `mkdocs serve`.
 
-Questions and ideas are welcome in [Discussions](https://github.com/STAN-UAntwerp/IMoTE/discussions), bugs can be
-reported as an [issue](https://github.com/STAN-UAntwerp/IMoTE/issues).
+Questions, ideas and bugs are welcome as an [issue](https://github.com/STAN-UAntwerp/IMoTE/issues).
 
 ### References
 
