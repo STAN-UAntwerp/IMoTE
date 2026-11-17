@@ -1791,29 +1791,43 @@ graph, and (when turned on) a plot showing the underlying data and possible fitt
 <p>Click any node in the graph area. The badge at the top of the card (default: "Standby") updates to reflect the type of
 node selected, and the fields below fill in.</p>
 <h2 id="node-badge">Node Badge<a class="headerlink" href="#node-badge" title="Permanent link">&para;</a></h2>
-<p>Each node contains a badge indicating the type of node. The available node types depend on the selected algorithm:</p>
-<ul>
-<li><strong>PILOT</strong>:<ul>
-<li><strong>pcon</strong> (<em>piecewise constant</em>) – a node with a piecewise constant prediction model.</li>
-<li><strong>pconc</strong> (<em>piecewise constant categorical</em>) – a node with a piecewise constant prediction model for categorical
-  splits.</li>
-<li><strong>lin</strong> (<em>linear</em>) – a node containing a linear model.</li>
-<li><strong>plin</strong> (<em>piecewise linear</em>) – a node containing a piecewise linear model.</li>
-<li><strong>blin</strong> (<em>broken linear</em>) – a node containing a broken linear model.</li>
-<li><strong>leaf</strong> – a leaf node containing a linear regression model.</li>
-</ul>
-</li>
-<li><strong>M5</strong>:<ul>
-<li><strong>split</strong> – an internal node that splits the data based on a feature value.</li>
-<li><strong>leaf</strong> – a leaf node containing a linear regression model.</li>
-</ul>
-</li>
-</ul>
+<p>Each node contains a badge indicating the type of node, in the same color as the node in the graph. The available node
+types depend on the selected algorithm: PILOT uses the types in the first group, trees that only split without fitting
+a model in their internal nodes, such as M5, use the types in the second group. Both have leaves.</p>
+<div class="node-types">
+<table>
+  <thead>
+    <tr><th>Node type</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="node-badge" style="background: #2ca02c">Leaf</span></td>
+        <td>Terminal node with no children.</td></tr>
+    <tr><td><span class="node-badge" style="background: #9467bd">Linear</span></td>
+        <td>Fits a linear model, only has one child.</td></tr>
+    <tr><td><span class="node-badge" style="background: #d62728">Pcon</span></td>
+        <td>Piecewise constant: splits and fits constant models.</td></tr>
+    <tr><td><span class="node-badge" style="background: #8c564b">PconC</span></td>
+        <td>Splits on a categorical variable and fits constant models.</td></tr>
+    <tr><td><span class="node-badge" style="background: #1f77b4">Blin</span></td>
+        <td>Broken linear: splits and fits a continuous two part linear model.</td></tr>
+    <tr><td><span class="node-badge" style="background: #ff7f0e">Plin</span></td>
+        <td>Piecewise linear: splits and fits two independent linear models.</td></tr>
+    <tr class="group-start"><td><span class="node-badge" style="background: #d62728">Split</span></td>
+        <td>Splits without fitting a model.</td></tr>
+    <tr><td><span class="node-badge" style="background: #8c564b">SplitC</span></td>
+        <td>Splits on a categorical variable without fitting a model.</td></tr>
+  </tbody>
+</table>
+</div>
+
 <h2 id="node-fields">Node fields<a class="headerlink" href="#node-fields" title="Permanent link">&para;</a></h2>
 <p>Below the node type badge, the following fields are displayed:</p>
 <ul>
 <li><strong>Description</strong> – One line under the badge that describes the nodes model with the full feature names.</li>
-<li><strong>Metrics</strong> – A dropdown list form which you select the metrics you are interested in.</li>
+<li>
+<p><strong>Metrics</strong> – A dropdown list from which you select the metrics you are interested in.
+    <small></p>
+<ul>
 <li><strong>Node ID</strong> – The unique identifier of the node in the tree.</li>
 <li><strong>Samples</strong> – The number of data points that reach this node.</li>
 <li><strong>RSS</strong> – The residual sum of squares (RSS) of the model fitted at this node.</li>
@@ -1824,7 +1838,12 @@ node selected, and the fields below fill in.</p>
 <li><strong>Mean Residual</strong> – The mean of the node's own residuals.</li>
 <li><strong>Std Residual</strong> – The standard deviation of the node's own residuals.</li>
 <li><strong>Split Balance</strong> – The fraction of samples routed to the right child, 0.5 indicates a perfectly balanced split.</li>
-<li><strong>Show node plot</strong> – A switch that enables the node plot for the selected node (see below).</li>
+</ul>
+<p></small></p>
+</li>
+<li>
+<p><strong>Show node plot</strong> – A switch that enables the node plot for the selected node (see below).</p>
+</li>
 </ul>
 <hr />
 <h2 id="node-plots">Node plots<a class="headerlink" href="#node-plots" title="Permanent link">&para;</a></h2>

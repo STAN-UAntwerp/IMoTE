@@ -1622,7 +1622,8 @@ large datasets while remaining stable and resistant to overfitting.</p>
 <p>As for many other linear model tree algorithm PILOT had no easy way to visualize and
 explore its tree structure. This application was created to make linear model tree easier to understand, explain, and
 analyze, allowing users to fully benefit from the interpretability offered by its design. </p>
-<p>When fitting a new tree you can choose between M5 and PILOT in the <a href="user-guide/c-new-tree/">New Tree</a> card when fitting a tree.</p>
+<p>When fitting a new tree you can choose between PILOT, M5 and a regular decision tree (scikit-learn's
+<code>DecisionTreeRegressor</code>, with a constant in every leaf, for comparison) in the <a href="user-guide/c-new-tree/">New Tree</a> card.</p>
 <h2 id="what-can-you-do-in-the-application">What can you do in the application?<a class="headerlink" href="#what-can-you-do-in-the-application" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Fit a new tree</strong> on a built-in or imported dataset, or reload/save trees you've fitted.</li>
@@ -1631,12 +1632,8 @@ analyze, allowing users to fully benefit from the interpretability offered by it
 <li><strong>Inspect any node</strong> to see more information and a detailed plot that shows its data and possible fit.</li>
 <li><strong>Highlight a specific data point</strong> to see the exact path it takes through the tree, and which leaf (and linear model)
   ends up making its prediction.</li>
-<li>
-<p><strong>Export</strong> a svg file of the tree that is currently shown to use outside the application.</p>
-</li>
-<li>
-<p><strong>Load your own tree</strong> by coding a new adapter wich let you upload any tree and gives you full flexibility.</p>
-</li>
+<li><strong>Export</strong> a svg file of the tree that is currently shown to use outside the application.</li>
+<li><strong>Load your own tree</strong> by coding a new adapter which lets you upload any tree and gives you full flexibility.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>Install IMoTE from PyPI and start the app (Python 3.10 or newer):</p>

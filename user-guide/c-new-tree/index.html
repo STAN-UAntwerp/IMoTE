@@ -1692,7 +1692,7 @@ an adapter.</p>
 </tr>
 <tr>
 <td><strong>Method</strong></td>
-<td>The tree algorithm to use (see the <a href="../../">home</a> page for a brief description of PILOT and M5).</td>
+<td>The tree algorithm to use PILOT, M5 or a regular decision tree (scikit-learn's <code>DecisionTreeRegressor</code>), see the <a href="../../">home</a> page for a brief description.</td>
 </tr>
 <tr>
 <td><strong>Max depth</strong></td>
@@ -1700,7 +1700,7 @@ an adapter.</p>
 </tr>
 <tr>
 <td><strong>Max model depth</strong></td>
-<td>PILOT only feauture: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).</td>
+<td>PILOT only feature: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).</td>
 </tr>
 <tr>
 <td><strong>Min samples split</strong></td>
@@ -1712,7 +1712,7 @@ an adapter.</p>
 </tr>
 </tbody>
 </table>
-<p>Click <strong>Fit Tree</strong> to train and show a new tree using the selected settings. Fitting may take a some time for larger
+<p>Click <strong>Fit Tree</strong> to train and show a new tree using the selected settings. Fitting may take some time for larger
 datasets or deeper trees.</p>
 <h2 id="saving-and-loading-trees">Saving and loading trees<a class="headerlink" href="#saving-and-loading-trees" title="Permanent link">&para;</a></h2>
 <p>The following actions are also available:</p>
@@ -1723,8 +1723,8 @@ datasets or deeper trees.</p>
   graph.</li>
 <li><strong>Reload tree</strong> – Restores the original fitted tree. This is useful after exploring subtrees or making temporary
   modifications to the visualization. The tree is restored to the state it had immediately after being fitted or loaded.</li>
-<li><strong>Load tree</strong> – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text
-  field and click <strong>Load tree</strong>. If the field is left empty, the application loads the most recently saved tree from
+<li><strong>Load saved viz_tree</strong> – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text
+  field and click <strong>Load saved viz_tree</strong>. If the field is left empty, the application loads the most recently saved tree from
   <code>~/.imote/saved_trees</code>.</li>
 </ul>
 <h2 id="datasets">Datasets<a class="headerlink" href="#datasets" title="Permanent link">&para;</a></h2>
@@ -1732,7 +1732,7 @@ datasets or deeper trees.</p>
 they are downloaded the first time a tree is fitted on them.</p>
 <h3 id="adding-a-dataset">Adding a dataset<a class="headerlink" href="#adding-a-dataset" title="Permanent link">&para;</a></h3>
 <div style="max-width: 450px;">
-<p><img alt="Screenshot: dialog to add a dataset" src="../assets/screenshots/dataset-add.png" /></p>
+<p><img alt="Screenshot: dialog to add a dataset" src="../../assets/screenshots/dataset-add.png" /></p>
 </div>
 <p>Click <strong>Add</strong> next to the dataset dropdown, then:</p>
 <ul>

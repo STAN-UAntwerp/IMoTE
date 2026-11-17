@@ -1545,25 +1545,31 @@
 <h2 id="what-it-shows">What it shows<a class="headerlink" href="#what-it-shows" title="Permanent link">&para;</a></h2>
 <p>Next to the title, the card displays several status badges that provide information about the currently displayed tree:</p>
 <ul>
-<li><span style="background-color: #3498db; color: white; padding: 2px 5px; border-radius: 3px;">Tree view</span> – 
+<li><span class="node-badge" style="background: #3498db">Tree view</span> – 
 Indicates whether you are viewing: the full tree, a pruned tree, or a subtree rooted at an internal node.</li>
-<li><span style="background-color: #f39c13; color: white; padding: 2px 5px; border-radius: 3px;">Collapsed nodes</span> – 
+<li><span class="node-badge" style="background: #f39c13">Collapsed nodes</span> – 
 Indicates how many nodes are collapsed in the tree, nodes that are collapsed are visually different.</li>
-<li><span style="background-color: #e74b3c; color: white; padding: 2px 5px; border-radius: 3px;">Highlighted point</span> – 
+<li><span class="node-badge" style="background: #e74b3c">Highlighted point</span> – 
 Indicates whether a data point is currently highlighted.</li>
 </ul>
 <p>Below the badges, the following information is shown:</p>
 <ul>
 <li><strong>Dataset name</strong> – The name of the dataset used to fit the tree.</li>
-<li><strong>Method</strong> – The algorithm used to fit the tree. On a hover it also shows:
-  <small></li>
+<li>
+<p><strong>Method</strong> – The algorithm used to fit the tree. On a hover it also shows:
+    <small></p>
+<ul>
 <li><strong>Max depth</strong> – The maximum model depth of the tree.</li>
 <li><strong>Max model depth</strong> – The maximum model depth of the tree without counting the linear models (PILOT only).</li>
 <li><strong>Training time</strong> – The time required to fit the tree.</li>
 <li><strong>Min samples split</strong> – The minimum number of training samples a node must contain before it is allowed to be considered for splitting.</li>
-<li><strong>Min samples leaf</strong> – The minimum number of training samples that each leaf must contain. A split is only performed if both resulting child nodes satisfy this constraint.
-  </small></li>
-<li><strong>Dataset size</strong> the number of rows and the number of features in the training dataset.</li>
+<li><strong>Min samples leaf</strong> – The minimum number of training samples that each leaf must contain. A split is only performed if both resulting child nodes satisfy this constraint.</li>
+</ul>
+<p></small></p>
+</li>
+<li>
+<p><strong>Dataset size</strong> the number of rows and the number of features in the training dataset.</p>
+</li>
 <li><strong>Nodes</strong> The number of total nodes in the tree, On a hover it also shows the split up into the number of leaf nodes and internal nodes.</li>
 <li><strong>Depth</strong> The total depth of the tree (including linear nodes for the PILOT algorithm.) The root node is at depth 0. </li>
 </ul>
