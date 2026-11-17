@@ -19,6 +19,8 @@ ANNOTATION_COLOR = "#1f3fbf"
 
 # Selected node in the Node Information screenshots: the BLIN node at the top right of the default tree
 INTERNAL_NODE = "node2"
+# Leaf for the global predsplot screenshot: the leftmost leaf of the default tree, at the end of the longest path
+PRED_LEAF = "node8"
 
 # Finds the Cytoscape instance of the tree graph, cytoscape keeps a reference to it on its container element
 _JS_CY = """
@@ -64,15 +66,6 @@ def click_node(page: Page, node_id: str):
     }}""", node_id)
     page.mouse.click(position["x"], position["y"])
     wait_until_idle(page)
-
-
-def deepest_leaf(page: Page) -> str:
-    """Id of the lowest leaf in the graph, its global predsplot has the most splits."""
-    return page.evaluate(f"""() => {{
-        {_JS_CY}
-        const leaves = cy.nodes('[node_type = "LeafNode"]').toArray();
-        return leaves.reduce((a, b) => (b.position().y > a.position().y ? b : a)).id();
-    }}""")
 
 
 def screenshot_from(page: Page, top_id: str, card_locator, path: Path):
@@ -158,37 +151,18 @@ def screenshot_node_info(browser: Browser, url: str):
     wait_until_idle(page)
     screenshot_from(page, ids.NODE_INFO_PLOT_CONTAINER, node_card, OUTPUT_DIR / "b-node-info-reg.png")
 
-    # Global predsplot of a leaf
-    click_node(page, deepest_leaf(page))
+    # Global predsplot of a leaf. The plot type is read when a node is selected, so the switch goes on first. The
+    # prediction plot settings are disabled while an internal node is selected, so first deselect it by clicking the
+    # empty top left corner of the graph.
+    graph = page.locator(f"#{ids.CYTOSCAPE_GRAPH}").bounding_box()
+    page.mouse.click(graph["x"] + 10, graph["y"] + 10)
+    wait_until_idle(page)
     page.get_by_label("Global predsplot").check()
+    wait_until_idle(page)
+    click_node(page, PRED_LEAF)
     page.wait_for_selector(f"#{ids.NODE_INFO_PLOT_CONTAINER} img")
     wait_until_idle(page)
     screenshot_from(page, ids.NODE_INFO_PLOT_CONTAINER, node_card, OUTPUT_DIR / "b-node-info-pred.png")
-    page.close()
-
-
-def screenshot_pinned_plots(browser: Browser, url: str):
-    """The whole app with the plots of an internal node and a leaf pinned on the graph."""
-    page = open_app(browser, url, OVERVIEW_SCALE)
-    click_node(page, INTERNAL_NODE)
-    page.locator(f"#{ids.NODE_INFO_PLOT_SWITCH}").check()
-    page.wait_for_selector(f"#{ids.NODE_INFO_PLOT_CONTAINER} img")
-    wait_until_idle(page)
-    for node_id in [INTERNAL_NODE, deepest_leaf(page)]:
-        click_node(page, node_id)
-        page.click(f"#{ids.BTN_ADD_GRAPH_PLOT}")
-        wait_until_idle(page)
-    page.wait_for_function("document.querySelectorAll('.imote-graph-plot img').length === 2")
-    # The leaf plot is placed over other nodes, drag it to the empty space under the tree like a user would
-    leaf_plot = page.locator(".imote-graph-plot").nth(1).bounding_box()
-    graph = page.locator(f"#{ids.CYTOSCAPE_GRAPH}").bounding_box()
-    page.mouse.move(leaf_plot["x"] + leaf_plot["width"] / 2, leaf_plot["y"] + leaf_plot["height"] / 2)
-    page.mouse.down()
-    page.mouse.move(graph["x"] + 0.45 * graph["width"], graph["y"] + 0.85 * graph["height"], steps=10)
-    page.mouse.up()
-    page.mouse.move(0, 0)  # no hover, so the close buttons and resize handles of the plots are hidden
-    wait_until_idle(page)
-    page.screenshot(path=OUTPUT_DIR / "gallery-pinned-plots.png")
     page.close()
 
 
@@ -239,7 +213,6 @@ SCREENSHOTS = [
     screenshot_overview,
     screenshot_tree_info,
     screenshot_node_info,
-    screenshot_pinned_plots,
     screenshot_new_tree,
     screenshot_edit_tree,
     screenshot_layout,

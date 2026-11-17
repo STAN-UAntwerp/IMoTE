@@ -8,3 +8,31 @@
   /* Keeps it consistent if you switch to dark/slate mode */
   --md-primary-fg-color: #1f77b4;
 }
+
+/* Node type badges in the Node Information docs, colors match the nodes in the graph */
+.md-typeset .node-badge {
+  display: inline-block;
+  min-width: 4em;
+  padding: 0.05em 0.5em;
+  border-radius: 0.35em;
+  font-size: 0.85em;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+}
+
+.md-typeset .node-types table td:first-child {
+  text-align: center;
+}
+
+.md-typeset .node-types table tr.group-start td {
+  border-top: 2px solid var(--md-default-fg-color--light);
+}
+
+/* Table text is already small, so the badges in the node type table keep a larger size */
+.md-typeset .node-types .node-badge {
+  min-width: 4.5em;
+  padding: 0.2em 0.7em;
+  border-radius: 0.4em;
+  font-size: 1em;
+}

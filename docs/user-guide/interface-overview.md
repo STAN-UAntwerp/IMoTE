@@ -1,12 +1,12 @@
 # Interface Overview
 
-This page give a short orientation of the full application.
+This page gives a short orientation of the full application.
 
 ![Screenshot: annotated screenshot pointing out the navbar, graph area, and sidebar](../assets/screenshots/app-overview-annotated.png)
 
 ## Layout
 
-The app window is split into four main areas:
+The app window is split into three main areas:
 
 - **The status bar**, directly above the graph, tells you what happened after each action and can show you the history of all messages.
 - **The interactive tree graph**, showing the current tree as an interactive [Cytoscape](https://js.cytoscape.org/) graph. You can pan, zoom and click on or shift nodes.
@@ -27,4 +27,4 @@ The first two cards — **Tree Information** and **Node Information** — are al
 
 ## Selecting a node
 
-Clicking a node in the graph area is how you select it. The currenclty selected node is used by the **Node Information** card and is a requirmend for several actions in the **Edit Tree** card (e.g. "Collapse/expand selected node"). When a node is selected it has a yellow outline.
+Clicking a node in the graph area is how you select it. The currently selected node is used by the **Node Information** card and is a requirement for several actions in the **Edit Tree** card (e.g. "Collapse/expand selected node"). When a node is selected it has a yellow outline.

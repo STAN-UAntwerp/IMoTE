@@ -13,13 +13,13 @@ an adapter.
 | Field                 | Description                                                                                                                                                       |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Dataset**           | The dataset on which the tree will be fitted, chosen from your list of datasets (see [Datasets](#datasets) below). The pencil button opens the settings of the selected dataset, **Add** adds a dataset from PMLB, the UCI repository or a file. |
-| **Method**            | The tree algorithm to use (see the [home](../index.md) page for a brief description of PILOT and M5).                                                             |
+| **Method**            | The tree algorithm to use PILOT, M5 or a regular decision tree (scikit-learn's `DecisionTreeRegressor`), see the [home](../index.md) page for a brief description.                                                             |
 | **Max depth**         | The maximum depth of the tree. (The root node is at depth 0.)                                                                                                     |
-| **Max model depth**   | PILOT only feauture: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).                                                  |
+| **Max model depth**   | PILOT only feature: The maximum model depth, also counting linear nodes (max depth doesn't count linear nodes).                                                  |
 | **Min samples split** | The minimum number of samples required before a node may be considered for splitting.                                                                             |
 | **Min samples leaf**  | The minimum number of samples that each resulting leaf must contain.                                                                                              |
 
-Click **Fit Tree** to train and show a new tree using the selected settings. Fitting may take a some time for larger
+Click **Fit Tree** to train and show a new tree using the selected settings. Fitting may take some time for larger
 datasets or deeper trees.
 
 ## Saving and loading trees
@@ -32,8 +32,8 @@ The following actions are also available:
   graph.
 * **Reload tree** – Restores the original fitted tree. This is useful after exploring subtrees or making temporary
   modifications to the visualization. The tree is restored to the state it had immediately after being fitted or loaded.
-* **Load tree** – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text
-  field and click **Load tree**. If the field is left empty, the application loads the most recently saved tree from
+* **Load saved viz_tree** – Loads a previously saved tree (pickled Python object). Enter the path to a saved tree in the text
+  field and click **Load saved viz_tree**. If the field is left empty, the application loads the most recently saved tree from
   `~/.imote/saved_trees`.
 
 ## Datasets

@@ -15,36 +15,56 @@ node selected, and the fields below fill in.
 
 ## Node Badge
 
-Each node contains a badge indicating the type of node. The available node types depend on the selected algorithm:
+Each node contains a badge indicating the type of node, in the same color as the node in the graph. The available node
+types depend on the selected algorithm: PILOT uses the types in the first group, trees that only split without fitting
+a model in their internal nodes, such as M5, use the types in the second group. Both have leaves.
 
-- **PILOT**:
-    - **pcon** (*piecewise constant*) – a node with a piecewise constant prediction model.
-    - **pconc** (*piecewise constant categorical*) – a node with a piecewise constant prediction model for categorical
-      splits.
-    - **lin** (*linear*) – a node containing a linear model.
-    - **plin** (*piecewise linear*) – a node containing a piecewise linear model.
-    - **blin** (*broken linear*) – a node containing a broken linear model.
-    - **leaf** – a leaf node containing a linear regression model.
-- **M5**:
-    - **split** – an internal node that splits the data based on a feature value.
-    - **leaf** – a leaf node containing a linear regression model.
+<div class="node-types">
+<table>
+  <thead>
+    <tr><th>Node type</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="node-badge" style="background: #2ca02c">Leaf</span></td>
+        <td>Terminal node with no children.</td></tr>
+    <tr><td><span class="node-badge" style="background: #9467bd">Linear</span></td>
+        <td>Fits a linear model, only has one child.</td></tr>
+    <tr><td><span class="node-badge" style="background: #d62728">Pcon</span></td>
+        <td>Piecewise constant: splits and fits constant models.</td></tr>
+    <tr><td><span class="node-badge" style="background: #8c564b">PconC</span></td>
+        <td>Splits on a categorical variable and fits constant models.</td></tr>
+    <tr><td><span class="node-badge" style="background: #1f77b4">Blin</span></td>
+        <td>Broken linear: splits and fits a continuous two part linear model.</td></tr>
+    <tr><td><span class="node-badge" style="background: #ff7f0e">Plin</span></td>
+        <td>Piecewise linear: splits and fits two independent linear models.</td></tr>
+    <tr class="group-start"><td><span class="node-badge" style="background: #d62728">Split</span></td>
+        <td>Splits without fitting a model.</td></tr>
+    <tr><td><span class="node-badge" style="background: #8c564b">SplitC</span></td>
+        <td>Splits on a categorical variable without fitting a model.</td></tr>
+  </tbody>
+</table>
+</div>
 
 ## Node fields
 
 Below the node type badge, the following fields are displayed:
 
 * **Description** – One line under the badge that describes the nodes model with the full feature names.
-* **Metrics** – A dropdown list form which you select the metrics you are interested in.
-  * **Node ID** – The unique identifier of the node in the tree.
-  * **Samples** – The number of data points that reach this node.
-  * **RSS** – The residual sum of squares (RSS) of the model fitted at this node.
-  * **MAE** – The mean absolute error (MAE) between the true and predicted values at this node.
-  * **MSE** – The mean squared error (MSE) between the true and predicted values at this node.
-  * **RMSE** – The root mean squared error (RMSE) between the true and predicted values at this node.
-  * **R²** – The coefficient of determination (R²) between the true and predicted values at this node.
-  * **Mean Residual** – The mean of the node's own residuals.
-  * **Std Residual** – The standard deviation of the node's own residuals.
-  * **Split Balance** – The fraction of samples routed to the right child, 0.5 indicates a perfectly balanced split.
+* **Metrics** – A dropdown list from which you select the metrics you are interested in.
+    <small>
+    * **Node ID** – The unique identifier of the node in the tree.
+    * **Samples** – The number of data points that reach this node.
+    * **RSS** – The residual sum of squares (RSS) of the model fitted at this node.
+    * **MAE** – The mean absolute error (MAE) between the true and predicted values at this node.
+    * **MSE** – The mean squared error (MSE) between the true and predicted values at this node.
+    * **RMSE** – The root mean squared error (RMSE) between the true and predicted values at this node.
+    * **R²** – The coefficient of determination (R²) between the true and predicted values at this node.
+    * **Mean Residual** – The mean of the node's own residuals.
+    * **Std Residual** – The standard deviation of the node's own residuals.
+    * **Split Balance** – The fraction of samples routed to the right child, 0.5 indicates a perfectly balanced split.
+
+    </small>
+  
 * **Show node plot** – A switch that enables the node plot for the selected node (see below).
 
 ---

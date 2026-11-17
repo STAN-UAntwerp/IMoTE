@@ -30,7 +30,8 @@ As for many other linear model tree algorithm PILOT had no easy way to visualize
 explore its tree structure. This application was created to make linear model tree easier to understand, explain, and
 analyze, allowing users to fully benefit from the interpretability offered by its design. 
 
-When fitting a new tree you can choose between M5 and PILOT in the [New Tree](user-guide/c-new-tree.md) card when fitting a tree.
+When fitting a new tree you can choose between PILOT, M5 and a regular decision tree (scikit-learn's
+`DecisionTreeRegressor`, with a constant in every leaf, for comparison) in the [New Tree](user-guide/c-new-tree.md) card.
 
 ## What can you do in the application?
 
@@ -41,9 +42,7 @@ When fitting a new tree you can choose between M5 and PILOT in the [New Tree](us
 - **Highlight a specific data point** to see the exact path it takes through the tree, and which leaf (and linear model)
   ends up making its prediction.
 - **Export** a svg file of the tree that is currently shown to use outside the application.
-
-
-- **Load your own tree** by coding a new adapter wich let you upload any tree and gives you full flexibility.
+- **Load your own tree** by coding a new adapter which lets you upload any tree and gives you full flexibility.
 
 ## Installation
 
