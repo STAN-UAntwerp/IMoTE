@@ -169,7 +169,7 @@ def test_left_right_swaps_the_axes():
     _, top_bottom = layout_elements(elements)
     _, left_right = layout_elements(elements, direction="LR")
     tb, lr = positions(top_bottom), positions(left_right)
-    assert lr["n1"][1] < lr["n0"][1] < lr["n2"][1]  # first child above
+    assert lr["n2"][1] < lr["n0"][1] < lr["n1"][1]  # first (left) child below
     assert lr["n0"][0] < lr["n1"][0] == lr["n2"][0]   # children to the right
     assert tb != lr
     assert not overlapping(elements, left_right)

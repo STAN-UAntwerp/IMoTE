@@ -10,7 +10,8 @@ The layout works on the cytoscape elements, the child order is the order of the 
 adds them (left child first). The size of each node comes from the stylesheet and its classes, so the layout fits
 every view (normal, minimal, tiny, node plots, data sized nodes).
 
-Everything is computed top to bottom (x along a level, y down the levels), the "Left Right" direction swaps the axes.
+Everything is computed top to bottom (x along a level, y down the levels), the "Left Right" direction swaps the axes
+and mirrors them, so the left child of a split is below the right child.
 """
 from __future__ import annotations
 
@@ -235,7 +236,7 @@ def _keep_positions(tree: TreeStructure, sizes: dict[str, tuple[float, float]], 
     of an expanded node). If nodes would overlap or children would swap, None: the whole tree is laid out again.
     """
     old_nodes = previous.get("_nodes") or {}
-    old = {node_id: (p["y"], p["x"]) if swap else (p["x"], p["y"])
+    old = {node_id: (-p["y"], p["x"]) if swap else (p["x"], p["y"])
            for node_id, p in (previous.get("positions") or {}).items()}
     kept = {node_id for node_id in tree.order if node_id in old and old_nodes.get(node_id) == nodes[node_id]}
     if not kept:
@@ -312,8 +313,8 @@ def layout_elements(elements: list[dict], direction: str = "TB", align_leaves: b
     if kept:
         positions, bends = kept
     if direction == "LR":
-        positions = {node_id: (y, x) for node_id, (x, y) in positions.items()}
-        bends = {edge: [(y, x) for x, y in points] for edge, points in bends.items()}
+        positions = {node_id: (y, -x) for node_id, (x, y) in positions.items()}
+        bends = {edge: [(y, -x) for x, y in points] for edge, points in bends.items()}
 
     new_elements = []
     for el in elements:
