@@ -14,14 +14,11 @@ every node, and traces a single data point through the tree to explain its predi
 
 <table>
   <tr>
-    <td width="33%"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/echo-left-right-highlight.png" alt="Highlighted path with node plots pinned on the graph"></a></td>
-    <td width="33%"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/cpu-data-flow.png" alt="Data flow through a large tree"></a></td>
-    <td width="33%"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/no2-pilot-node-plots.png" alt="Every node shown as its plot"></a></td>
+    <td width="47%" rowspan="2" valign="top"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/no2-pilot-node-plots.png" alt="Every node shown as its plot" width="100%"></a></td>
+    <td width="53%" valign="top"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/cpu-mse.png" alt="Large tree with the MSE of every node shown and colored" width="100%"></a></td>
   </tr>
   <tr>
-    <td align="center"><sub>Trace a data point, with node plots pinned on the graph</sub></td>
-    <td align="center"><sub>Data flow through a large tree</sub></td>
-    <td align="center"><sub>Every node shown as its plot</sub></td>
+    <td valign="top"><a href="https://stan-uantwerp.github.io/IMoTE/gallery/"><img src="https://raw.githubusercontent.com/STAN-UAntwerp/IMoTE/main/docs/assets/readme_screenshots/echo-pinned-plots.png" alt="Node plots pinned next to their nodes on the graph" width="100%"></a></td>
   </tr>
 </table>
 
@@ -133,7 +130,8 @@ python -m imote.app       # start the app in Dash debug mode, it reloads on code
 
 To work on the documentation: `pip install -e ".[docs]"`, then `mkdocs serve`.
 
-Questions, ideas and bugs are welcome as an [issue](https://github.com/STAN-UAntwerp/IMoTE/issues).
+Questions and ideas are welcome in [Discussions](https://github.com/STAN-UAntwerp/IMoTE/discussions), bugs can be
+reported as an [issue](https://github.com/STAN-UAntwerp/IMoTE/issues).
 
 ### References
 
